@@ -58,8 +58,55 @@ const importLayoutRule = {
   },
 };
 
+const constSpacingRule = {
+  meta: {
+    type: 'layout',
+    schema: [],
+    messages: {
+      consecutive: 'Do not add a blank line between consecutive const declarations.',
+      following: 'Add one blank line after a const declaration before another statement.',
+    },
+  },
+  create(context) {
+    const checkStatements = (statements) => {
+      for (let index = 1; index < statements.length; index += 1) {
+        const currentStatement = statements[index];
+        const previousStatement = statements[index - 1];
+        const previousIsConst =
+          previousStatement.type === 'VariableDeclaration' && previousStatement.kind === 'const';
+
+        if (!previousIsConst) {
+          continue;
+        }
+
+        const currentIsConst =
+          currentStatement.type === 'VariableDeclaration' && currentStatement.kind === 'const';
+        const lineDistance = currentStatement.loc.start.line - previousStatement.loc.end.line;
+
+        if (currentIsConst && lineDistance !== 1) {
+          context.report({ node: currentStatement, messageId: 'consecutive' });
+        }
+
+        if (!currentIsConst && lineDistance !== 2) {
+          context.report({ node: currentStatement, messageId: 'following' });
+        }
+      }
+    };
+
+    return {
+      Program(node) {
+        checkStatements(node.body);
+      },
+      BlockStatement(node) {
+        checkStatements(node.body);
+      },
+    };
+  },
+};
+
 const localPlugin = {
   rules: {
+    'const-spacing': constSpacingRule,
     'import-layout': importLayoutRule,
   },
 };
@@ -77,14 +124,10 @@ export default tseslint.config(
     },
     rules: {
       curly: ['error', 'all'],
+      'local/const-spacing': 'error',
       'local/import-layout': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/padding-line-between-statements': [
-        'error',
-        { blankLine: 'always', prev: 'const', next: '*' },
-        { blankLine: 'never', prev: 'const', next: 'const' },
-      ],
     },
   },
 );
