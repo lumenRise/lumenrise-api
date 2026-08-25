@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import getHealthRoute from './get';
+import getHealthRoute from './get.js';
 
 const healthRoutes = Router();
 

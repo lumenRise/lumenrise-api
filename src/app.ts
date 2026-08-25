@@ -3,9 +3,9 @@ import helmet from 'helmet';
 import express from 'express';
 import compression from 'compression';
 
-import router from './routes';
-import notFound from './middleware/notFound';
-import errorHandler from './middleware/errorHandler';
+import router from './routes/index.js';
+import notFound from './middleware/notFound.js';
+import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
 

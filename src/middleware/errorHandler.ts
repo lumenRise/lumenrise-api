@@ -1,7 +1,7 @@
 import type { ErrorRequestHandler } from 'express';
 
-import log from '../logger';
-import type { ApiResponse, EmptyResult } from '../types/response';
+import log from '../logger.js';
+import type { ApiResponse, EmptyResult } from '../types/response.js';
 
 const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
   if (res.headersSent) {

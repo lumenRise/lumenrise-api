@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 
-import type { HealthResult } from '../../types/health';
-import type { ApiResponse } from '../../types/response';
+import type { HealthResult } from '../../types/health.js';
+import type { ApiResponse } from '../../types/response.js';
 
 const getHealthRoute: RequestHandler = (_req, res) => {
   const response: ApiResponse<HealthResult> = {

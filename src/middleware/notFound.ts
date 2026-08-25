@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 
-import type { ApiResponse, EmptyResult } from '../types/response';
+import type { ApiResponse, EmptyResult } from '../types/response.js';
 
 const notFound: RequestHandler = (_req, res) => {
   const response: ApiResponse<EmptyResult> = {

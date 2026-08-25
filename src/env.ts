@@ -18,6 +18,14 @@ const schema = defineConfig({
     default: 'info',
     description: 'Logging verbosity.',
   },
+  DB_URI: {
+    default: 'mongodb://127.0.0.1:27017/?replicaSet=rs0&directConnection=true',
+    description: 'MongoDB connection string.',
+  },
+  DB_NAME: {
+    default: 'lumenrise',
+    description: 'MongoDB database name.',
+  },
 });
 const source =
   process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production' ? undefined : 'file';
