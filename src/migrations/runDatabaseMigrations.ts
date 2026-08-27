@@ -2,8 +2,12 @@ import log from '../logger.js';
 import DatabaseMigration from '../models/DatabaseMigration.js';
 import createIdentityIndexes from './20260922CreateIdentityIndexes.js';
 import type { MigrationDefinition } from '../types/database/migration.js';
+import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes.js';
 
-const migrations: readonly MigrationDefinition[] = [createIdentityIndexes];
+const migrations: readonly MigrationDefinition[] = [
+  createIdentityIndexes,
+  createExternalAccountIndexes,
+];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();
 
