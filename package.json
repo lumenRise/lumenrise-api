@@ -29,6 +29,7 @@
   "dependencies": {
     "@stellar/stellar-sdk": "^17.1.0",
     "compression": "^1.8.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "envyra": "^0.1.6",
     "express": "^5.2.1",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/compression": "^1.8.1",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.2",

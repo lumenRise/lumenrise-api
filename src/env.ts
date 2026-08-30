@@ -26,6 +26,15 @@ const schema = defineConfig({
     default: 'lumenrise',
     description: 'MongoDB database name.',
   },
+  CLIENT_ORIGIN: {
+    default: 'http://localhost:5173',
+    description: 'Browser client origin allowed to send credentialed requests.',
+  },
+  SESSION_TTL_DAYS: {
+    type: 'number',
+    default: 30,
+    description: 'Number of days a Lumenrise session remains valid.',
+  },
 });
 const source =
   process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production' ? undefined : 'file';
