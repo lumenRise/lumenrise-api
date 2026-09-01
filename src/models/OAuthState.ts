@@ -36,6 +36,13 @@ const oauthStateSchema = new Schema<OAuthStateRecord>(
       immutable: true,
       match: [/^[A-Za-z0-9_-]{43}$/, 'PKCE code challenge must be a SHA-256 base64url value'],
     },
+    codeVerifier: {
+      type: String,
+      required: true,
+      immutable: true,
+      select: false,
+      match: [/^[A-Za-z0-9_-]{43}$/, 'PKCE code verifier must be a base64url value'],
+    },
     redirectUri: {
       type: String,
       required: true,

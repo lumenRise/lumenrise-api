@@ -35,6 +35,18 @@ const schema = defineConfig({
     default: 30,
     description: 'Number of days a Lumenrise session remains valid.',
   },
+  GITHUB_CLIENT_ID: {
+    default: '',
+    description: 'GitHub OAuth application client ID.',
+  },
+  GITHUB_CLIENT_SECRET: {
+    default: '',
+    description: 'GitHub OAuth application client secret.',
+  },
+  GITHUB_CALLBACK_URL: {
+    default: 'http://localhost:5000/v1/oauth/github/callback',
+    description: 'GitHub OAuth callback URL registered for the application.',
+  },
 });
 const source =
   process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production' ? undefined : 'file';

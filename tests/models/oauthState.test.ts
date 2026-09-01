@@ -4,8 +4,9 @@ import { describe, expect, it } from 'vitest';
 
 import OAuthState from '../../src/models/OAuthState.js';
 
+const CODE_VERIFIER = 'a'.repeat(43);
 const STATE_HASH = createHash('sha256').update('oauth-state').digest('hex');
-const CODE_CHALLENGE = createHash('sha256').update('code-verifier').digest('base64url');
+const CODE_CHALLENGE = createHash('sha256').update(CODE_VERIFIER).digest('base64url');
 
 describe('OAuthState model', () => {
   it('accepts a short-lived registration state without an identity', async () => {
@@ -15,6 +16,7 @@ describe('OAuthState model', () => {
       purpose: 'register',
       stateHash: STATE_HASH,
       codeChallenge: CODE_CHALLENGE,
+      codeVerifier: CODE_VERIFIER,
       redirectUri: 'https://app.lumenrise.example/oauth/callback',
       expiresAt: new Date(Date.now() + 600_000),
     });
@@ -32,6 +34,7 @@ describe('OAuthState model', () => {
       purpose: 'connect',
       stateHash: STATE_HASH,
       codeChallenge: CODE_CHALLENGE,
+      codeVerifier: CODE_VERIFIER,
       redirectUri: 'https://app.lumenrise.example/oauth/callback',
       expiresAt: new Date(Date.now() + 600_000),
     });
@@ -48,6 +51,7 @@ describe('OAuthState model', () => {
     const state = new OAuthState({ identity });
 
     expect(state.identity).toEqual(identity);
+    expect(OAuthState.schema.path('codeVerifier').options.select).toBe(false);
     expect(OAuthState.schema.indexes()).toEqual(
       expect.arrayContaining([
         [

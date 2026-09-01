@@ -26,6 +26,7 @@ interface OAuthStateRecord {
   purpose: OAuthPurpose;
   stateHash: string;
   codeChallenge: string;
+  codeVerifier: string;
   redirectUri: string;
   expiresAt: Date;
   consumedAt: Date | null;
