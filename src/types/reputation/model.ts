@@ -26,12 +26,49 @@ interface ReputationSnapshotRecord {
   createdAt: Date;
 }
 
+interface GitHubDeveloperMetrics {
+  accountAgeDays: number;
+  publicRepositoryCount: number;
+  recentPublicEventCount: number | null;
+  sampledOriginalRepositoryStars: number | null;
+}
+
+interface ReputationSignalInput {
+  key: string;
+  rawValue: number;
+  scoreCap: number;
+  baseWeight: number;
+}
+
+interface ReputationSignalResult {
+  provider: ExternalAccountProvider;
+  key: string;
+  rawValue: number;
+  normalizedScore: number;
+  weight: number;
+  contribution: number;
+  observedAt: string;
+}
+
+interface ReputationSnapshotResult {
+  category: ReputationCategory;
+  status: ReputationSnapshotStatus;
+  algorithmVersion: string;
+  score: number | null;
+  signals: ReputationSignalResult[];
+  calculatedAt: string;
+}
+
 type ReputationSnapshotDocument = HydratedDocument<ReputationSnapshotRecord>;
 
 export type {
+  GitHubDeveloperMetrics,
   ReputationCategory,
+  ReputationSignalInput,
   ReputationSignalRecord,
+  ReputationSignalResult,
   ReputationSnapshotDocument,
   ReputationSnapshotRecord,
+  ReputationSnapshotResult,
   ReputationSnapshotStatus,
 };

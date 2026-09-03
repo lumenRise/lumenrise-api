@@ -7,15 +7,20 @@ import { issueSession } from '../auth/session.js';
 import OAuthState from '../../models/OAuthState.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { IssuedSession } from '../../types/auth/model.js';
+import { createGitHubDeveloperSnapshot } from '../reputation/developer.js';
+import type { GitHubDeveloperMetrics } from '../../types/reputation/model.js';
 import type {
   CompletedGitHubOAuth,
   GitHubAuthorizationFlow,
+  GitHubEvent,
   GitHubOAuthPurpose,
   GitHubTokenResponse,
+  GitHubRepository,
   GitHubUser,
 } from '../../types/integration/github.js';
 
 const OAUTH_STATE_TTL_MS = 600_000;
+const GITHUB_API_VERSION = '2026-03-10';
 const GITHUB_USER_API_URL = 'https://api.github.com/user';
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
@@ -90,7 +95,7 @@ const getAuthenticatedGitHubUser = async (accessToken: string): Promise<GitHubUs
       Accept: 'application/vnd.github+json',
       Authorization: `Bearer ${accessToken}`,
       'User-Agent': 'lumenrise-api',
-      'X-GitHub-Api-Version': '2022-11-28',
+      'X-GitHub-Api-Version': GITHUB_API_VERSION,
     },
   });
 
@@ -99,6 +104,62 @@ const getAuthenticatedGitHubUser = async (accessToken: string): Promise<GitHubUs
   }
 
   return (await response.json()) as GitHubUser;
+};
+const getGitHubJson = async <T>(url: string, accessToken: string): Promise<T> => {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: `Bearer ${accessToken}`,
+      'User-Agent': 'lumenrise-api',
+      'X-GitHub-Api-Version': GITHUB_API_VERSION,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('GitHub reputation data lookup failed');
+  }
+
+  return (await response.json()) as T;
+};
+const collectGitHubDeveloperMetrics = async (
+  user: GitHubUser,
+  accessToken: string,
+  observedAt: Date,
+): Promise<GitHubDeveloperMetrics> => {
+  const username = encodeURIComponent(user.login);
+  const repositoriesUrl = `https://api.github.com/users/${username}/repos?type=owner&sort=updated&per_page=100`;
+  const eventsUrl = `https://api.github.com/users/${username}/events/public?per_page=100`;
+  const [repositoriesResult, eventsResult] = await Promise.allSettled([
+    getGitHubJson<GitHubRepository[]>(repositoriesUrl, accessToken),
+    getGitHubJson<GitHubEvent[]>(eventsUrl, accessToken),
+  ]);
+  const accountCreatedAt = new Date(user.created_at);
+  const repositories =
+    repositoriesResult.status === 'fulfilled' && Array.isArray(repositoriesResult.value)
+      ? repositoriesResult.value
+      : null;
+  const events =
+    eventsResult.status === 'fulfilled' && Array.isArray(eventsResult.value)
+      ? eventsResult.value
+      : null;
+  const accountAgeDays = Math.max(
+    0,
+    Math.floor((observedAt.getTime() - accountCreatedAt.getTime()) / 86_400_000),
+  );
+  const sampledOriginalRepositoryStars =
+    repositories !== null
+      ? repositories
+          .filter((repository) => !repository.fork)
+          .reduce((total, repository) => total + repository.stargazers_count, 0)
+      : null;
+  const recentPublicEventCount = events?.length ?? null;
+
+  return {
+    accountAgeDays,
+    publicRepositoryCount: user.public_repos,
+    recentPublicEventCount,
+    sampledOriginalRepositoryStars,
+  };
 };
 const connectGitHubAccount = async (
   user: GitHubUser,
@@ -175,6 +236,11 @@ const completeGitHubAuthorization = async (
   const accessToken = await exchangeGitHubCode(code, oauthState.codeVerifier);
   const user = await getAuthenticatedGitHubUser(accessToken);
   const identityId = await connectGitHubAccount(user, oauthState.purpose, oauthState.identity);
+  const calculatedAt = new Date();
+  const metrics = await collectGitHubDeveloperMetrics(user, accessToken, calculatedAt);
+
+  await createGitHubDeveloperSnapshot(identityId, metrics, calculatedAt);
+
   const session = await issueSession(identityId);
 
   return {
