@@ -7,15 +7,13 @@ import { issueSession } from '../auth/session.js';
 import OAuthState from '../../models/OAuthState.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { IssuedSession } from '../../types/auth/model.js';
-import { createGitHubDeveloperSnapshot } from '../reputation/developer.js';
-import type { GitHubDeveloperMetrics } from '../../types/reputation/model.js';
+import { collectGitHubData } from '../reputation/githubData.js';
 import type {
   CompletedGitHubOAuth,
+  ConnectedGitHubAccount,
   GitHubAuthorizationFlow,
-  GitHubEvent,
   GitHubOAuthPurpose,
   GitHubTokenResponse,
-  GitHubRepository,
   GitHubUser,
 } from '../../types/integration/github.js';
 
@@ -59,6 +57,7 @@ const createGitHubAuthorization = async (
   authorizationUrl.searchParams.set('code_challenge', codeChallenge);
   authorizationUrl.searchParams.set('code_challenge_method', 'S256');
   authorizationUrl.searchParams.set('prompt', 'select_account');
+  authorizationUrl.searchParams.set('scope', 'read:user');
 
   return {
     authorizationUrl: authorizationUrl.toString(),
@@ -105,67 +104,11 @@ const getAuthenticatedGitHubUser = async (accessToken: string): Promise<GitHubUs
 
   return (await response.json()) as GitHubUser;
 };
-const getGitHubJson = async <T>(url: string, accessToken: string): Promise<T> => {
-  const response = await fetch(url, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${accessToken}`,
-      'User-Agent': 'lumenrise-api',
-      'X-GitHub-Api-Version': GITHUB_API_VERSION,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('GitHub reputation data lookup failed');
-  }
-
-  return (await response.json()) as T;
-};
-const collectGitHubDeveloperMetrics = async (
-  user: GitHubUser,
-  accessToken: string,
-  observedAt: Date,
-): Promise<GitHubDeveloperMetrics> => {
-  const username = encodeURIComponent(user.login);
-  const repositoriesUrl = `https://api.github.com/users/${username}/repos?type=owner&sort=updated&per_page=100`;
-  const eventsUrl = `https://api.github.com/users/${username}/events/public?per_page=100`;
-  const [repositoriesResult, eventsResult] = await Promise.allSettled([
-    getGitHubJson<GitHubRepository[]>(repositoriesUrl, accessToken),
-    getGitHubJson<GitHubEvent[]>(eventsUrl, accessToken),
-  ]);
-  const accountCreatedAt = new Date(user.created_at);
-  const repositories =
-    repositoriesResult.status === 'fulfilled' && Array.isArray(repositoriesResult.value)
-      ? repositoriesResult.value
-      : null;
-  const events =
-    eventsResult.status === 'fulfilled' && Array.isArray(eventsResult.value)
-      ? eventsResult.value
-      : null;
-  const accountAgeDays = Math.max(
-    0,
-    Math.floor((observedAt.getTime() - accountCreatedAt.getTime()) / 86_400_000),
-  );
-  const sampledOriginalRepositoryStars =
-    repositories !== null
-      ? repositories
-          .filter((repository) => !repository.fork)
-          .reduce((total, repository) => total + repository.stargazers_count, 0)
-      : null;
-  const recentPublicEventCount = events?.length ?? null;
-
-  return {
-    accountAgeDays,
-    publicRepositoryCount: user.public_repos,
-    recentPublicEventCount,
-    sampledOriginalRepositoryStars,
-  };
-};
 const connectGitHubAccount = async (
   user: GitHubUser,
   purpose: GitHubOAuthPurpose,
   requestedIdentityId: Types.ObjectId | null,
-): Promise<Types.ObjectId> => {
+): Promise<ConnectedGitHubAccount> => {
   const providerAccountId = user.id.toString();
   const existingAccount = await ExternalAccount.findOne({ provider: 'github', providerAccountId });
 
@@ -188,8 +131,7 @@ const connectGitHubAccount = async (
   }
 
   const now = new Date();
-
-  await ExternalAccount.findOneAndUpdate(
+  const externalAccount = await ExternalAccount.findOneAndUpdate(
     { provider: 'github', providerAccountId },
     {
       $set: {
@@ -206,10 +148,14 @@ const connectGitHubAccount = async (
         connectedAt: now,
       },
     },
-    { upsert: true, runValidators: true },
+    { upsert: true, runValidators: true, new: true },
   );
 
-  return identityId;
+  if (!externalAccount) {
+    throw new Error('GitHub account connection could not be persisted');
+  }
+
+  return { identityId, externalAccountId: externalAccount._id };
 };
 const completeGitHubAuthorization = async (
   code: string,
@@ -235,17 +181,15 @@ const completeGitHubAuthorization = async (
 
   const accessToken = await exchangeGitHubCode(code, oauthState.codeVerifier);
   const user = await getAuthenticatedGitHubUser(accessToken);
-  const identityId = await connectGitHubAccount(user, oauthState.purpose, oauthState.identity);
-  const calculatedAt = new Date();
-  const metrics = await collectGitHubDeveloperMetrics(user, accessToken, calculatedAt);
+  const account = await connectGitHubAccount(user, oauthState.purpose, oauthState.identity);
 
-  await createGitHubDeveloperSnapshot(identityId, metrics, calculatedAt);
+  await collectGitHubData(account.identityId, account.externalAccountId, user, accessToken);
 
-  const session = await issueSession(identityId);
+  const session = await issueSession(account.identityId);
 
   return {
     connection: {
-      identityId: identityId.toString(),
+      identityId: account.identityId.toString(),
       username: user.login,
     },
     session,

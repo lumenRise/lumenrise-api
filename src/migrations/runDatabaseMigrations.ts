@@ -3,6 +3,7 @@ import DatabaseMigration from '../models/DatabaseMigration.js';
 import createSessionIndexes from './20260922CreateSessionIndexes.js';
 import createIdentityIndexes from './20260922CreateIdentityIndexes.js';
 import type { MigrationDefinition } from '../types/database/migration.js';
+import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes.js';
 import createReputationIndexes from './20260922CreateReputationIndexes.js';
 import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes.js';
 
@@ -11,6 +12,7 @@ const migrations: readonly MigrationDefinition[] = [
   createExternalAccountIndexes,
   createReputationIndexes,
   createSessionIndexes,
+  createGitHubDataIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();

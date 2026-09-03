@@ -26,20 +26,6 @@ interface ReputationSnapshotRecord {
   createdAt: Date;
 }
 
-interface GitHubDeveloperMetrics {
-  accountAgeDays: number;
-  publicRepositoryCount: number;
-  recentPublicEventCount: number | null;
-  sampledOriginalRepositoryStars: number | null;
-}
-
-interface ReputationSignalInput {
-  key: string;
-  rawValue: number;
-  scoreCap: number;
-  baseWeight: number;
-}
-
 interface ReputationSignalResult {
   provider: ExternalAccountProvider;
   key: string;
@@ -62,9 +48,7 @@ interface ReputationSnapshotResult {
 type ReputationSnapshotDocument = HydratedDocument<ReputationSnapshotRecord>;
 
 export type {
-  GitHubDeveloperMetrics,
   ReputationCategory,
-  ReputationSignalInput,
   ReputationSignalRecord,
   ReputationSignalResult,
   ReputationSnapshotDocument,

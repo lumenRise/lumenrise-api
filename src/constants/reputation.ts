@@ -9,6 +9,5 @@ const REPUTATION_SNAPSHOT_STATUSES = [
   'partial',
   'failed',
 ] as const satisfies readonly ReputationSnapshotStatus[];
-const GITHUB_DEVELOPER_ALGORITHM_VERSION = 'github-developer-v1';
 
-export { GITHUB_DEVELOPER_ALGORITHM_VERSION, REPUTATION_CATEGORIES, REPUTATION_SNAPSHOT_STATUSES };
+export { REPUTATION_CATEGORIES, REPUTATION_SNAPSHOT_STATUSES };

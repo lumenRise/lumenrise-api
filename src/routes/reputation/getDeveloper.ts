@@ -1,14 +1,13 @@
 import type { RequestHandler } from 'express';
 
-import ReputationSnapshot from '../../models/ReputationSnapshot.js';
+import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { ReputationSnapshotResult } from '../../types/reputation/model.js';
+import type { GitHubDataSnapshotResult } from '../../types/reputation/github.js';
 
 const getDeveloperReputationRoute: RequestHandler = async (req, res) => {
-  const snapshot = await ReputationSnapshot.findOne({
+  const snapshot = await GitHubDataSnapshot.findOne({
     identity: req.auth?.identityId,
-    category: 'developer',
-  }).sort({ calculatedAt: -1 });
+  }).sort({ collectedAt: -1 });
 
   if (!snapshot) {
     const response: ApiResponse<EmptyResult> = {
@@ -20,24 +19,34 @@ const getDeveloperReputationRoute: RequestHandler = async (req, res) => {
     return res.status(404).json(response);
   }
 
-  const response: ApiResponse<ReputationSnapshotResult> = {
+  const response: ApiResponse<GitHubDataSnapshotResult> = {
     status: 'success',
     message: 'Developer reputation retrieved',
     result: {
-      category: snapshot.category,
+      provider: 'github',
       status: snapshot.status,
-      algorithmVersion: snapshot.algorithmVersion,
-      score: snapshot.score,
-      signals: snapshot.signals.map((signal) => ({
-        provider: signal.provider,
-        key: signal.key,
-        rawValue: signal.rawValue,
-        normalizedScore: signal.normalizedScore,
-        weight: signal.weight,
-        contribution: signal.contribution,
-        observedAt: signal.observedAt.toISOString(),
+      dataVersion: snapshot.dataVersion,
+      username: snapshot.username,
+      coverage: snapshot.coverage,
+      metrics: snapshot.metrics,
+      contributionPeriods: snapshot.contributionPeriods.map((period) => ({
+        key: period.key,
+        from: period.from.toISOString(),
+        to: period.to.toISOString(),
+        totalContributions: period.totalContributions,
+        commitContributions: period.commitContributions,
+        issueContributions: period.issueContributions,
+        pullRequestContributions: period.pullRequestContributions,
+        pullRequestReviewContributions: period.pullRequestReviewContributions,
+        repositoryContributions: period.repositoryContributions,
+        restrictedContributions: period.restrictedContributions,
+        repositoriesWithCommitContributions: period.repositoriesWithCommitContributions,
+        repositoriesWithIssueContributions: period.repositoriesWithIssueContributions,
+        repositoriesWithPullRequestContributions: period.repositoriesWithPullRequestContributions,
+        repositoriesWithPullRequestReviewContributions:
+          period.repositoriesWithPullRequestReviewContributions,
       })),
-      calculatedAt: snapshot.calculatedAt.toISOString(),
+      collectedAt: snapshot.collectedAt.toISOString(),
     },
   };
 

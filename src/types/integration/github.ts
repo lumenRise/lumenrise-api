@@ -20,15 +20,9 @@ interface GitHubUser {
   avatar_url: string;
   created_at: string;
   public_repos: number;
-}
-
-interface GitHubRepository {
-  fork: boolean;
-  stargazers_count: number;
-}
-
-interface GitHubEvent {
-  id: string;
+  public_gists: number;
+  followers: number;
+  following: number;
 }
 
 interface CompletedGitHubOAuth {
@@ -36,17 +30,22 @@ interface CompletedGitHubOAuth {
   username: string;
 }
 
+interface ConnectedGitHubAccount {
+  identityId: Types.ObjectId;
+  externalAccountId: Types.ObjectId;
+}
+
 type GitHubOAuthPurpose = 'register' | 'connect';
 type GitHubOAuthResultStatus = 'success' | 'error';
 
 export type {
   CompletedGitHubOAuth,
+  ConnectedGitHubAccount,
   GitHubAuthorizationFlow,
-  GitHubEvent,
   GitHubOAuthPurpose,
   GitHubOAuthResultStatus,
   GitHubOAuthStartResult,
   GitHubTokenResponse,
-  GitHubRepository,
   GitHubUser,
 };
+import type { Types } from 'mongoose';
