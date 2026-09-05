@@ -1,12 +1,29 @@
 import type { RequestHandler } from 'express';
 
+import ExternalAccount from '../../models/ExternalAccount.js';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import type { GitHubDataSnapshotResult } from '../../types/reputation/github.js';
 
 const getDeveloperReputationRoute: RequestHandler = async (req, res) => {
-  const snapshot = await GitHubDataSnapshot.findOne({
+  const account = await ExternalAccount.findOne({
     identity: req.auth?.identityId,
+    provider: 'github',
+    status: 'connected',
+  }).select('_id');
+
+  if (!account) {
+    const response: ApiResponse<EmptyResult> = {
+      status: 'error',
+      message: 'GitHub account is not connected',
+      result: {},
+    };
+
+    return res.status(404).json(response);
+  }
+
+  const snapshot = await GitHubDataSnapshot.findOne({
+    externalAccount: account._id,
   }).sort({ collectedAt: -1 });
 
   if (!snapshot) {

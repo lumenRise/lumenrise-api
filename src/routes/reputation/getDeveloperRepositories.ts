@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import type { RequestHandler } from 'express';
 
+import ExternalAccount from '../../models/ExternalAccount.js';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
 import GitHubRepositoryFact from '../../models/GitHubRepositoryFact.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
@@ -25,7 +26,23 @@ const getDeveloperRepositoriesRoute: RequestHandler = async (req, res) => {
     return res.status(400).json(response);
   }
 
-  const snapshot = await GitHubDataSnapshot.findOne({ identity: req.auth?.identityId }).sort({
+  const account = await ExternalAccount.findOne({
+    identity: req.auth?.identityId,
+    provider: 'github',
+    status: 'connected',
+  }).select('_id');
+
+  if (!account) {
+    const response: ApiResponse<EmptyResult> = {
+      status: 'error',
+      message: 'GitHub account is not connected',
+      result: {},
+    };
+
+    return res.status(404).json(response);
+  }
+
+  const snapshot = await GitHubDataSnapshot.findOne({ externalAccount: account._id }).sort({
     collectedAt: -1,
   });
 
