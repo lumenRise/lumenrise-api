@@ -5,9 +5,9 @@ import type { ProviderCredentialRecord } from '../types/integration/credential.j
 
 const encryptedSecretSchema = new Schema(
   {
-    ciphertext: { type: String, required: true, select: false },
-    initializationVector: { type: String, required: true, select: false },
-    authenticationTag: { type: String, required: true, select: false },
+    ciphertext: { type: String, required: true },
+    initializationVector: { type: String, required: true },
+    authenticationTag: { type: String, required: true },
   },
   { _id: false, versionKey: false },
 );

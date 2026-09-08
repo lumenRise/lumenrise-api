@@ -8,6 +8,9 @@ interface GitHubAuthorizationFlow extends GitHubOAuthStartResult {
 
 interface GitHubTokenResponse {
   access_token?: string;
+  expires_in?: number;
+  refresh_token?: string;
+  refresh_token_expires_in?: number;
   error?: string;
   error_description?: string;
 }

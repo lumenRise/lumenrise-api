@@ -19,6 +19,18 @@ interface ProviderCredentialRecord {
   updatedAt: Date;
 }
 
+interface ProviderCredentialInput {
+  accessToken: string;
+  refreshToken: string | null;
+  accessTokenExpiresAt: Date | null;
+  refreshTokenExpiresAt: Date | null;
+}
+
 type ProviderCredentialDocument = HydratedDocument<ProviderCredentialRecord>;
 
-export type { EncryptedSecret, ProviderCredentialDocument, ProviderCredentialRecord };
+export type {
+  EncryptedSecret,
+  ProviderCredentialDocument,
+  ProviderCredentialInput,
+  ProviderCredentialRecord,
+};

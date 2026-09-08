@@ -8,6 +8,7 @@ import OAuthState from '../../models/OAuthState.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { IssuedSession } from '../../types/auth/model.js';
 import { collectGitHubData } from '../reputation/githubData.js';
+import { storeProviderCredential } from '../integration/providerCredential.js';
 import type {
   CompletedGitHubOAuth,
   ConnectedGitHubAccount,
@@ -64,7 +65,10 @@ const createGitHubAuthorization = async (
     state,
   };
 };
-const exchangeGitHubCode = async (code: string, codeVerifier: string): Promise<string> => {
+const exchangeGitHubCode = async (
+  code: string,
+  codeVerifier: string,
+): Promise<GitHubTokenResponse> => {
   const body = new URLSearchParams({
     client_id: env.GITHUB_CLIENT_ID,
     client_secret: env.GITHUB_CLIENT_SECRET,
@@ -86,7 +90,7 @@ const exchangeGitHubCode = async (code: string, codeVerifier: string): Promise<s
     throw new Error(result.error_description ?? result.error ?? 'GitHub token exchange failed');
   }
 
-  return result.access_token;
+  return result;
 };
 const getAuthenticatedGitHubUser = async (accessToken: string): Promise<GitHubUser> => {
   const response = await fetch(GITHUB_USER_API_URL, {
@@ -179,9 +183,19 @@ const completeGitHubAuthorization = async (
     throw new Error('Invalid or expired OAuth state');
   }
 
-  const accessToken = await exchangeGitHubCode(code, oauthState.codeVerifier);
+  const token = await exchangeGitHubCode(code, oauthState.codeVerifier);
+  const accessToken = token.access_token as string;
   const user = await getAuthenticatedGitHubUser(accessToken);
   const account = await connectGitHubAccount(user, oauthState.purpose, oauthState.identity);
+
+  await storeProviderCredential(account.externalAccountId, 'github', {
+    accessToken,
+    refreshToken: token.refresh_token ?? null,
+    accessTokenExpiresAt: token.expires_in ? new Date(Date.now() + token.expires_in * 1_000) : null,
+    refreshTokenExpiresAt: token.refresh_token_expires_in
+      ? new Date(Date.now() + token.refresh_token_expires_in * 1_000)
+      : null,
+  });
 
   await collectGitHubData(account.identityId, account.externalAccountId, user, accessToken);
 
