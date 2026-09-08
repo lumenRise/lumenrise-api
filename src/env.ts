@@ -47,6 +47,10 @@ const schema = defineConfig({
     default: 'http://localhost:5000/v1/oauth/github/callback',
     description: 'GitHub OAuth callback URL registered for the application.',
   },
+  CREDENTIAL_ENCRYPTION_KEY: {
+    default: '',
+    description: '64-character hexadecimal key used to encrypt provider credentials.',
+  },
 });
 const source =
   process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production' ? undefined : 'file';
