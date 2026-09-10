@@ -65,17 +65,7 @@ const createGitHubAuthorization = async (
     state,
   };
 };
-const exchangeGitHubCode = async (
-  code: string,
-  codeVerifier: string,
-): Promise<GitHubTokenResponse> => {
-  const body = new URLSearchParams({
-    client_id: env.GITHUB_CLIENT_ID,
-    client_secret: env.GITHUB_CLIENT_SECRET,
-    code,
-    redirect_uri: env.GITHUB_CALLBACK_URL,
-    code_verifier: codeVerifier,
-  });
+const requestGitHubToken = async (body: URLSearchParams): Promise<GitHubTokenResponse> => {
   const response = await fetch(GITHUB_TOKEN_URL, {
     method: 'POST',
     headers: {
@@ -91,6 +81,32 @@ const exchangeGitHubCode = async (
   }
 
   return result;
+};
+const exchangeGitHubCode = async (
+  code: string,
+  codeVerifier: string,
+): Promise<GitHubTokenResponse> => {
+  const body = new URLSearchParams({
+    client_id: env.GITHUB_CLIENT_ID,
+    client_secret: env.GITHUB_CLIENT_SECRET,
+    code,
+    redirect_uri: env.GITHUB_CALLBACK_URL,
+    code_verifier: codeVerifier,
+  });
+
+  return requestGitHubToken(body);
+};
+const refreshGitHubAccessToken = async (refreshToken: string): Promise<GitHubTokenResponse> => {
+  assertGitHubConfiguration();
+
+  const body = new URLSearchParams({
+    client_id: env.GITHUB_CLIENT_ID,
+    client_secret: env.GITHUB_CLIENT_SECRET,
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  });
+
+  return requestGitHubToken(body);
 };
 const getAuthenticatedGitHubUser = async (accessToken: string): Promise<GitHubUser> => {
   const response = await fetch(GITHUB_USER_API_URL, {
@@ -210,4 +226,9 @@ const completeGitHubAuthorization = async (
   };
 };
 
-export { completeGitHubAuthorization, createGitHubAuthorization };
+export {
+  completeGitHubAuthorization,
+  createGitHubAuthorization,
+  getAuthenticatedGitHubUser,
+  refreshGitHubAccessToken,
+};

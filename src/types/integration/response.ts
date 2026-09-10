@@ -21,4 +21,12 @@ interface ConnectionsResult {
   connections: ConnectionResult[];
 }
 
-export type { ConnectionDataState, ConnectionResult, ConnectionsResult };
+interface ConnectionSyncResult {
+  provider: ExternalAccountProvider;
+  username: string;
+  status: 'complete' | 'partial';
+  dataVersion: string;
+  collectedAt: string;
+}
+
+export type { ConnectionDataState, ConnectionResult, ConnectionSyncResult, ConnectionsResult };

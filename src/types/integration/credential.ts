@@ -26,6 +26,10 @@ interface ProviderCredentialInput {
   refreshTokenExpiresAt: Date | null;
 }
 
+interface StoredProviderCredential extends ProviderCredentialInput {
+  provider: ExternalAccountProvider;
+}
+
 type ProviderCredentialDocument = HydratedDocument<ProviderCredentialRecord>;
 
 export type {
@@ -33,4 +37,5 @@ export type {
   ProviderCredentialDocument,
   ProviderCredentialInput,
   ProviderCredentialRecord,
+  StoredProviderCredential,
 };
