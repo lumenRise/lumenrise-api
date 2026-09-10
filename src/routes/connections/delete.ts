@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 
 import ExternalAccount from '../../models/ExternalAccount.js';
+import ProviderCredential from '../../models/ProviderCredential.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import { EXTERNAL_ACCOUNT_PROVIDERS } from '../../constants/integration.js';
 import type { ExternalAccountProvider } from '../../types/integration/model.js';
@@ -46,6 +47,8 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
 
     return res.status(404).json(response);
   }
+
+  await ProviderCredential.deleteOne({ externalAccount: account._id });
 
   const response: ApiResponse<EmptyResult> = {
     status: 'success',
