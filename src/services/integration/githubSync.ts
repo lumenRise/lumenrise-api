@@ -2,12 +2,15 @@ import type { Types } from 'mongoose';
 
 import ExternalAccount from '../../models/ExternalAccount.js';
 import { collectGitHubData } from '../reputation/githubData.js';
+import type { GitHubSyncOutcome } from '../../types/integration/sync.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
-import type { GitHubDataSnapshotDocument } from '../../types/reputation/github.js';
 import { getProviderCredential, storeProviderCredential } from './providerCredential.js';
 import { getAuthenticatedGitHubUser, refreshGitHubAccessToken } from '../oauth/github.js';
+import { GITHUB_SYNC_LEASE_MS, GITHUB_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
 
 const TOKEN_REFRESH_WINDOW_MS = 300_000;
+const getRetryAfterSeconds = (availableAt: Date, now = new Date()): number =>
+  Math.max(1, Math.ceil((availableAt.getTime() - now.getTime()) / 1_000));
 const needsCredentialRefresh = (expiresAt: Date | null, now = new Date()): boolean =>
   expiresAt !== null && expiresAt.getTime() <= now.getTime() + TOKEN_REFRESH_WINDOW_MS;
 const resolveGitHubAccessToken = async (
@@ -46,36 +49,84 @@ const resolveGitHubAccessToken = async (
 };
 const syncGitHubAccount = async (
   account: ExternalAccountDocument,
-): Promise<GitHubDataSnapshotDocument | null> => {
-  const accessToken = await resolveGitHubAccessToken(account._id);
+  now = new Date(),
+): Promise<GitHubSyncOutcome> => {
+  const nextSyncAt = account.lastSyncedAt
+    ? new Date(account.lastSyncedAt.getTime() + GITHUB_SYNC_MIN_INTERVAL_MS)
+    : now;
 
-  if (!accessToken) {
-    return null;
+  if (nextSyncAt > now) {
+    return {
+      state: 'too_recent',
+      retryAfterSeconds: getRetryAfterSeconds(nextSyncAt, now),
+    };
   }
 
-  const user = await getAuthenticatedGitHubUser(accessToken);
-
-  if (user.id.toString() !== account.providerAccountId) {
-    throw new Error('Stored GitHub credential does not match the connected account');
-  }
-
-  const snapshot = await collectGitHubData(account.identity, account._id, user, accessToken);
-
-  await ExternalAccount.updateOne(
-    { _id: account._id, status: 'connected' },
+  const syncLeaseUntil = new Date(now.getTime() + GITHUB_SYNC_LEASE_MS);
+  const leasedAccount = await ExternalAccount.findOneAndUpdate(
     {
-      $set: {
-        username: user.login,
-        displayName: user.name,
-        profileUrl: user.html_url,
-        avatarUrl: user.avatar_url,
-        lastSyncedAt: snapshot.collectedAt,
-      },
+      _id: account._id,
+      status: 'connected',
+      $or: [{ syncLeaseUntil: null }, { syncLeaseUntil: { $lte: now } }],
+      lastSyncedAt: account.lastSyncedAt,
     },
-    { runValidators: true },
+    { $set: { syncLeaseUntil } },
+    { new: true },
   );
 
-  return snapshot;
+  if (!leasedAccount) {
+    const currentAccount = await ExternalAccount.findById(account._id).select(
+      'lastSyncedAt syncLeaseUntil',
+    );
+    const retryAt = currentAccount?.syncLeaseUntil ?? new Date(now.getTime() + 1_000);
+
+    return {
+      state: 'in_progress',
+      retryAfterSeconds: getRetryAfterSeconds(retryAt, now),
+    };
+  }
+
+  try {
+    const accessToken = await resolveGitHubAccessToken(leasedAccount._id);
+
+    if (!accessToken) {
+      return { state: 'reauthorization_required' };
+    }
+
+    const user = await getAuthenticatedGitHubUser(accessToken);
+
+    if (user.id.toString() !== leasedAccount.providerAccountId) {
+      throw new Error('Stored GitHub credential does not match the connected account');
+    }
+
+    const snapshot = await collectGitHubData(
+      leasedAccount.identity,
+      leasedAccount._id,
+      user,
+      accessToken,
+    );
+
+    await ExternalAccount.updateOne(
+      { _id: leasedAccount._id, status: 'connected' },
+      {
+        $set: {
+          username: user.login,
+          displayName: user.name,
+          profileUrl: user.html_url,
+          avatarUrl: user.avatar_url,
+          lastSyncedAt: snapshot.collectedAt,
+        },
+      },
+      { runValidators: true },
+    );
+
+    return { state: 'synchronized', snapshot };
+  } finally {
+    await ExternalAccount.updateOne(
+      { _id: leasedAccount._id, syncLeaseUntil },
+      { $set: { syncLeaseUntil: null } },
+    );
+  }
 };
 
-export { needsCredentialRefresh, syncGitHubAccount };
+export { getRetryAfterSeconds, needsCredentialRefresh, syncGitHubAccount };

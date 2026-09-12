@@ -37,6 +37,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     {
       $set: {
         status: 'disconnected',
+        syncLeaseUntil: null,
         disconnectedAt,
       },
     },

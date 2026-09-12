@@ -188,6 +188,7 @@ const connectGitHubAccount = async (
         avatarUrl: user.avatar_url,
         status: 'connected',
         lastSyncedAt: now,
+        syncLeaseUntil: null,
         disconnectedAt: null,
       },
       $setOnInsert: {

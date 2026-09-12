@@ -22,9 +22,9 @@ const postGitHubSyncRoute: RequestHandler = async (req, res) => {
     return res.status(404).json(response);
   }
 
-  const snapshot = await syncGitHubAccount(account);
+  const outcome = await syncGitHubAccount(account);
 
-  if (!snapshot) {
+  if (outcome.state === 'reauthorization_required') {
     const response: ApiResponse<EmptyResult> = {
       status: 'error',
       message: 'GitHub account must be reauthorized',
@@ -34,6 +34,22 @@ const postGitHubSyncRoute: RequestHandler = async (req, res) => {
     return res.status(409).json(response);
   }
 
+  if (outcome.state !== 'synchronized') {
+    const response: ApiResponse<EmptyResult> = {
+      status: 'error',
+      message:
+        outcome.state === 'in_progress'
+          ? 'GitHub synchronization is already in progress'
+          : 'GitHub data was synchronized recently',
+      result: {},
+    };
+
+    res.setHeader('Retry-After', outcome.retryAfterSeconds.toString());
+
+    return res.status(429).json(response);
+  }
+
+  const { snapshot } = outcome;
   const response: ApiResponse<ConnectionSyncResult> = {
     status: 'success',
     message: 'GitHub data synchronized',

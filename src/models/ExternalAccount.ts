@@ -63,6 +63,10 @@ const externalAccountSchema = new Schema<ExternalAccountRecord>(
       type: Date,
       default: null,
     },
+    syncLeaseUntil: {
+      type: Date,
+      default: null,
+    },
     disconnectedAt: {
       type: Date,
       default: null,

@@ -15,6 +15,7 @@ interface ExternalAccountRecord {
   status: ExternalAccountStatus;
   connectedAt: Date;
   lastSyncedAt: Date | null;
+  syncLeaseUntil: Date | null;
   disconnectedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
