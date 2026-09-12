@@ -21,6 +21,7 @@ import type {
 const OAUTH_STATE_TTL_MS = 600_000;
 const GITHUB_API_VERSION = '2026-03-10';
 const GITHUB_USER_API_URL = 'https://api.github.com/user';
+const GITHUB_APPLICATIONS_API_URL = 'https://api.github.com/applications';
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
 const assertGitHubConfiguration = (): void => {
@@ -107,6 +108,31 @@ const refreshGitHubAccessToken = async (refreshToken: string): Promise<GitHubTok
   });
 
   return requestGitHubToken(body);
+};
+const revokeGitHubAccessToken = async (accessToken: string): Promise<void> => {
+  assertGitHubConfiguration();
+
+  const authorization = Buffer.from(`${env.GITHUB_CLIENT_ID}:${env.GITHUB_CLIENT_SECRET}`).toString(
+    'base64',
+  );
+  const response = await fetch(
+    `${GITHUB_APPLICATIONS_API_URL}/${encodeURIComponent(env.GITHUB_CLIENT_ID)}/token`,
+    {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Basic ${authorization}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'lumenrise-api',
+        'X-GitHub-Api-Version': GITHUB_API_VERSION,
+      },
+      body: JSON.stringify({ access_token: accessToken }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`GitHub token revocation failed with status ${response.status}`);
+  }
 };
 const getAuthenticatedGitHubUser = async (accessToken: string): Promise<GitHubUser> => {
   const response = await fetch(GITHUB_USER_API_URL, {
@@ -231,4 +257,5 @@ export {
   createGitHubAuthorization,
   getAuthenticatedGitHubUser,
   refreshGitHubAccessToken,
+  revokeGitHubAccessToken,
 };

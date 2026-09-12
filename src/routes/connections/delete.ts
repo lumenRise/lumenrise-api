@@ -1,10 +1,13 @@
 import type { RequestHandler } from 'express';
 
+import log from '../../logger.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import ProviderCredential from '../../models/ProviderCredential.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
+import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
 import { EXTERNAL_ACCOUNT_PROVIDERS } from '../../constants/integration.js';
 import type { ExternalAccountProvider } from '../../types/integration/model.js';
+import { getProviderCredential } from '../../services/integration/providerCredential.js';
 
 const isExternalAccountProvider = (provider: string): provider is ExternalAccountProvider =>
   EXTERNAL_ACCOUNT_PROVIDERS.some((candidate) => candidate === provider);
@@ -23,6 +26,8 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
   }
 
   const disconnectedAt = new Date();
+
+  let githubAccessToken: string | null = null;
   const account = await ExternalAccount.findOneAndUpdate(
     {
       identity: req.auth?.identityId,
@@ -46,6 +51,24 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     };
 
     return res.status(404).json(response);
+  }
+
+  if (provider === 'github') {
+    try {
+      const credential = await getProviderCredential(account._id);
+
+      githubAccessToken = credential?.accessToken ?? null;
+    } catch (error) {
+      log.warn({ error, externalAccountId: account._id }, 'GitHub credential could not be read');
+    }
+  }
+
+  if (githubAccessToken) {
+    try {
+      await revokeGitHubAccessToken(githubAccessToken);
+    } catch (error) {
+      log.warn({ error, externalAccountId: account._id }, 'GitHub token revocation failed');
+    }
   }
 
   await ProviderCredential.deleteOne({ externalAccount: account._id });
