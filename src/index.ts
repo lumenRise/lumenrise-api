@@ -5,6 +5,7 @@ import env from './env.js';
 import log from './logger.js';
 import { connectDatabase, disconnectDatabase } from './db.js';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations.js';
+import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration.js';
 
 let server: Server | undefined;
 
@@ -41,6 +42,8 @@ const handleShutdown = (signal: NodeJS.Signals): void => {
   });
 };
 const bootstrap = async (): Promise<void> => {
+  validateRuntimeConfiguration(env);
+
   await connectDatabase();
   await runDatabaseMigrations();
 
