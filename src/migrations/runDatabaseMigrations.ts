@@ -7,6 +7,7 @@ import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes.js';
 import createReputationIndexes from './20260922CreateReputationIndexes.js';
 import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes.js';
 import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes.js';
+import createIntegrationSyncJobIndexes from './20260922CreateIntegrationSyncJobIndexes.js';
 
 const migrations: readonly MigrationDefinition[] = [
   createIdentityIndexes,
@@ -15,6 +16,7 @@ const migrations: readonly MigrationDefinition[] = [
   createSessionIndexes,
   createGitHubDataIndexes,
   createProviderCredentialIndexes,
+  createIntegrationSyncJobIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();
