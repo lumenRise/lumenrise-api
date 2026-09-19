@@ -1,3 +1,7 @@
+import type { Types } from 'mongoose';
+
+import type { ExternalAccountDocument } from './model.js';
+
 interface GitHubOAuthStartResult {
   authorizationUrl: string;
 }
@@ -31,11 +35,12 @@ interface GitHubUser {
 interface CompletedGitHubOAuth {
   identityId: string;
   username: string;
+  syncJobId: string;
 }
 
 interface ConnectedGitHubAccount {
   identityId: Types.ObjectId;
-  externalAccountId: Types.ObjectId;
+  externalAccount: ExternalAccountDocument;
 }
 
 type GitHubOAuthPurpose = 'register' | 'connect';
@@ -51,4 +56,3 @@ export type {
   GitHubTokenResponse,
   GitHubUser,
 };
-import type { Types } from 'mongoose';

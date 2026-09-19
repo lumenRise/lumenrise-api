@@ -7,7 +7,7 @@ import { issueSession } from '../auth/session.js';
 import OAuthState from '../../models/OAuthState.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { IssuedSession } from '../../types/auth/model.js';
-import { collectGitHubData } from '../reputation/githubData.js';
+import { enqueueGitHubSync } from '../integration/syncQueue.js';
 import { storeProviderCredential } from '../integration/providerCredential.js';
 import type {
   CompletedGitHubOAuth,
@@ -187,7 +187,6 @@ const connectGitHubAccount = async (
         profileUrl: user.html_url,
         avatarUrl: user.avatar_url,
         status: 'connected',
-        lastSyncedAt: now,
         syncLeaseUntil: null,
         disconnectedAt: null,
       },
@@ -202,7 +201,7 @@ const connectGitHubAccount = async (
     throw new Error('GitHub account connection could not be persisted');
   }
 
-  return { identityId, externalAccountId: externalAccount._id };
+  return { identityId, externalAccount };
 };
 const completeGitHubAuthorization = async (
   code: string,
@@ -231,7 +230,7 @@ const completeGitHubAuthorization = async (
   const user = await getAuthenticatedGitHubUser(accessToken);
   const account = await connectGitHubAccount(user, oauthState.purpose, oauthState.identity);
 
-  await storeProviderCredential(account.externalAccountId, 'github', {
+  await storeProviderCredential(account.externalAccount._id, 'github', {
     accessToken,
     refreshToken: token.refresh_token ?? null,
     accessTokenExpiresAt: token.expires_in ? new Date(Date.now() + token.expires_in * 1_000) : null,
@@ -240,14 +239,14 @@ const completeGitHubAuthorization = async (
       : null,
   });
 
-  await collectGitHubData(account.identityId, account.externalAccountId, user, accessToken);
-
+  const syncJob = await enqueueGitHubSync(account.externalAccount);
   const session = await issueSession(account.identityId);
 
   return {
     connection: {
       identityId: account.identityId.toString(),
       username: user.login,
+      syncJobId: syncJob._id.toString(),
     },
     session,
   };

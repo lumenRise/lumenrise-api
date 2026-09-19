@@ -3,6 +3,8 @@ import type { RequestHandler } from 'express';
 import type { ApiResponse } from '../../types/response.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
+import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
+import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
 import type { ConnectionResult, ConnectionsResult } from '../../types/integration/response.js';
 
 const getConnectionsRoute: RequestHandler = async (req, res) => {
@@ -16,6 +18,12 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
         account.provider === 'github'
           ? await GitHubDataSnapshot.findOne({ externalAccount: account._id }).sort({
               collectedAt: -1,
+            })
+          : null;
+      const syncJob =
+        account.provider === 'github'
+          ? await IntegrationSyncJob.findOne({ externalAccount: account._id }).sort({
+              createdAt: -1,
             })
           : null;
 
@@ -34,6 +42,7 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
               collectedAt: githubData.collectedAt.toISOString(),
             }
           : null,
+        sync: syncJob ? createIntegrationSyncJobResult(syncJob) : null,
       };
     }),
   );

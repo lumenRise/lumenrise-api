@@ -34,7 +34,8 @@ const integrationSyncJobSchema = new Schema<IntegrationSyncJobRecord>(
 
 integrationSyncJobSchema.pre('validate', function validateJobState() {
   const isActiveStatus = this.status === 'queued' || this.status === 'running';
-  const isTerminalStatus = this.status === 'completed' || this.status === 'failed';
+  const isTerminalStatus =
+    this.status === 'completed' || this.status === 'failed' || this.status === 'cancelled';
 
   if (this.active !== isActiveStatus) {
     this.invalidate('active', 'Active must match the sync job status');

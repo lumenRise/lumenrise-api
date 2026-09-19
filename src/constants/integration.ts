@@ -16,7 +16,13 @@ const EXTERNAL_ACCOUNT_STATUSES = [
 ] as const satisfies readonly ExternalAccountStatus[];
 const GITHUB_SYNC_LEASE_MS = 3_600_000;
 const GITHUB_SYNC_MIN_INTERVAL_MS = 900_000;
-const INTEGRATION_SYNC_JOB_STATUSES = ['queued', 'running', 'completed', 'failed'] as const;
+const INTEGRATION_SYNC_JOB_STATUSES = [
+  'queued',
+  'running',
+  'completed',
+  'failed',
+  'cancelled',
+] as const;
 
 export {
   EXTERNAL_ACCOUNT_PROVIDERS,

@@ -11,7 +11,11 @@ import {
   matchesOAuthStateCookie,
 } from '../../../services/oauth/stateCookie.js';
 
-const createClientRedirect = (status: GitHubOAuthResultStatus, username?: string): string => {
+const createClientRedirect = (
+  status: GitHubOAuthResultStatus,
+  username?: string,
+  syncJobId?: string,
+): string => {
   const redirectUrl = new URL('/onboarding', env.CLIENT_ORIGIN);
 
   redirectUrl.searchParams.set('provider', 'github');
@@ -19,6 +23,10 @@ const createClientRedirect = (status: GitHubOAuthResultStatus, username?: string
 
   if (username) {
     redirectUrl.searchParams.set('username', username);
+  }
+
+  if (syncJobId) {
+    redirectUrl.searchParams.set('syncJobId', syncJobId);
   }
 
   return redirectUrl.toString();
@@ -42,7 +50,10 @@ const callbackGitHubOAuthRoute: RequestHandler = async (req, res) => {
 
     setSessionCookie(res, result.session);
 
-    return res.redirect(302, createClientRedirect('success', result.connection.username));
+    return res.redirect(
+      302,
+      createClientRedirect('success', result.connection.username, result.connection.syncJobId),
+    );
   } catch (error) {
     log.warn({ error }, 'GitHub OAuth callback failed');
 

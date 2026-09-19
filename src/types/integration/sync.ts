@@ -2,7 +2,7 @@ import type { HydratedDocument, Types } from 'mongoose';
 
 import type { GitHubDataSnapshotDocument } from '../reputation/github.js';
 
-type IntegrationSyncJobStatus = 'queued' | 'running' | 'completed' | 'failed';
+type IntegrationSyncJobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 interface IntegrationSyncJobRecord {
   identity: Types.ObjectId;

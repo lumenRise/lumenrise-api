@@ -1,4 +1,5 @@
 import type { ExternalAccountProvider } from './model.js';
+import type { IntegrationSyncJobResult } from './sync.js';
 
 interface ConnectionDataState {
   status: 'complete' | 'partial';
@@ -15,18 +16,11 @@ interface ConnectionResult {
   connectedAt: string;
   lastSyncedAt: string | null;
   data: ConnectionDataState | null;
+  sync: IntegrationSyncJobResult | null;
 }
 
 interface ConnectionsResult {
   connections: ConnectionResult[];
 }
 
-interface ConnectionSyncResult {
-  provider: ExternalAccountProvider;
-  username: string;
-  status: 'complete' | 'partial';
-  dataVersion: string;
-  collectedAt: string;
-}
-
-export type { ConnectionDataState, ConnectionResult, ConnectionSyncResult, ConnectionsResult };
+export type { ConnectionDataState, ConnectionResult, ConnectionsResult };

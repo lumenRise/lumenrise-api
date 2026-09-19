@@ -2,8 +2,9 @@ import type { RequestHandler } from 'express';
 
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import { syncGitHubAccount } from '../../services/integration/githubSync.js';
-import type { ConnectionSyncResult } from '../../types/integration/response.js';
+import { enqueueGitHubSync } from '../../services/integration/syncQueue.js';
+import type { IntegrationSyncJobResult } from '../../types/integration/sync.js';
+import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
 
 const postGitHubSyncRoute: RequestHandler = async (req, res) => {
   const account = await ExternalAccount.findOne({
@@ -22,47 +23,16 @@ const postGitHubSyncRoute: RequestHandler = async (req, res) => {
     return res.status(404).json(response);
   }
 
-  const outcome = await syncGitHubAccount(account);
-
-  if (outcome.state === 'reauthorization_required') {
-    const response: ApiResponse<EmptyResult> = {
-      status: 'error',
-      message: 'GitHub account must be reauthorized',
-      result: {},
-    };
-
-    return res.status(409).json(response);
-  }
-
-  if (outcome.state !== 'synchronized') {
-    const response: ApiResponse<EmptyResult> = {
-      status: 'error',
-      message:
-        outcome.state === 'in_progress'
-          ? 'GitHub synchronization is already in progress'
-          : 'GitHub data was synchronized recently',
-      result: {},
-    };
-
-    res.setHeader('Retry-After', outcome.retryAfterSeconds.toString());
-
-    return res.status(429).json(response);
-  }
-
-  const { snapshot } = outcome;
-  const response: ApiResponse<ConnectionSyncResult> = {
+  const job = await enqueueGitHubSync(account);
+  const response: ApiResponse<IntegrationSyncJobResult> = {
     status: 'success',
-    message: 'GitHub data synchronized',
-    result: {
-      provider: 'github',
-      username: snapshot.username,
-      status: snapshot.status,
-      dataVersion: snapshot.dataVersion,
-      collectedAt: snapshot.collectedAt.toISOString(),
-    },
+    message: 'GitHub synchronization queued',
+    result: createIntegrationSyncJobResult(job),
   };
 
-  return res.status(200).json(response);
+  res.setHeader('Location', `/v1/connections/github/sync/${job._id.toString()}`);
+
+  return res.status(202).json(response);
 };
 
 export default postGitHubSyncRoute;

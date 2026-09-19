@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express';
 
 import log from '../../logger.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
+import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import ProviderCredential from '../../models/ProviderCredential.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
@@ -72,6 +73,19 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     }
   }
 
+  await IntegrationSyncJob.updateMany(
+    { externalAccount: account._id, active: true },
+    {
+      $set: {
+        status: 'cancelled',
+        active: false,
+        completedAt: disconnectedAt,
+        leaseUntil: null,
+        lastError: 'Connection was disconnected',
+      },
+    },
+    { runValidators: true },
+  );
   await ProviderCredential.deleteOne({ externalAccount: account._id });
 
   const response: ApiResponse<EmptyResult> = {
