@@ -35,6 +35,11 @@ const schema = defineConfig({
     default: 30,
     description: 'Number of days a Lumenrise session remains valid.',
   },
+  SYNC_WORKER_POLL_INTERVAL_MS: {
+    type: 'number',
+    default: 2_000,
+    description: 'Delay between background synchronization queue polls.',
+  },
   GITHUB_CLIENT_ID: {
     default: '',
     description: 'GitHub OAuth application client ID.',

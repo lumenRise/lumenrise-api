@@ -6,6 +6,10 @@ import log from './logger.js';
 import { connectDatabase, disconnectDatabase } from './db.js';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations.js';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration.js';
+import {
+  startIntegrationSyncWorker,
+  stopIntegrationSyncWorker,
+} from './services/integration/syncWorker.js';
 
 let server: Server | undefined;
 
@@ -31,6 +35,7 @@ const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
 
   try {
     await closeServer();
+    await stopIntegrationSyncWorker();
   } finally {
     await disconnectDatabase();
   }
@@ -46,6 +51,7 @@ const bootstrap = async (): Promise<void> => {
 
   await connectDatabase();
   await runDatabaseMigrations();
+  startIntegrationSyncWorker();
 
   server = app.listen(env.PORT, () => {
     log.info({ port: env.PORT }, 'Lumenrise API started');
