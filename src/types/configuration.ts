@@ -4,6 +4,10 @@ interface RuntimeConfiguration {
   GITHUB_CLIENT_ID: string;
   GITHUB_CLIENT_SECRET: string;
   GITHUB_CALLBACK_URL: string;
+  GITLAB_BASE_URL: string;
+  GITLAB_CLIENT_ID: string;
+  GITLAB_CLIENT_SECRET: string;
+  GITLAB_CALLBACK_URL: string;
   CREDENTIAL_ENCRYPTION_KEY: string;
 }
 

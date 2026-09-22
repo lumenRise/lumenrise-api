@@ -52,6 +52,22 @@ const schema = defineConfig({
     default: 'http://localhost:5000/v1/oauth/github/callback',
     description: 'GitHub OAuth callback URL registered for the application.',
   },
+  GITLAB_BASE_URL: {
+    default: 'https://gitlab.com',
+    description: 'Base URL of the GitLab instance used for OAuth and API requests.',
+  },
+  GITLAB_CLIENT_ID: {
+    default: '',
+    description: 'GitLab OAuth application ID.',
+  },
+  GITLAB_CLIENT_SECRET: {
+    default: '',
+    description: 'GitLab OAuth application secret.',
+  },
+  GITLAB_CALLBACK_URL: {
+    default: 'http://localhost:5000/v1/oauth/gitlab/callback',
+    description: 'GitLab OAuth callback URL registered for the application.',
+  },
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',
     description: '64-character hexadecimal key used to encrypt provider credentials.',
