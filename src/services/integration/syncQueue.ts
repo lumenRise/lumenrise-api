@@ -42,7 +42,12 @@ const enqueueGitHubSync = async (
           resultSnapshot: null,
         },
       },
-      { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
+      {
+        upsert: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+        returnDocument: 'after',
+      },
     );
 
     if (!job) {
@@ -91,7 +96,7 @@ const claimIntegrationSyncJob = async (
       },
       $inc: { attempts: 1 },
     },
-    { sort: { scheduledAt: 1 }, new: true, runValidators: true },
+    { sort: { scheduledAt: 1 }, runValidators: true, returnDocument: 'after' },
   );
 const completeIntegrationSyncJob = async (
   job: IntegrationSyncJobDocument,

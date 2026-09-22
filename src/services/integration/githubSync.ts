@@ -71,7 +71,7 @@ const syncGitHubAccount = async (
       lastSyncedAt: account.lastSyncedAt,
     },
     { $set: { syncLeaseUntil } },
-    { new: true },
+    { returnDocument: 'after' },
   );
 
   if (!leasedAccount) {

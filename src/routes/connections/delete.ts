@@ -42,7 +42,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
         disconnectedAt,
       },
     },
-    { new: true, runValidators: true },
+    { runValidators: true, returnDocument: 'after' },
   );
 
   if (!account) {

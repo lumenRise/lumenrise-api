@@ -194,7 +194,7 @@ const connectGitHubAccount = async (
         connectedAt: now,
       },
     },
-    { upsert: true, runValidators: true, new: true },
+    { upsert: true, runValidators: true, returnDocument: 'after' },
   );
 
   if (!externalAccount) {
@@ -218,7 +218,7 @@ const completeGitHubAuthorization = async (
       expiresAt: { $gt: new Date() },
     },
     { $set: { consumedAt: new Date() } },
-    { new: true },
+    { returnDocument: 'after' },
   ).select('+codeVerifier');
 
   if (!oauthState) {
