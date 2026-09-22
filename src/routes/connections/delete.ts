@@ -5,6 +5,7 @@ import ExternalAccount from '../../models/ExternalAccount.js';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import ProviderCredential from '../../models/ProviderCredential.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
+import { revokeGitLabAccessToken } from '../../services/oauth/gitlab.js';
 import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
 import { EXTERNAL_ACCOUNT_PROVIDERS } from '../../constants/integration.js';
 import type { ExternalAccountProvider } from '../../types/integration/model.js';
@@ -28,7 +29,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
 
   const disconnectedAt = new Date();
 
-  let githubAccessToken: string | null = null;
+  let providerAccessToken: string | null = null;
   const account = await ExternalAccount.findOneAndUpdate(
     {
       identity: req.auth?.identityId,
@@ -55,21 +56,33 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     return res.status(404).json(response);
   }
 
-  if (provider === 'github') {
+  if (provider === 'github' || provider === 'gitlab') {
     try {
       const credential = await getProviderCredential(account._id);
 
-      githubAccessToken = credential?.accessToken ?? null;
+      providerAccessToken = credential?.accessToken ?? null;
     } catch (error) {
-      log.warn({ error, externalAccountId: account._id }, 'GitHub credential could not be read');
+      log.warn(
+        { error, externalAccountId: account._id, provider },
+        'Provider credential could not be read',
+      );
     }
   }
 
-  if (githubAccessToken) {
+  if (providerAccessToken) {
     try {
-      await revokeGitHubAccessToken(githubAccessToken);
+      if (provider === 'github') {
+        await revokeGitHubAccessToken(providerAccessToken);
+      }
+
+      if (provider === 'gitlab') {
+        await revokeGitLabAccessToken(providerAccessToken);
+      }
     } catch (error) {
-      log.warn({ error, externalAccountId: account._id }, 'GitHub token revocation failed');
+      log.warn(
+        { error, externalAccountId: account._id, provider },
+        'Provider token revocation failed',
+      );
     }
   }
 
