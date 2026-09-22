@@ -19,7 +19,7 @@ const schema = defineConfig({
     description: 'Logging verbosity.',
   },
   DB_URI: {
-    default: 'mongodb://127.0.0.1:27017/?replicaSet=rs0&directConnection=true',
+    default: 'mongodb://127.0.0.1:27017',
     description: 'MongoDB connection string.',
   },
   DB_NAME: {
