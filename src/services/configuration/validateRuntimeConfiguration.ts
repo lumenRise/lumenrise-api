@@ -28,6 +28,13 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   }
 
   if (
+    !Number.isFinite(configuration.X_AUTO_SYNC_INTERVAL_HOURS) ||
+    configuration.X_AUTO_SYNC_INTERVAL_HOURS < 0
+  ) {
+    throw new Error('X_AUTO_SYNC_INTERVAL_HOURS must be a nonnegative number');
+  }
+
+  if (
     (hasGitHubClientId || hasGitLabClientId || hasXClientId) &&
     !/^[a-f\d]{64}$/i.test(configuration.CREDENTIAL_ENCRYPTION_KEY)
   ) {

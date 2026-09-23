@@ -80,6 +80,11 @@ const schema = defineConfig({
     default: 'http://localhost:5000/v1/oauth/x/callback',
     description: 'X OAuth callback URL registered for the application.',
   },
+  X_AUTO_SYNC_INTERVAL_HOURS: {
+    type: 'number',
+    default: 0,
+    description: 'Hours between automatic X scans; 0 disables metered automatic API usage.',
+  },
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',
     description: '64-character hexadecimal key used to encrypt provider credentials.',

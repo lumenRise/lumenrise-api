@@ -3,6 +3,8 @@ import type { Types } from 'mongoose';
 import { collectXData } from '../reputation/xData.js';
 import XDataSnapshot from '../../models/XDataSnapshot.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
+import ReputationSnapshot from '../../models/ReputationSnapshot.js';
+import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import type { XSyncOutcome } from '../../types/integration/sync.js';
 import { getAuthenticatedXUser, refreshXAccessToken } from '../oauth/x.js';
 import { getRetryAfterSeconds, needsCredentialRefresh } from './githubSync.js';
@@ -117,7 +119,31 @@ const syncXAccount = async (
       return { state: 'disconnected' };
     }
 
-    await calculateAndStoreSocialReputation(leasedAccount.identity);
+    const reputation = await calculateAndStoreSocialReputation(snapshot);
+
+    if (!reputation) {
+      await XDataSnapshot.deleteOne({ _id: snapshot._id });
+
+      return { state: 'disconnected' };
+    }
+
+    await ReputationSnapshot.deleteMany({
+      identity: leasedAccount.identity,
+      category: 'social',
+      _id: { $ne: reputation._id },
+    });
+    await IntegrationSyncJob.updateMany(
+      {
+        externalAccount: leasedAccount._id,
+        provider: 'x',
+        resultSnapshot: { $ne: snapshot._id },
+      },
+      { $set: { resultSnapshot: null } },
+    );
+    await XDataSnapshot.deleteMany({
+      externalAccount: leasedAccount._id,
+      _id: { $ne: snapshot._id },
+    });
 
     return { state: 'synchronized', snapshot };
   } finally {

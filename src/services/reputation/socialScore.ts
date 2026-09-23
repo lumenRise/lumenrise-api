@@ -1,9 +1,7 @@
-import type { Types } from 'mongoose';
-
-import XDataSnapshot from '../../models/XDataSnapshot.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import type { XDataSnapshotDocument } from '../../types/reputation/x.js';
+import type { ReputationSnapshotDocument } from '../../types/reputation/model.js';
 import type {
   SocialScoreCalculation,
   SocialSignalInput,
@@ -146,30 +144,23 @@ const createXSocialSignals = (snapshot: XDataSnapshotDocument): SocialSignalInpu
   return signals;
 };
 const calculateAndStoreSocialReputation = async (
-  identityId: Types.ObjectId,
+  snapshot: XDataSnapshotDocument,
   calculatedAt = new Date(),
-): Promise<void> => {
+): Promise<ReputationSnapshotDocument | null> => {
   const account = await ExternalAccount.findOne({
-    identity: identityId,
+    _id: snapshot.externalAccount,
+    identity: snapshot.identity,
     provider: 'x',
     status: 'connected',
   }).select('_id');
 
   if (!account) {
-    return;
-  }
-
-  const snapshot = await XDataSnapshot.findOne({ externalAccount: account._id }).sort({
-    collectedAt: -1,
-  });
-
-  if (!snapshot) {
-    return;
+    return null;
   }
 
   const calculation = calculateSocialScore(createXSocialSignals(snapshot));
   const reputation = await ReputationSnapshot.create({
-    identity: identityId,
+    identity: snapshot.identity,
     category: 'social',
     status: snapshot.status,
     algorithmVersion: SOCIAL_ALGORITHM_VERSION,
@@ -192,7 +183,11 @@ const calculateAndStoreSocialReputation = async (
 
   if (!stillConnected) {
     await ReputationSnapshot.deleteOne({ _id: reputation._id });
+
+    return null;
   }
+
+  return reputation;
 };
 
 export {

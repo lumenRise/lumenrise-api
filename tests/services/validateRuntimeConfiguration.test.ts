@@ -16,6 +16,7 @@ const validConfiguration: RuntimeConfiguration = {
   X_CLIENT_ID: 'x-client-id',
   X_CLIENT_SECRET: 'x-client-secret',
   X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',
+  X_AUTO_SYNC_INTERVAL_HOURS: 0,
   CREDENTIAL_ENCRYPTION_KEY: 'a'.repeat(64),
 };
 
@@ -40,6 +41,12 @@ describe('runtime configuration validation', () => {
     expect(() =>
       validateRuntimeConfiguration({ ...validConfiguration, X_CLIENT_SECRET: '' }),
     ).toThrow('must be configured together');
+  });
+
+  it('rejects a negative automatic X synchronization interval', () => {
+    expect(() =>
+      validateRuntimeConfiguration({ ...validConfiguration, X_AUTO_SYNC_INTERVAL_HOURS: -1 }),
+    ).toThrow('must be a nonnegative number');
   });
 
   it('rejects an invalid credential encryption key', () => {

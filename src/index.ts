@@ -5,6 +5,7 @@ import env from './env.js';
 import log from './logger.js';
 import { connectDatabase, disconnectDatabase } from './db.js';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations.js';
+import { startXScheduler, stopXScheduler } from './services/integration/xScheduler.js';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration.js';
 import {
   startIntegrationSyncWorker,
@@ -35,6 +36,7 @@ const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
 
   try {
     await closeServer();
+    await stopXScheduler();
     await stopIntegrationSyncWorker();
   } finally {
     await disconnectDatabase();
@@ -52,6 +54,7 @@ const bootstrap = async (): Promise<void> => {
   await connectDatabase();
   await runDatabaseMigrations();
   startIntegrationSyncWorker();
+  startXScheduler();
 
   server = app.listen(env.PORT, () => {
     log.info({ port: env.PORT }, 'Lumenrise API started');

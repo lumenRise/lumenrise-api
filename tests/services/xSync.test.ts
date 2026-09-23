@@ -7,6 +7,9 @@ import type { ExternalAccountDocument } from '../../src/types/integration/model.
 const mocks = vi.hoisted(() => ({
   collectXData: vi.fn(),
   deleteSnapshot: vi.fn(),
+  deleteOldSnapshots: vi.fn(),
+  deleteOldScores: vi.fn(),
+  clearOldJobResults: vi.fn(),
   getCredential: vi.fn(),
   getUser: vi.fn(),
   leaseAccount: vi.fn(),
@@ -21,7 +24,13 @@ vi.mock('../../src/models/ExternalAccount.js', () => ({
   },
 }));
 vi.mock('../../src/models/XDataSnapshot.js', () => ({
-  default: { deleteOne: mocks.deleteSnapshot },
+  default: { deleteOne: mocks.deleteSnapshot, deleteMany: mocks.deleteOldSnapshots },
+}));
+vi.mock('../../src/models/ReputationSnapshot.js', () => ({
+  default: { deleteMany: mocks.deleteOldScores },
+}));
+vi.mock('../../src/models/IntegrationSyncJob.js', () => ({
+  default: { updateMany: mocks.clearOldJobResults },
 }));
 vi.mock('../../src/services/integration/providerCredential.js', () => ({
   getProviderCredential: mocks.getCredential,
@@ -63,7 +72,7 @@ describe('X account synchronization', () => {
       collectedAt: new Date('2026-09-23T12:00:00.000Z'),
     });
     mocks.deleteSnapshot.mockResolvedValue({ deletedCount: 1 });
-    mocks.storeSocialScore.mockResolvedValue(undefined);
+    mocks.storeSocialScore.mockResolvedValue({ _id: new Types.ObjectId() });
   });
 
   it('removes a collected snapshot if the connection was cut during synchronization', async () => {
@@ -85,7 +94,11 @@ describe('X account synchronization', () => {
     const outcome = await syncXAccount(account, new Date('2026-09-23T12:00:00.000Z'));
 
     expect(outcome.state).toBe('synchronized');
-    expect(mocks.storeSocialScore).toHaveBeenCalledWith(identityId);
+    expect(mocks.storeSocialScore).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: snapshotId }),
+    );
     expect(mocks.deleteSnapshot).not.toHaveBeenCalled();
+    expect(mocks.deleteOldSnapshots).toHaveBeenCalledOnce();
+    expect(mocks.deleteOldScores).toHaveBeenCalledOnce();
   });
 });
