@@ -15,6 +15,13 @@ interface ReputationSignalRecord {
   observedAt: Date;
 }
 
+interface ReputationSourceRecord {
+  provider: ExternalAccountProvider;
+  snapshot: Types.ObjectId;
+  dataVersion: string;
+  collectedAt: Date;
+}
+
 interface ReputationSnapshotRecord {
   identity: Types.ObjectId;
   category: ReputationCategory;
@@ -22,6 +29,7 @@ interface ReputationSnapshotRecord {
   algorithmVersion: string;
   score: number | null;
   signals: ReputationSignalRecord[];
+  sources: ReputationSourceRecord[];
   calculatedAt: Date;
   createdAt: Date;
 }
@@ -36,12 +44,20 @@ interface ReputationSignalResult {
   observedAt: string;
 }
 
+interface ReputationSourceResult {
+  provider: ExternalAccountProvider;
+  snapshotId: string;
+  dataVersion: string;
+  collectedAt: string;
+}
+
 interface ReputationSnapshotResult {
   category: ReputationCategory;
   status: ReputationSnapshotStatus;
   algorithmVersion: string;
   score: number | null;
   signals: ReputationSignalResult[];
+  sources: ReputationSourceResult[];
   calculatedAt: string;
 }
 
@@ -51,6 +67,8 @@ export type {
   ReputationCategory,
   ReputationSignalRecord,
   ReputationSignalResult,
+  ReputationSourceRecord,
+  ReputationSourceResult,
   ReputationSnapshotDocument,
   ReputationSnapshotRecord,
   ReputationSnapshotResult,

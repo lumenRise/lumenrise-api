@@ -24,12 +24,21 @@ describe('ReputationSnapshot model', () => {
           observedAt: calculatedAt,
         },
       ],
+      sources: [
+        {
+          provider: 'github',
+          snapshot: new Types.ObjectId(),
+          dataVersion: 'github-data-v1',
+          collectedAt: calculatedAt,
+        },
+      ],
     });
 
     await snapshot.validate();
 
     expect(snapshot.score).toBe(72);
     expect(snapshot.signals).toHaveLength(1);
+    expect(snapshot.sources).toHaveLength(1);
     expect(snapshot.signals[0]?.contribution).toBe(20);
   });
 
