@@ -1,8 +1,11 @@
+import { Types } from 'mongoose';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { XPost } from '../../src/types/reputation/x.js';
 import type { XUser } from '../../src/types/integration/x.js';
-import { buildXMetrics, collectXPosts } from '../../src/services/reputation/xData.js';
+import XDataSnapshot from '../../src/models/XDataSnapshot.js';
+import XRateLimitError from '../../src/services/integration/xRateLimit.js';
+import { buildXMetrics, collectXData, collectXPosts } from '../../src/services/reputation/xData.js';
 
 const user: XUser = {
   id: '42',
@@ -21,9 +24,20 @@ const user: XUser = {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe('X data collection', () => {
+  it('schedules rate-limit retries after the response reset time', () => {
+    const now = Date.parse('2026-09-23T12:00:00.000Z');
+    const response = new Response(null, {
+      status: 429,
+      headers: { 'x-rate-limit-reset': String(now / 1_000 + 90) },
+    });
+
+    expect(new XRateLimitError(response, now).retryAfterSeconds).toBe(91);
+  });
+
   it('follows every timeline pagination token without an internal item cap', async () => {
     const fetchMock = vi
       .fn()
@@ -59,6 +73,58 @@ describe('X data collection', () => {
       'created_at,public_metrics,referenced_tweets',
     );
     expect(secondUrl.searchParams.get('pagination_token')).toBe('next-page');
+  });
+
+  it('defers a rate-limited page using the X reset header', async () => {
+    const resetAt = Math.floor(Date.now() / 1_000) + 120;
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response(null, {
+        status: 429,
+        headers: { 'x-rate-limit-reset': resetAt.toString() },
+      }),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(collectXPosts('42', 'access-token')).rejects.toMatchObject({
+      name: 'XRateLimitError',
+      retryAfterSeconds: expect.any(Number),
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it('does not save a successful snapshot when a timeline page fails', async () => {
+    const createSnapshot = vi.spyOn(XDataSnapshot, 'create');
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ errors: [{ detail: 'Timeline unavailable' }] }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      collectXData(new Types.ObjectId(), new Types.ObjectId(), user, 'access-token'),
+    ).rejects.toThrow('Timeline unavailable');
+    expect(createSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('reports depleted credits as a nonretryable X API error', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ title: 'Payment Required', detail: 'credits depleted' }), {
+        status: 402,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(collectXPosts('42', 'access-token')).rejects.toMatchObject({
+      status: 402,
+      retryable: false,
+      message: expect.stringContaining('credits depleted'),
+    });
   });
 
   it('builds aggregate metrics without retaining post content', () => {

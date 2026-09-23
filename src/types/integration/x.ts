@@ -47,6 +47,8 @@ interface XUser {
 
 interface XUserResponse {
   data?: XUser;
+  title?: string;
+  detail?: string;
   errors?: Array<{ detail?: string; title?: string }>;
 }
 

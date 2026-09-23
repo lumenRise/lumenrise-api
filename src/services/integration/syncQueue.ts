@@ -208,6 +208,7 @@ const deferIntegrationSyncJob = async (
         scheduledAt: new Date(now.getTime() + retryAfterSeconds * 1_000),
         leaseUntil: null,
       },
+      $inc: { attempts: -1 },
     },
     { runValidators: true },
   );

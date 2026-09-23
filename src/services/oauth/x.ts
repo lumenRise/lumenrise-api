@@ -6,8 +6,10 @@ import Identity from '../../models/Identity.js';
 import { issueSession } from '../auth/session.js';
 import OAuthState from '../../models/OAuthState.js';
 import { enqueueXSync } from '../integration/syncQueue.js';
+import XRateLimitError from '../integration/xRateLimit.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { IssuedSession } from '../../types/auth/model.js';
+import XApiResponseError from '../integration/xApiResponseError.js';
 import { storeProviderCredential } from '../integration/providerCredential.js';
 import type {
   CompletedXOAuth,
@@ -136,12 +138,27 @@ const getAuthenticatedXUser = async (accessToken: string): Promise<XUser> => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+
+  if (response.status === 429) {
+    throw new XRateLimitError(response);
+  }
+
   const result = (await response.json()) as XUserResponse;
 
-  if (!response.ok || !result.data) {
-    throw new Error(
-      result.errors?.[0]?.detail ?? result.errors?.[0]?.title ?? 'X user lookup failed',
+  if (!response.ok) {
+    throw new XApiResponseError(
+      response.status,
+      'user lookup',
+      result.errors?.[0]?.detail ??
+        result.errors?.[0]?.title ??
+        result.detail ??
+        result.title ??
+        'Unknown X API error',
     );
+  }
+
+  if (!result.data) {
+    throw new Error('X user lookup returned no profile');
   }
 
   return result.data;

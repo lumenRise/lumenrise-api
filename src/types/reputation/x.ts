@@ -34,6 +34,8 @@ interface XTimelineMeta {
 interface XTimelineResponse {
   data?: XPost[];
   meta?: XTimelineMeta;
+  title?: string;
+  detail?: string;
   errors?: Array<{ detail?: string; title?: string }>;
 }
 

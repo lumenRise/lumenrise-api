@@ -2,6 +2,8 @@ import type { Types } from 'mongoose';
 
 import XDataSnapshot from '../../models/XDataSnapshot.js';
 import type { XUser } from '../../types/integration/x.js';
+import XRateLimitError from '../integration/xRateLimit.js';
+import XApiResponseError from '../integration/xApiResponseError.js';
 import type {
   XDataMetrics,
   XDataSnapshotDocument,
@@ -37,11 +39,22 @@ const collectXPosts = async (userId: string, accessToken: string): Promise<XPost
         Authorization: `Bearer ${accessToken}`,
       },
     });
+
+    if (response.status === 429) {
+      throw new XRateLimitError(response);
+    }
+
     const result = (await response.json()) as XTimelineResponse;
 
     if (!response.ok) {
-      throw new Error(
-        result.errors?.[0]?.detail ?? result.errors?.[0]?.title ?? 'X timeline request failed',
+      throw new XApiResponseError(
+        response.status,
+        'timeline request',
+        result.errors?.[0]?.detail ??
+          result.errors?.[0]?.title ??
+          result.detail ??
+          result.title ??
+          'Unknown X API error',
       );
     }
 
@@ -139,10 +152,7 @@ const collectXData = async (
   accessToken: string,
   collectedAt = new Date(),
 ): Promise<XDataSnapshotDocument> => {
-  const postsResult = await Promise.allSettled([collectXPosts(user.id, accessToken)]);
-  const firstPostsResult = postsResult[0];
-  const posts = firstPostsResult?.status === 'fulfilled' ? firstPostsResult.value : [];
-  const postsCollected = firstPostsResult?.status === 'fulfilled';
+  const posts = await collectXPosts(user.id, accessToken);
   const activityFrom = posts.reduce<Date | null>((oldest, post) => {
     if (!post.created_at) {
       return oldest;
@@ -159,11 +169,11 @@ const collectXData = async (
     externalAccount: externalAccountId,
     providerAccountId: user.id,
     username: user.username,
-    status: postsCollected ? 'complete' : 'partial',
+    status: 'complete',
     dataVersion: X_DATA_VERSION,
     coverage: {
       profile: true,
-      posts: postsCollected,
+      posts: true,
     },
     metrics,
     activityFrom,
