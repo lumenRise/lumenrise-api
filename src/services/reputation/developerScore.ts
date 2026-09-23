@@ -294,7 +294,16 @@ const calculateAndStoreDeveloperReputation = async (
   }
 
   if (sources.length === 0) {
-    throw new Error('Developer reputation data is not available');
+    return ReputationSnapshot.create({
+      identity: identityId,
+      category: 'developer',
+      status: 'failed',
+      algorithmVersion: DEVELOPER_ALGORITHM_VERSION,
+      score: null,
+      signals: [],
+      sources: [],
+      calculatedAt,
+    });
   }
 
   const status =

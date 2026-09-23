@@ -10,6 +10,7 @@ import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
 import { EXTERNAL_ACCOUNT_PROVIDERS } from '../../constants/integration.js';
 import type { ExternalAccountProvider } from '../../types/integration/model.js';
 import { getProviderCredential } from '../../services/integration/providerCredential.js';
+import { calculateAndStoreDeveloperReputation } from '../../services/reputation/developerScore.js';
 
 const isExternalAccountProvider = (provider: string): provider is ExternalAccountProvider =>
   EXTERNAL_ACCOUNT_PROVIDERS.some((candidate) => candidate === provider);
@@ -100,6 +101,17 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     { runValidators: true },
   );
   await ProviderCredential.deleteOne({ externalAccount: account._id });
+
+  if (provider === 'github' || provider === 'gitlab') {
+    try {
+      await calculateAndStoreDeveloperReputation(account.identity);
+    } catch (error) {
+      log.warn(
+        { error, identityId: account.identity, provider },
+        'Developer reputation could not be recalculated after disconnection',
+      );
+    }
+  }
 
   const response: ApiResponse<EmptyResult> = {
     status: 'success',
