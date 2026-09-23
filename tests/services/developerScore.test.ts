@@ -44,6 +44,11 @@ describe('developer reputation scoring', () => {
 
     expect(result.status).toBe('complete');
     expect(result.signals.map((signal) => signal.weight)).toEqual([0.25, 0.75]);
+    expect(result.signals[0]).toMatchObject({
+      normalization: 'diminishing_returns',
+      scale: 10,
+      baseWeight: 0.25,
+    });
     expect(result.signals[0]?.contribution).toBeCloseTo(15.803, 3);
     expect(result.signals[1]?.contribution).toBeCloseTo(47.4091, 3);
     expect(result.score).toBe(63.21);

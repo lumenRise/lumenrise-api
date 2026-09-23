@@ -1,8 +1,7 @@
 import type { Types } from 'mongoose';
 
-import type { ReputationSnapshotStatus } from './model.js';
-
 type DeveloperReputationProvider = 'github' | 'gitlab';
+type DeveloperReputationStatus = 'complete' | 'partial';
 
 interface DeveloperSignalInput {
   provider: DeveloperReputationProvider;
@@ -22,12 +21,15 @@ interface DeveloperReputationSourceInput {
 }
 
 interface DeveloperReputationCalculation {
-  status: ReputationSnapshotStatus;
+  status: DeveloperReputationStatus;
   score: number;
   signals: Array<{
     provider: DeveloperReputationProvider;
     key: string;
     rawValue: number;
+    normalization: 'diminishing_returns';
+    scale: number;
+    baseWeight: number;
     normalizedScore: number;
     weight: number;
     contribution: number;
@@ -39,5 +41,6 @@ export type {
   DeveloperReputationCalculation,
   DeveloperReputationProvider,
   DeveloperReputationSourceInput,
+  DeveloperReputationStatus,
   DeveloperSignalInput,
 };

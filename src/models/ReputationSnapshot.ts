@@ -25,6 +25,22 @@ const reputationSignalSchema = new Schema<ReputationSignalRecord>(
       type: Number,
       required: true,
     },
+    normalization: {
+      type: String,
+      enum: ['diminishing_returns'],
+      required: true,
+    },
+    scale: {
+      type: Number,
+      min: 0,
+      required: true,
+    },
+    baseWeight: {
+      type: Number,
+      min: 0,
+      max: 1,
+      required: true,
+    },
     normalizedScore: {
       type: Number,
       required: true,

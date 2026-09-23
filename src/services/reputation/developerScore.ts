@@ -4,12 +4,13 @@ import ExternalAccount from '../../models/ExternalAccount.js';
 import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import GitLabDataSnapshot from '../../models/GitLabDataSnapshot.js';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
+import type { ReputationSnapshotDocument } from '../../types/reputation/model.js';
 import type { GitLabDataSnapshotDocument } from '../../types/reputation/gitlab.js';
 import type { GitHubDataSnapshotDocument } from '../../types/reputation/github.js';
-import type { ReputationSnapshotDocument, ReputationSnapshotStatus } from '../../types/reputation/model.js';
 import type {
   DeveloperReputationCalculation,
   DeveloperReputationSourceInput,
+  DeveloperReputationStatus,
   DeveloperSignalInput,
 } from '../../types/reputation/scoring.js';
 
@@ -20,8 +21,12 @@ const round = (value: number, precision: number): number => {
   return Math.round((value + Number.EPSILON) * multiplier) / multiplier;
 };
 const normalizeDiminishingReturns = (rawValue: number, scale: number): number => {
-  if (scale <= 0) {
+  if (!Number.isFinite(scale) || scale <= 0) {
     throw new Error('Developer signal scale must be positive');
+  }
+
+  if (!Number.isFinite(rawValue)) {
+    throw new Error('Developer signal value must be finite');
   }
 
   const value = Math.max(0, rawValue);
@@ -30,8 +35,12 @@ const normalizeDiminishingReturns = (rawValue: number, scale: number): number =>
 };
 const calculateDeveloperScore = (
   inputs: DeveloperSignalInput[],
-  status: ReputationSnapshotStatus,
+  status: DeveloperReputationStatus,
 ): DeveloperReputationCalculation => {
+  if (inputs.some((input) => !Number.isFinite(input.baseWeight) || input.baseWeight <= 0)) {
+    throw new Error('Developer signal weights must be positive');
+  }
+
   const totalWeight = inputs.reduce((total, input) => total + input.baseWeight, 0);
 
   if (totalWeight <= 0) {
@@ -47,6 +56,9 @@ const calculateDeveloperScore = (
       provider: input.provider,
       key: input.key,
       rawValue: input.rawValue,
+      normalization: 'diminishing_returns' as const,
+      scale: input.scale,
+      baseWeight: input.baseWeight,
       normalizedScore,
       weight,
       contribution,

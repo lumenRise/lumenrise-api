@@ -4,6 +4,7 @@ import ExternalAccount from '../../models/ExternalAccount.js';
 import { collectGitHubData } from '../reputation/githubData.js';
 import type { GitHubSyncOutcome } from '../../types/integration/sync.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
+import { calculateAndStoreDeveloperReputation } from '../reputation/developerScore.js';
 import { getProviderCredential, storeProviderCredential } from './providerCredential.js';
 import { getAuthenticatedGitHubUser, refreshGitHubAccessToken } from '../oauth/github.js';
 import { GITHUB_SYNC_LEASE_MS, GITHUB_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
@@ -119,6 +120,7 @@ const syncGitHubAccount = async (
       },
       { runValidators: true },
     );
+    await calculateAndStoreDeveloperReputation(leasedAccount.identity);
 
     return { state: 'synchronized', snapshot };
   } finally {

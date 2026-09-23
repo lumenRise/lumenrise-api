@@ -5,6 +5,7 @@ import { collectGitLabData } from '../reputation/gitlabData.js';
 import type { GitLabSyncOutcome } from '../../types/integration/sync.js';
 import { getRetryAfterSeconds, needsCredentialRefresh } from './githubSync.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
+import { calculateAndStoreDeveloperReputation } from '../reputation/developerScore.js';
 import { getProviderCredential, storeProviderCredential } from './providerCredential.js';
 import { getAuthenticatedGitLabUser, refreshGitLabAccessToken } from '../oauth/gitlab.js';
 import { GITLAB_SYNC_LEASE_MS, GITLAB_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
@@ -111,6 +112,7 @@ const syncGitLabAccount = async (
       },
       { runValidators: true },
     );
+    await calculateAndStoreDeveloperReputation(leasedAccount.identity);
 
     return { state: 'synchronized', snapshot };
   } finally {

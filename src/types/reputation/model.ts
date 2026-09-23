@@ -4,11 +4,15 @@ import type { ExternalAccountProvider } from '../integration/model.js';
 
 type ReputationCategory = 'social' | 'developer';
 type ReputationSnapshotStatus = 'complete' | 'partial' | 'failed';
+type ReputationNormalization = 'diminishing_returns';
 
 interface ReputationSignalRecord {
   provider: ExternalAccountProvider;
   key: string;
   rawValue: number;
+  normalization: ReputationNormalization;
+  scale: number;
+  baseWeight: number;
   normalizedScore: number;
   weight: number;
   contribution: number;
@@ -38,6 +42,9 @@ interface ReputationSignalResult {
   provider: ExternalAccountProvider;
   key: string;
   rawValue: number;
+  normalization: ReputationNormalization;
+  scale: number;
+  baseWeight: number;
   normalizedScore: number;
   weight: number;
   contribution: number;
@@ -65,6 +72,7 @@ type ReputationSnapshotDocument = HydratedDocument<ReputationSnapshotRecord>;
 
 export type {
   ReputationCategory,
+  ReputationNormalization,
   ReputationSignalRecord,
   ReputationSignalResult,
   ReputationSourceRecord,
