@@ -85,6 +85,10 @@ const schema = defineConfig({
     default: 0,
     description: 'Hours between automatic X scans; 0 disables metered automatic API usage.',
   },
+  STELLAR_HORIZON_URL: {
+    default: 'https://horizon-testnet.stellar.org',
+    description: 'Horizon base URL used for read-only Stellar account lookups.',
+  },
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',
     description: '64-character hexadecimal key used to encrypt provider credentials.',

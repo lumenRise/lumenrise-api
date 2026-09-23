@@ -44,6 +44,7 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   }
 
   const clientOrigin = parseUrl(configuration.CLIENT_ORIGIN, 'CLIENT_ORIGIN');
+  const stellarHorizonUrl = parseUrl(configuration.STELLAR_HORIZON_URL, 'STELLAR_HORIZON_URL');
   const gitlabBaseUrl = parseUrl(configuration.GITLAB_BASE_URL, 'GITLAB_BASE_URL');
   const githubCallbackUrl = parseUrl(configuration.GITHUB_CALLBACK_URL, 'GITHUB_CALLBACK_URL');
   const gitlabCallbackUrl = parseUrl(configuration.GITLAB_CALLBACK_URL, 'GITLAB_CALLBACK_URL');
@@ -53,11 +54,16 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
     configuration.NODE_ENV === 'production' &&
     (clientOrigin.protocol !== 'https:' ||
       gitlabBaseUrl.protocol !== 'https:' ||
+      stellarHorizonUrl.protocol !== 'https:' ||
       githubCallbackUrl.protocol !== 'https:' ||
       gitlabCallbackUrl.protocol !== 'https:' ||
       xCallbackUrl.protocol !== 'https:')
   ) {
     throw new Error('Client, callback, and provider URLs must use HTTPS in production');
+  }
+
+  if (!['http:', 'https:'].includes(stellarHorizonUrl.protocol)) {
+    throw new Error('STELLAR_HORIZON_URL must use HTTP or HTTPS');
   }
 };
 

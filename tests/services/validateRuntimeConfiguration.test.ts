@@ -17,6 +17,7 @@ const validConfiguration: RuntimeConfiguration = {
   X_CLIENT_SECRET: 'x-client-secret',
   X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',
   X_AUTO_SYNC_INTERVAL_HOURS: 0,
+  STELLAR_HORIZON_URL: 'https://horizon-testnet.stellar.org',
   CREDENTIAL_ENCRYPTION_KEY: 'a'.repeat(64),
 };
 
@@ -47,6 +48,12 @@ describe('runtime configuration validation', () => {
     expect(() =>
       validateRuntimeConfiguration({ ...validConfiguration, X_AUTO_SYNC_INTERVAL_HOURS: -1 }),
     ).toThrow('must be a nonnegative number');
+  });
+
+  it('rejects an invalid Stellar Horizon URL', () => {
+    expect(() =>
+      validateRuntimeConfiguration({ ...validConfiguration, STELLAR_HORIZON_URL: 'not-a-url' }),
+    ).toThrow('STELLAR_HORIZON_URL must be a valid absolute URL');
   });
 
   it('rejects an invalid credential encryption key', () => {
