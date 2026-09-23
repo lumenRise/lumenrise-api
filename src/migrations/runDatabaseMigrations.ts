@@ -4,6 +4,7 @@ import createSessionIndexes from './20260922CreateSessionIndexes.js';
 import createIdentityIndexes from './20260922CreateIdentityIndexes.js';
 import type { MigrationDefinition } from '../types/database/migration.js';
 import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes.js';
+import createGitLabDataIndexes from './20260923CreateGitLabDataIndexes.js';
 import createReputationIndexes from './20260922CreateReputationIndexes.js';
 import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes.js';
 import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes.js';
@@ -15,6 +16,7 @@ const migrations: readonly MigrationDefinition[] = [
   createReputationIndexes,
   createSessionIndexes,
   createGitHubDataIndexes,
+  createGitLabDataIndexes,
   createProviderCredentialIndexes,
   createIntegrationSyncJobIndexes,
 ];
