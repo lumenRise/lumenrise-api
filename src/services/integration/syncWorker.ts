@@ -1,5 +1,6 @@
 import env from '../../env.js';
 import log from '../../logger.js';
+import { syncXAccount } from './xSync.js';
 import { syncGitHubAccount } from './githubSync.js';
 import { syncGitLabAccount } from './gitlabSync.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
@@ -16,6 +17,20 @@ let activeTick: Promise<void> | null = null;
 
 const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : 'Unknown synchronization error';
+const synchronizeAccount = async (
+  job: IntegrationSyncJobDocument,
+  account: NonNullable<Awaited<ReturnType<typeof ExternalAccount.findOne>>>,
+) => {
+  if (job.provider === 'github') {
+    return syncGitHubAccount(account);
+  }
+
+  if (job.provider === 'gitlab') {
+    return syncGitLabAccount(account);
+  }
+
+  return syncXAccount(account);
+};
 const processIntegrationSyncJob = async (job: IntegrationSyncJobDocument): Promise<void> => {
   const account = await ExternalAccount.findOne({
     _id: job.externalAccount,
@@ -30,10 +45,7 @@ const processIntegrationSyncJob = async (job: IntegrationSyncJobDocument): Promi
   }
 
   try {
-    const outcome =
-      job.provider === 'github'
-        ? await syncGitHubAccount(account)
-        : await syncGitLabAccount(account);
+    const outcome = await synchronizeAccount(job, account);
 
     if (outcome.state === 'synchronized') {
       await completeIntegrationSyncJob(job, outcome.snapshot._id);

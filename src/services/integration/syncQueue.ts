@@ -2,14 +2,15 @@ import type { Types } from 'mongoose';
 
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
-import {
-  GITHUB_SYNC_MIN_INTERVAL_MS,
-  GITLAB_SYNC_MIN_INTERVAL_MS,
-} from '../../constants/integration.js';
 import type {
   IntegrationSyncJobDocument,
   IntegrationSyncJobProvider,
 } from '../../types/integration/sync.js';
+import {
+  GITHUB_SYNC_MIN_INTERVAL_MS,
+  GITLAB_SYNC_MIN_INTERVAL_MS,
+  X_SYNC_MIN_INTERVAL_MS,
+} from '../../constants/integration.js';
 
 const MAX_SYNC_JOB_ATTEMPTS = 5;
 const SYNC_JOB_LEASE_MS = 3_600_000;
@@ -28,6 +29,13 @@ const calculateGitLabSyncSchedule = (lastSyncedAt: Date | null, now = new Date()
   }
 
   return new Date(Math.max(now.getTime(), lastSyncedAt.getTime() + GITLAB_SYNC_MIN_INTERVAL_MS));
+};
+const calculateXSyncSchedule = (lastSyncedAt: Date | null, now = new Date()): Date => {
+  if (!lastSyncedAt) {
+    return now;
+  }
+
+  return new Date(Math.max(now.getTime(), lastSyncedAt.getTime() + X_SYNC_MIN_INTERVAL_MS));
 };
 const enqueueIntegrationSync = async (
   account: ExternalAccountDocument,
@@ -107,6 +115,14 @@ const enqueueGitLabSync = async (
   const scheduledAt = calculateGitLabSyncSchedule(account.lastSyncedAt, now);
 
   return enqueueIntegrationSync(account, 'gitlab', scheduledAt, 'GitLab');
+};
+const enqueueXSync = async (
+  account: ExternalAccountDocument,
+  now = new Date(),
+): Promise<IntegrationSyncJobDocument> => {
+  const scheduledAt = calculateXSyncSchedule(account.lastSyncedAt, now);
+
+  return enqueueIntegrationSync(account, 'x', scheduledAt, 'X');
 };
 const claimIntegrationSyncJob = async (
   now = new Date(),
@@ -200,11 +216,13 @@ const deferIntegrationSyncJob = async (
 export {
   calculateGitHubSyncSchedule,
   calculateGitLabSyncSchedule,
+  calculateXSyncSchedule,
   calculateSyncRetryDelay,
   claimIntegrationSyncJob,
   completeIntegrationSyncJob,
   deferIntegrationSyncJob,
   enqueueGitHubSync,
   enqueueGitLabSync,
+  enqueueXSync,
   failIntegrationSyncJob,
 };

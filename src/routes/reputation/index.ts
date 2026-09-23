@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import getXSocialRoute from './getXSocial.js';
 import getGitLabEventsRoute from './getGitLabEvents.js';
 import getDeveloperReputationRoute from './getDeveloper.js';
 import getGitLabProjectsRoute from './getGitLabProjects.js';
@@ -11,6 +12,7 @@ import getDeveloperRepositoriesRoute from './getDeveloperRepositories.js';
 const reputationRoutes = Router();
 
 reputationRoutes.get('/developer', requireSession, getDeveloperReputationRoute);
+reputationRoutes.get('/social/x', requireSession, getXSocialRoute);
 reputationRoutes.get('/developer/score', requireSession, getDeveloperScoreRoute);
 reputationRoutes.get('/developer/repositories', requireSession, getDeveloperRepositoriesRoute);
 reputationRoutes.get('/developer/gitlab', requireSession, getGitLabDeveloperRoute);

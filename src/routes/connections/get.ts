@@ -1,5 +1,6 @@
 import type { RequestHandler } from 'express';
 
+import XDataSnapshot from '../../models/XDataSnapshot.js';
 import type { ApiResponse } from '../../types/response.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import GitLabDataSnapshot from '../../models/GitLabDataSnapshot.js';
@@ -27,9 +28,15 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
               collectedAt: -1,
             })
           : null;
-      const providerData = githubData ?? gitlabData;
+      const xData =
+        account.provider === 'x'
+          ? await XDataSnapshot.findOne({ externalAccount: account._id }).sort({
+              collectedAt: -1,
+            })
+          : null;
+      const providerData = githubData ?? gitlabData ?? xData;
       const syncJob =
-        account.provider === 'github' || account.provider === 'gitlab'
+        account.provider === 'github' || account.provider === 'gitlab' || account.provider === 'x'
           ? await IntegrationSyncJob.findOne({ externalAccount: account._id }).sort({
               createdAt: -1,
             })

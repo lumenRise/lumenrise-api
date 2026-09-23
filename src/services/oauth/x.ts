@@ -5,6 +5,7 @@ import env from '../../env.js';
 import Identity from '../../models/Identity.js';
 import { issueSession } from '../auth/session.js';
 import OAuthState from '../../models/OAuthState.js';
+import { enqueueXSync } from '../integration/syncQueue.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { IssuedSession } from '../../types/auth/model.js';
 import { storeProviderCredential } from '../integration/providerCredential.js';
@@ -138,7 +139,9 @@ const getAuthenticatedXUser = async (accessToken: string): Promise<XUser> => {
   const result = (await response.json()) as XUserResponse;
 
   if (!response.ok || !result.data) {
-    throw new Error(result.errors?.[0]?.detail ?? result.errors?.[0]?.title ?? 'X user lookup failed');
+    throw new Error(
+      result.errors?.[0]?.detail ?? result.errors?.[0]?.title ?? 'X user lookup failed',
+    );
   }
 
   return result.data;
@@ -232,12 +235,14 @@ const completeXAuthorization = async (
     refreshTokenExpiresAt: null,
   });
 
+  const syncJob = await enqueueXSync(account.externalAccount);
   const session = await issueSession(account.identityId);
 
   return {
     connection: {
       identityId: account.identityId.toString(),
       username: user.username,
+      syncJobId: syncJob._id.toString(),
     },
     session,
   };

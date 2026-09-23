@@ -1,5 +1,6 @@
 import log from '../logger.js';
 import DatabaseMigration from '../models/DatabaseMigration.js';
+import createXDataIndexes from './20260923CreateXDataIndexes.js';
 import createSessionIndexes from './20260922CreateSessionIndexes.js';
 import createIdentityIndexes from './20260922CreateIdentityIndexes.js';
 import type { MigrationDefinition } from '../types/database/migration.js';
@@ -17,6 +18,7 @@ const migrations: readonly MigrationDefinition[] = [
   createSessionIndexes,
   createGitHubDataIndexes,
   createGitLabDataIndexes,
+  createXDataIndexes,
   createProviderCredentialIndexes,
   createIntegrationSyncJobIndexes,
 ];

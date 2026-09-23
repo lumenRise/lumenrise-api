@@ -1,10 +1,11 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
+import type { XDataSnapshotDocument } from '../reputation/x.js';
 import type { GitHubDataSnapshotDocument } from '../reputation/github.js';
 import type { GitLabDataSnapshotDocument } from '../reputation/gitlab.js';
 
 type IntegrationSyncJobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
-type IntegrationSyncJobProvider = 'github' | 'gitlab';
+type IntegrationSyncJobProvider = 'github' | 'gitlab' | 'x';
 
 interface IntegrationSyncJobRecord {
   identity: Types.ObjectId;
@@ -68,6 +69,22 @@ interface GitLabSyncReauthorizationRequired {
 }
 
 type GitLabSyncOutcome = GitLabSyncSuccess | GitLabSyncDeferred | GitLabSyncReauthorizationRequired;
+
+interface XSyncSuccess {
+  state: 'synchronized';
+  snapshot: XDataSnapshotDocument;
+}
+
+interface XSyncDeferred {
+  state: 'in_progress' | 'too_recent';
+  retryAfterSeconds: number;
+}
+
+interface XSyncReauthorizationRequired {
+  state: 'reauthorization_required';
+}
+
+type XSyncOutcome = XSyncSuccess | XSyncDeferred | XSyncReauthorizationRequired;
 type IntegrationSyncJobDocument = HydratedDocument<IntegrationSyncJobRecord>;
 
 export type {
@@ -84,4 +101,8 @@ export type {
   IntegrationSyncJobRecord,
   IntegrationSyncJobResult,
   IntegrationSyncJobStatus,
+  XSyncDeferred,
+  XSyncOutcome,
+  XSyncReauthorizationRequired,
+  XSyncSuccess,
 };

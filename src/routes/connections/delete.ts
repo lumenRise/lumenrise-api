@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 
 import log from '../../logger.js';
+import XDataSnapshot from '../../models/XDataSnapshot.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import { revokeXAccessToken } from '../../services/oauth/x.js';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
@@ -106,6 +107,10 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     { runValidators: true },
   );
   await ProviderCredential.deleteOne({ externalAccount: account._id });
+
+  if (provider === 'x') {
+    await XDataSnapshot.deleteMany({ externalAccount: account._id });
+  }
 
   if (provider === 'github' || provider === 'gitlab') {
     try {

@@ -12,7 +12,7 @@ const integrationSyncJobSchema = new Schema<IntegrationSyncJobRecord>(
       required: true,
       immutable: true,
     },
-    provider: { type: String, enum: ['github', 'gitlab'], required: true, immutable: true },
+    provider: { type: String, enum: ['github', 'gitlab', 'x'], required: true, immutable: true },
     status: {
       type: String,
       enum: INTEGRATION_SYNC_JOB_STATUSES,
