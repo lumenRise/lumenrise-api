@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express';
 
 import log from '../../logger.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
+import { revokeXAccessToken } from '../../services/oauth/x.js';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import ProviderCredential from '../../models/ProviderCredential.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
@@ -57,7 +58,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     return res.status(404).json(response);
   }
 
-  if (provider === 'github' || provider === 'gitlab') {
+  if (provider === 'github' || provider === 'gitlab' || provider === 'x') {
     try {
       const credential = await getProviderCredential(account._id);
 
@@ -78,6 +79,10 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
 
       if (provider === 'gitlab') {
         await revokeGitLabAccessToken(providerAccessToken);
+      }
+
+      if (provider === 'x') {
+        await revokeXAccessToken(providerAccessToken);
       }
     } catch (error) {
       log.warn(

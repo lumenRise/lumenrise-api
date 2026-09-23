@@ -23,6 +23,15 @@ describe('OAuth flow', () => {
     );
   });
 
+  it('rejects an X callback that is not bound to the initiating browser', async () => {
+    const response = await request(app).get('/v1/oauth/x/callback?code=code&state=state');
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe(
+      'http://localhost:5173/onboarding?provider=x&status=error',
+    );
+  });
+
   it('compares browser-bound OAuth state values', () => {
     expect(matchesOAuthStateCookie('matching-state', 'matching-state')).toBe(true);
     expect(matchesOAuthStateCookie('different-state', 'matching-state')).toBe(false);
