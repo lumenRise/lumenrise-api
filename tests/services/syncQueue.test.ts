@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   calculateGitHubSyncSchedule,
+  calculateGitLabSyncSchedule,
   calculateSyncRetryDelay,
 } from '../../src/services/integration/syncQueue.js';
 
@@ -17,6 +18,15 @@ describe('integration synchronization queue', () => {
     const lastSyncedAt = new Date('2026-09-22T11:55:00.000Z');
 
     expect(calculateGitHubSyncSchedule(lastSyncedAt, now)).toEqual(
+      new Date('2026-09-22T12:10:00.000Z'),
+    );
+  });
+
+  it('schedules recently synchronized GitLab accounts after the minimum interval', () => {
+    const now = new Date('2026-09-22T12:00:00.000Z');
+    const lastSyncedAt = new Date('2026-09-22T11:55:00.000Z');
+
+    expect(calculateGitLabSyncSchedule(lastSyncedAt, now)).toEqual(
       new Date('2026-09-22T12:10:00.000Z'),
     );
   });

@@ -1,13 +1,15 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
 import type { GitHubDataSnapshotDocument } from '../reputation/github.js';
+import type { GitLabDataSnapshotDocument } from '../reputation/gitlab.js';
 
 type IntegrationSyncJobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+type IntegrationSyncJobProvider = 'github' | 'gitlab';
 
 interface IntegrationSyncJobRecord {
   identity: Types.ObjectId;
   externalAccount: Types.ObjectId;
-  provider: 'github';
+  provider: IntegrationSyncJobProvider;
   status: IntegrationSyncJobStatus;
   active: boolean;
   attempts: number;
@@ -24,7 +26,7 @@ interface IntegrationSyncJobRecord {
 
 interface IntegrationSyncJobResult {
   id: string;
-  provider: 'github';
+  provider: IntegrationSyncJobProvider;
   status: IntegrationSyncJobStatus;
   attempts: number;
   maxAttempts: number;
@@ -50,6 +52,22 @@ interface GitHubSyncReauthorizationRequired {
 }
 
 type GitHubSyncOutcome = GitHubSyncSuccess | GitHubSyncDeferred | GitHubSyncReauthorizationRequired;
+
+interface GitLabSyncSuccess {
+  state: 'synchronized';
+  snapshot: GitLabDataSnapshotDocument;
+}
+
+interface GitLabSyncDeferred {
+  state: 'in_progress' | 'too_recent';
+  retryAfterSeconds: number;
+}
+
+interface GitLabSyncReauthorizationRequired {
+  state: 'reauthorization_required';
+}
+
+type GitLabSyncOutcome = GitLabSyncSuccess | GitLabSyncDeferred | GitLabSyncReauthorizationRequired;
 type IntegrationSyncJobDocument = HydratedDocument<IntegrationSyncJobRecord>;
 
 export type {
@@ -57,7 +75,12 @@ export type {
   GitHubSyncOutcome,
   GitHubSyncReauthorizationRequired,
   GitHubSyncSuccess,
+  GitLabSyncDeferred,
+  GitLabSyncOutcome,
+  GitLabSyncReauthorizationRequired,
+  GitLabSyncSuccess,
   IntegrationSyncJobDocument,
+  IntegrationSyncJobProvider,
   IntegrationSyncJobRecord,
   IntegrationSyncJobResult,
   IntegrationSyncJobStatus,

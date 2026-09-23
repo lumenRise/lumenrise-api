@@ -38,6 +38,7 @@ interface GitLabUser {
 interface CompletedGitLabOAuth {
   identityId: string;
   username: string;
+  syncJobId: string;
 }
 
 interface ConnectedGitLabAccount {

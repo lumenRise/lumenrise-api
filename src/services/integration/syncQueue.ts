@@ -1,9 +1,15 @@
 import type { Types } from 'mongoose';
 
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
-import { GITHUB_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
-import type { IntegrationSyncJobDocument } from '../../types/integration/sync.js';
+import {
+  GITHUB_SYNC_MIN_INTERVAL_MS,
+  GITLAB_SYNC_MIN_INTERVAL_MS,
+} from '../../constants/integration.js';
+import type {
+  IntegrationSyncJobDocument,
+  IntegrationSyncJobProvider,
+} from '../../types/integration/sync.js';
 
 const MAX_SYNC_JOB_ATTEMPTS = 5;
 const SYNC_JOB_LEASE_MS = 3_600_000;
@@ -16,11 +22,22 @@ const calculateGitHubSyncSchedule = (lastSyncedAt: Date | null, now = new Date()
 
   return new Date(Math.max(now.getTime(), lastSyncedAt.getTime() + GITHUB_SYNC_MIN_INTERVAL_MS));
 };
-const enqueueGitHubSync = async (
+const calculateGitLabSyncSchedule = (lastSyncedAt: Date | null, now = new Date()): Date => {
+  if (!lastSyncedAt) {
+    return now;
+  }
+
+  return new Date(Math.max(now.getTime(), lastSyncedAt.getTime() + GITLAB_SYNC_MIN_INTERVAL_MS));
+};
+const enqueueIntegrationSync = async (
   account: ExternalAccountDocument,
-  now = new Date(),
+  provider: IntegrationSyncJobProvider,
+  scheduledAt: Date,
+  providerName: string,
 ): Promise<IntegrationSyncJobDocument> => {
-  const scheduledAt = calculateGitHubSyncSchedule(account.lastSyncedAt, now);
+  if (account.provider !== provider) {
+    throw new Error(`${providerName} synchronization requires a ${providerName} account`);
+  }
 
   try {
     const job = await IntegrationSyncJob.findOneAndUpdate(
@@ -29,7 +46,7 @@ const enqueueGitHubSync = async (
         $setOnInsert: {
           identity: account.identity,
           externalAccount: account._id,
-          provider: 'github',
+          provider,
           status: 'queued',
           active: true,
           attempts: 0,
@@ -51,7 +68,7 @@ const enqueueGitHubSync = async (
     );
 
     if (!job) {
-      throw new Error('GitHub synchronization job could not be queued');
+      throw new Error(`${providerName} synchronization job could not be queued`);
     }
 
     return job;
@@ -74,6 +91,22 @@ const enqueueGitHubSync = async (
 
     return existingJob;
   }
+};
+const enqueueGitHubSync = async (
+  account: ExternalAccountDocument,
+  now = new Date(),
+): Promise<IntegrationSyncJobDocument> => {
+  const scheduledAt = calculateGitHubSyncSchedule(account.lastSyncedAt, now);
+
+  return enqueueIntegrationSync(account, 'github', scheduledAt, 'GitHub');
+};
+const enqueueGitLabSync = async (
+  account: ExternalAccountDocument,
+  now = new Date(),
+): Promise<IntegrationSyncJobDocument> => {
+  const scheduledAt = calculateGitLabSyncSchedule(account.lastSyncedAt, now);
+
+  return enqueueIntegrationSync(account, 'gitlab', scheduledAt, 'GitLab');
 };
 const claimIntegrationSyncJob = async (
   now = new Date(),
@@ -166,10 +199,12 @@ const deferIntegrationSyncJob = async (
 
 export {
   calculateGitHubSyncSchedule,
+  calculateGitLabSyncSchedule,
   calculateSyncRetryDelay,
   claimIntegrationSyncJob,
   completeIntegrationSyncJob,
   deferIntegrationSyncJob,
   enqueueGitHubSync,
+  enqueueGitLabSync,
   failIntegrationSyncJob,
 };

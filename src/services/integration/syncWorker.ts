@@ -1,6 +1,7 @@
 import env from '../../env.js';
 import log from '../../logger.js';
 import { syncGitHubAccount } from './githubSync.js';
+import { syncGitLabAccount } from './gitlabSync.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { IntegrationSyncJobDocument } from '../../types/integration/sync.js';
 import {
@@ -24,12 +25,15 @@ const processIntegrationSyncJob = async (job: IntegrationSyncJobDocument): Promi
   });
 
   if (!account) {
-    await failIntegrationSyncJob(job, 'Connected GitHub account was not found', false);
+    await failIntegrationSyncJob(job, `Connected ${job.provider} account was not found`, false);
     return;
   }
 
   try {
-    const outcome = await syncGitHubAccount(account);
+    const outcome =
+      job.provider === 'github'
+        ? await syncGitHubAccount(account)
+        : await syncGitLabAccount(account);
 
     if (outcome.state === 'synchronized') {
       await completeIntegrationSyncJob(job, outcome.snapshot._id);
@@ -37,7 +41,7 @@ const processIntegrationSyncJob = async (job: IntegrationSyncJobDocument): Promi
     }
 
     if (outcome.state === 'reauthorization_required') {
-      await failIntegrationSyncJob(job, 'GitHub account must be reauthorized', false);
+      await failIntegrationSyncJob(job, `${job.provider} account must be reauthorized`, false);
       return;
     }
 

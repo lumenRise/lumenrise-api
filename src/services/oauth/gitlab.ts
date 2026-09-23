@@ -7,6 +7,7 @@ import { issueSession } from '../auth/session.js';
 import OAuthState from '../../models/OAuthState.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { IssuedSession } from '../../types/auth/model.js';
+import { enqueueGitLabSync } from '../integration/syncQueue.js';
 import { storeProviderCredential } from '../integration/providerCredential.js';
 import type {
   CompletedGitLabOAuth,
@@ -228,12 +229,14 @@ const completeGitLabAuthorization = async (
     refreshTokenExpiresAt: null,
   });
 
+  const syncJob = await enqueueGitLabSync(account.externalAccount);
   const session = await issueSession(account.identityId);
 
   return {
     connection: {
       identityId: account.identityId.toString(),
       username: user.username,
+      syncJobId: syncJob._id.toString(),
     },
     session,
   };
