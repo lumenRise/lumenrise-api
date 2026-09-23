@@ -25,6 +25,7 @@ const getStellarAccountOperations = async (
   cursor: string | null = null,
   limit = 50,
   order: StellarOperationOrder = 'desc',
+  sourceUrl = env.STELLAR_HORIZON_URL,
 ): Promise<StellarOperationsResult | null> => {
   if (!isValidStellarGAddress(address)) {
     throw new Error('Invalid Stellar account address');
@@ -42,7 +43,7 @@ const getStellarAccountOperations = async (
     throw new Error('Invalid Stellar operations order');
   }
 
-  const url = new URL(`/accounts/${address}/operations`, env.STELLAR_HORIZON_URL);
+  const url = new URL(`/accounts/${address}/operations`, sourceUrl);
 
   url.searchParams.set('order', order);
   url.searchParams.set('limit', limit.toString());

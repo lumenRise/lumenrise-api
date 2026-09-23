@@ -11,6 +11,10 @@ import {
   startIntegrationSyncWorker,
   stopIntegrationSyncWorker,
 } from './services/integration/syncWorker.js';
+import {
+  startStellarActivityScanWorker,
+  stopStellarActivityScanWorker,
+} from './services/stellar/activityScanWorker.js';
 
 let server: Server | undefined;
 
@@ -38,6 +42,7 @@ const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
     await closeServer();
     await stopXScheduler();
     await stopIntegrationSyncWorker();
+    await stopStellarActivityScanWorker();
   } finally {
     await disconnectDatabase();
   }
@@ -54,6 +59,7 @@ const bootstrap = async (): Promise<void> => {
   await connectDatabase();
   await runDatabaseMigrations();
   startIntegrationSyncWorker();
+  startStellarActivityScanWorker();
   startXScheduler();
 
   server = app.listen(env.PORT, () => {
