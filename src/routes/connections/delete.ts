@@ -6,6 +6,7 @@ import ExternalAccount from '../../models/ExternalAccount.js';
 import { revokeXAccessToken } from '../../services/oauth/x.js';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import ProviderCredential from '../../models/ProviderCredential.js';
+import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import { revokeGitLabAccessToken } from '../../services/oauth/gitlab.js';
 import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
@@ -44,6 +45,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
         status: 'disconnected',
         syncLeaseUntil: null,
         disconnectedAt,
+        ...(provider === 'x' ? { lastSyncedAt: null } : {}),
       },
     },
     { runValidators: true, returnDocument: 'after' },
@@ -109,7 +111,14 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
   await ProviderCredential.deleteOne({ externalAccount: account._id });
 
   if (provider === 'x') {
-    await XDataSnapshot.deleteMany({ externalAccount: account._id });
+    await Promise.all([
+      XDataSnapshot.deleteMany({ externalAccount: account._id }),
+      ReputationSnapshot.deleteMany({ identity: account.identity, category: 'social' }),
+      IntegrationSyncJob.updateMany(
+        { externalAccount: account._id, provider: 'x', resultSnapshot: { $ne: null } },
+        { $set: { resultSnapshot: null } },
+      ),
+    ]);
   }
 
   if (provider === 'github' || provider === 'gitlab') {

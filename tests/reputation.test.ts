@@ -10,6 +10,12 @@ describe('reputation', () => {
     expect(response.status).toBe(401);
   });
 
+  it('requires a session to retrieve the social score', async () => {
+    const response = await request(app).get('/v1/reputation/social/score');
+
+    expect(response.status).toBe(401);
+  });
+
   it('requires a session to retrieve GitLab reputation data', async () => {
     const response = await request(app).get('/v1/reputation/developer/gitlab');
 

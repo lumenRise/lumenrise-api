@@ -1,11 +1,13 @@
 import type { Types } from 'mongoose';
 
 import { collectXData } from '../reputation/xData.js';
+import XDataSnapshot from '../../models/XDataSnapshot.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import type { XSyncOutcome } from '../../types/integration/sync.js';
 import { getAuthenticatedXUser, refreshXAccessToken } from '../oauth/x.js';
 import { getRetryAfterSeconds, needsCredentialRefresh } from './githubSync.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
+import { calculateAndStoreSocialReputation } from '../reputation/socialScore.js';
 import { getProviderCredential, storeProviderCredential } from './providerCredential.js';
 import { X_SYNC_LEASE_MS, X_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
 
@@ -95,9 +97,8 @@ const syncXAccount = async (
       user,
       accessToken,
     );
-
-    await ExternalAccount.updateOne(
-      { _id: leasedAccount._id, provider: 'x', status: 'connected' },
+    const updateResult = await ExternalAccount.updateOne(
+      { _id: leasedAccount._id, provider: 'x', status: 'connected', syncLeaseUntil },
       {
         $set: {
           username: user.username,
@@ -109,6 +110,14 @@ const syncXAccount = async (
       },
       { runValidators: true },
     );
+
+    if (updateResult.matchedCount === 0) {
+      await XDataSnapshot.deleteOne({ _id: snapshot._id });
+
+      return { state: 'disconnected' };
+    }
+
+    await calculateAndStoreSocialReputation(leasedAccount.identity);
 
     return { state: 'synchronized', snapshot };
   } finally {

@@ -57,6 +57,11 @@ const processIntegrationSyncJob = async (job: IntegrationSyncJobDocument): Promi
       return;
     }
 
+    if (outcome.state === 'disconnected') {
+      await failIntegrationSyncJob(job, 'X account was disconnected during synchronization', false);
+      return;
+    }
+
     await deferIntegrationSyncJob(job, outcome.retryAfterSeconds);
   } catch (error) {
     await failIntegrationSyncJob(job, getErrorMessage(error), true);

@@ -84,7 +84,11 @@ interface XSyncReauthorizationRequired {
   state: 'reauthorization_required';
 }
 
-type XSyncOutcome = XSyncSuccess | XSyncDeferred | XSyncReauthorizationRequired;
+interface XSyncDisconnected {
+  state: 'disconnected';
+}
+
+type XSyncOutcome = XSyncSuccess | XSyncDeferred | XSyncReauthorizationRequired | XSyncDisconnected;
 type IntegrationSyncJobDocument = HydratedDocument<IntegrationSyncJobRecord>;
 
 export type {
@@ -102,6 +106,7 @@ export type {
   IntegrationSyncJobResult,
   IntegrationSyncJobStatus,
   XSyncDeferred,
+  XSyncDisconnected,
   XSyncOutcome,
   XSyncReauthorizationRequired,
   XSyncSuccess,
