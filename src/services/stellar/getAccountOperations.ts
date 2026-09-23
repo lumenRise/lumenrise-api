@@ -1,4 +1,5 @@
 import env from '../../env.js';
+import summarizeStellarActivityPage from './summarizeActivityPage.js';
 import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
 import type {
   StellarHorizonOperationsPage,
@@ -108,6 +109,7 @@ const getStellarAccountOperations = async (
     order,
     limit,
     items,
+    summary: summarizeStellarActivityPage(address, items),
     nextCursor: items.length === limit ? lastCursor : null,
   };
 };

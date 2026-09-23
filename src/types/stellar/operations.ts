@@ -1,3 +1,5 @@
+import type { StellarActivityPageSummary } from './activity.js';
+
 type StellarOperationOrder = 'asc' | 'desc';
 
 interface StellarHorizonOperation {
@@ -30,6 +32,7 @@ interface StellarOperationsResult {
   order: StellarOperationOrder;
   limit: number;
   items: StellarOperationResult[];
+  summary: StellarActivityPageSummary;
   nextCursor: string | null;
 }
 

@@ -41,6 +41,12 @@ describe('Stellar account operations', () => {
       address,
       ownershipVerified: false,
       nextCursor: '100',
+      summary: {
+        scope: 'page',
+        operationCount: 1,
+        initiatedOperationCount: 1,
+        sentPaymentCount: 0,
+      },
       items: [
         {
           pagingToken: '100',
