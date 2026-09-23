@@ -11,4 +11,12 @@ describe('Stellar account overview route', () => {
 
     expect(response.status).toBe(401);
   });
+
+  it('requires a session to list operations', async () => {
+    const response = await request(app).get(
+      '/v1/stellar/accounts/GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR/operations',
+    );
+
+    expect(response.status).toBe(401);
+  });
 });

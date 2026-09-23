@@ -27,7 +27,8 @@ describe('Stellar account route responses', () => {
   });
 
   it('distinguishes a missing account from an unavailable provider', async () => {
-    const fetchMock = vi.fn()
+    const fetchMock = vi
+      .fn()
       .mockResolvedValueOnce({ ok: false, status: 404 })
       .mockResolvedValueOnce({ ok: false, status: 503 });
 
@@ -38,5 +39,16 @@ describe('Stellar account route responses', () => {
 
     expect(missing.status).toBe(404);
     expect(unavailable.status).toBe(502);
+  });
+
+  it('rejects invalid operation pagination parameters', async () => {
+    const fetchMock = vi.fn();
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await request(app).get(`/v1/stellar/accounts/${address}/operations?limit=201`);
+
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
