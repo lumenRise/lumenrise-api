@@ -13,6 +13,9 @@ const validConfiguration: RuntimeConfiguration = {
   GITLAB_CLIENT_ID: 'gitlab-client-id',
   GITLAB_CLIENT_SECRET: 'gitlab-client-secret',
   GITLAB_CALLBACK_URL: 'http://localhost:5000/v1/oauth/gitlab/callback',
+  X_CLIENT_ID: 'x-client-id',
+  X_CLIENT_SECRET: 'x-client-secret',
+  X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',
   CREDENTIAL_ENCRYPTION_KEY: 'a'.repeat(64),
 };
 
@@ -30,6 +33,12 @@ describe('runtime configuration validation', () => {
   it('rejects incomplete GitLab credentials', () => {
     expect(() =>
       validateRuntimeConfiguration({ ...validConfiguration, GITLAB_CLIENT_SECRET: '' }),
+    ).toThrow('must be configured together');
+  });
+
+  it('rejects incomplete X credentials', () => {
+    expect(() =>
+      validateRuntimeConfiguration({ ...validConfiguration, X_CLIENT_SECRET: '' }),
     ).toThrow('must be configured together');
   });
 

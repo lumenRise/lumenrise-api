@@ -8,6 +8,9 @@ interface RuntimeConfiguration {
   GITLAB_CLIENT_ID: string;
   GITLAB_CLIENT_SECRET: string;
   GITLAB_CALLBACK_URL: string;
+  X_CLIENT_ID: string;
+  X_CLIENT_SECRET: string;
+  X_CALLBACK_URL: string;
   CREDENTIAL_ENCRYPTION_KEY: string;
 }
 
