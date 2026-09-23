@@ -157,6 +157,62 @@ interface GitLabEventFactRecord {
   createdAt: Date;
 }
 
+interface GitLabDataSnapshotResult {
+  provider: 'gitlab';
+  status: GitLabDataStatus;
+  dataVersion: string;
+  username: string;
+  coverage: GitLabDataCoverage;
+  metrics: GitLabDataMetrics;
+  activityFrom: string | null;
+  activityTo: string;
+  collectedAt: string;
+}
+
+interface GitLabProjectFactResult {
+  projectId: string;
+  nameWithNamespace: string;
+  pathWithNamespace: string;
+  namespaceKind: string;
+  visibility: GitLabProjectVisibility;
+  isOwned: boolean;
+  isContributed: boolean;
+  isFork: boolean;
+  isArchived: boolean;
+  starCount: number;
+  forkCount: number;
+  openIssueCount: number;
+  topics: string[];
+  webUrl: string;
+  description: string | null;
+  projectCreatedAt: string;
+  lastActivityAt: string;
+}
+
+interface GitLabEventFactResult {
+  eventId: string;
+  projectId: string | null;
+  actionName: string;
+  targetId: string | null;
+  targetIid: string | null;
+  targetType: string | null;
+  targetTitle: string | null;
+  commitCount: number | null;
+  refType: string | null;
+  ref: string | null;
+  eventCreatedAt: string;
+}
+
+interface GitLabProjectsResult {
+  items: GitLabProjectFactResult[];
+  nextCursor: string | null;
+}
+
+interface GitLabEventsResult {
+  items: GitLabEventFactResult[];
+  nextCursor: string | null;
+}
+
 type GitLabDataSnapshotDocument = HydratedDocument<GitLabDataSnapshotRecord>;
 
 export type {
@@ -166,10 +222,13 @@ export type {
   GitLabDataMetrics,
   GitLabDataSnapshotDocument,
   GitLabDataSnapshotRecord,
+  GitLabDataSnapshotResult,
   GitLabDataStatus,
   GitLabEvent,
   GitLabEventFactRecord,
+  GitLabEventsResult,
   GitLabProject,
   GitLabProjectFactRecord,
   GitLabProjectVisibility,
+  GitLabProjectsResult,
 };
