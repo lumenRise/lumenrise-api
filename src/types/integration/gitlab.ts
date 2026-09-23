@@ -28,6 +28,11 @@ interface GitLabUser {
   web_url: string;
   avatar_url: string | null;
   created_at: string;
+  state?: string;
+  bot?: boolean;
+  followers?: number;
+  following?: number;
+  last_activity_on?: string | null;
 }
 
 interface CompletedGitLabOAuth {
