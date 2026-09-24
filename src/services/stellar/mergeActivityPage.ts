@@ -3,24 +3,8 @@ import type {
   StellarActivityAggregate,
   StellarActivityMergeResult,
 } from '../../types/stellar/scan.js';
+import { createEmptyStellarActivityAggregate } from '../../utils/services/stellar/mergeActivityPage/createEmptyStellarActivityAggregate.js';
 
-const createEmptyStellarActivityAggregate = (): StellarActivityAggregate => ({
-  scope: 'scanned_pages',
-  operationCount: 0,
-  initiatedOperationCount: 0,
-  relatedOperationCount: 0,
-  distinctTransactionCount: 0,
-  activeDayCount: 0,
-  firstObservedAt: null,
-  lastObservedAt: null,
-  operationTypeCounts: {},
-  sentPaymentCount: 0,
-  receivedPaymentCount: 0,
-  selfPaymentCount: 0,
-  trustlineChangeCount: 0,
-  offerActionCount: 0,
-  contractInvocationCount: 0,
-});
 const mergeStellarActivityPage = (
   current: StellarActivityAggregate,
   page: StellarOperationsResult,
@@ -33,12 +17,15 @@ const mergeStellarActivityPage = (
 
   const firstOperation = page.items[0];
   const lastOperation = page.items.at(-1);
+
   const firstDay = firstOperation
     ? new Date(firstOperation.createdAt).toISOString().slice(0, 10)
     : null;
+
   const nextLastDay = lastOperation
     ? new Date(lastOperation.createdAt).toISOString().slice(0, 10)
     : lastDay;
+
   const operationTypeCounts = new Map(Object.entries(current.operationTypeCounts));
 
   for (const [type, count] of Object.entries(page.summary.operationTypeCounts)) {

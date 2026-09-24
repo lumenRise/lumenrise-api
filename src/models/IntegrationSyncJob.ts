@@ -58,10 +58,12 @@ integrationSyncJobSchema.index(
     name: 'integration_sync_jobs_one_active_per_account',
   },
 );
+
 integrationSyncJobSchema.index(
   { status: 1, scheduledAt: 1, leaseUntil: 1 },
   { name: 'integration_sync_jobs_claim' },
 );
+
 integrationSyncJobSchema.index(
   { identity: 1, createdAt: -1 },
   { name: 'integration_sync_jobs_identity_created' },

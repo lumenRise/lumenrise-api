@@ -1,45 +1,16 @@
-import type { Types } from 'mongoose';
-
 import { collectXData } from '../reputation/xData.js';
+import { getAuthenticatedXUser } from '../oauth/x.js';
+import { getRetryAfterSeconds } from './githubSync.js';
 import XDataSnapshot from '../../models/XDataSnapshot.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import type { XSyncOutcome } from '../../types/integration/sync.js';
-import { getAuthenticatedXUser, refreshXAccessToken } from '../oauth/x.js';
-import { getRetryAfterSeconds, needsCredentialRefresh } from './githubSync.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
 import { calculateAndStoreSocialReputation } from '../reputation/socialScore.js';
-import { getProviderCredential, storeProviderCredential } from './providerCredential.js';
 import { X_SYNC_LEASE_MS, X_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
+import { resolveXAccessToken } from '../../utils/services/integration/xSync/resolveXAccessToken.js';
 
-const resolveXAccessToken = async (externalAccountId: Types.ObjectId): Promise<string | null> => {
-  const credential = await getProviderCredential(externalAccountId);
-
-  if (!credential || credential.provider !== 'x') {
-    return null;
-  }
-
-  if (!needsCredentialRefresh(credential.accessTokenExpiresAt)) {
-    return credential.accessToken;
-  }
-
-  if (!credential.refreshToken) {
-    return null;
-  }
-
-  const token = await refreshXAccessToken(credential.refreshToken);
-  const accessToken = token.access_token as string;
-
-  await storeProviderCredential(externalAccountId, 'x', {
-    accessToken,
-    refreshToken: token.refresh_token ?? credential.refreshToken,
-    accessTokenExpiresAt: token.expires_in ? new Date(Date.now() + token.expires_in * 1_000) : null,
-    refreshTokenExpiresAt: null,
-  });
-
-  return accessToken;
-};
 const syncXAccount = async (
   account: ExternalAccountDocument,
   now = new Date(),
@@ -56,6 +27,7 @@ const syncXAccount = async (
   }
 
   const syncLeaseUntil = new Date(now.getTime() + X_SYNC_LEASE_MS);
+
   const leasedAccount = await ExternalAccount.findOneAndUpdate(
     {
       _id: account._id,
@@ -99,6 +71,7 @@ const syncXAccount = async (
       user,
       accessToken,
     );
+
     const updateResult = await ExternalAccount.updateOne(
       { _id: leasedAccount._id, provider: 'x', status: 'connected', syncLeaseUntil },
       {
@@ -132,6 +105,7 @@ const syncXAccount = async (
       category: 'social',
       _id: { $ne: reputation._id },
     });
+
     await IntegrationSyncJob.updateMany(
       {
         externalAccount: leasedAccount._id,
@@ -140,6 +114,7 @@ const syncXAccount = async (
       },
       { $set: { resultSnapshot: null } },
     );
+
     await XDataSnapshot.deleteMany({
       externalAccount: leasedAccount._id,
       _id: { $ne: snapshot._id },

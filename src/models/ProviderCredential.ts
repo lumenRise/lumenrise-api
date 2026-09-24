@@ -11,6 +11,7 @@ const encryptedSecretSchema = new Schema(
   },
   { _id: false, versionKey: false },
 );
+
 const providerCredentialSchema = new Schema<ProviderCredentialRecord>(
   {
     externalAccount: {

@@ -7,6 +7,7 @@ import { setOAuthStateCookie } from '../../../services/oauth/stateCookie.js';
 
 const startXOAuthRoute: RequestHandler = async (_req, res) => {
   const flow = await createXAuthorization('register', null);
+
   const response: ApiResponse<XOAuthStartResult> = {
     status: 'success',
     message: 'X authorization started',

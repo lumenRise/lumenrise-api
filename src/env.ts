@@ -104,8 +104,10 @@ const schema = defineConfig({
     description: '64-character hexadecimal key used to encrypt provider credentials.',
   },
 });
+
 const source =
   process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production' ? undefined : 'file';
+  
 const env = createEnv(schema, { source });
 
 export default env;

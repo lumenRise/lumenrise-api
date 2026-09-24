@@ -24,6 +24,7 @@ const postXSyncRoute: RequestHandler = async (req, res) => {
   }
 
   const job = await enqueueXSync(account);
+
   const response: ApiResponse<IntegrationSyncJobResult> = {
     status: 'success',
     message: 'X synchronization queued',

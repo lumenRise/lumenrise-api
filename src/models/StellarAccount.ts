@@ -47,6 +47,7 @@ stellarAccountSchema.index(
   { address: 1 },
   { unique: true, name: 'stellar_accounts_address_unique' },
 );
+
 stellarAccountSchema.index(
   { identity: 1, isPrimary: 1 },
   {
@@ -55,6 +56,7 @@ stellarAccountSchema.index(
     name: 'stellar_accounts_one_primary_per_identity',
   },
 );
+
 stellarAccountSchema.index(
   { identity: 1, disconnectedAt: 1 },
   { name: 'stellar_accounts_identity_connected' },

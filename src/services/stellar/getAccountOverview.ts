@@ -14,6 +14,7 @@ const getStellarAccountOverview = async (
   }
 
   const url = new URL(`/accounts/${address}`, env.STELLAR_HORIZON_URL);
+
   const response = await fetch(url, {
     headers: { Accept: 'application/json' },
     signal: AbortSignal.timeout(10_000),

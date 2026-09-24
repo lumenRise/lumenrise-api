@@ -10,13 +10,10 @@ import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import { revokeGitLabAccessToken } from '../../services/oauth/gitlab.js';
 import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
-import { EXTERNAL_ACCOUNT_PROVIDERS } from '../../constants/integration.js';
-import type { ExternalAccountProvider } from '../../types/integration/model.js';
 import { getProviderCredential } from '../../services/integration/providerCredential.js';
 import { calculateAndStoreDeveloperReputation } from '../../services/reputation/developerScore.js';
+import { isExternalAccountProvider } from '../../utils/routes/connections/delete/isExternalAccountProvider.js';
 
-const isExternalAccountProvider = (provider: string): provider is ExternalAccountProvider =>
-  EXTERNAL_ACCOUNT_PROVIDERS.some((candidate) => candidate === provider);
 const deleteConnectionRoute: RequestHandler = async (req, res) => {
   const providerParam = req.params.provider;
   const provider = typeof providerParam === 'string' ? providerParam : null;
@@ -34,6 +31,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
   const disconnectedAt = new Date();
 
   let providerAccessToken: string | null = null;
+
   const account = await ExternalAccount.findOneAndUpdate(
     {
       identity: req.auth?.identityId,
@@ -108,6 +106,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     },
     { runValidators: true },
   );
+
   await ProviderCredential.deleteOne({ externalAccount: account._id });
 
   if (provider === 'x') {

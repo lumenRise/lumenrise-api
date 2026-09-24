@@ -13,12 +13,16 @@ import requireSession from '../../middleware/requireSession.js';
 const connectionRoutes = Router();
 
 connectionRoutes.get('/', requireSession, getConnectionsRoute);
-connectionRoutes.get('/x/sync/:jobId', requireSession, getXSyncJobRoute);
-connectionRoutes.get('/github/sync/:jobId', requireSession, getGitHubSyncJobRoute);
-connectionRoutes.get('/gitlab/sync/:jobId', requireSession, getGitLabSyncJobRoute);
+
 connectionRoutes.post('/github/sync', requireSession, postGitHubSyncRoute);
+connectionRoutes.get('/github/sync/:jobId', requireSession, getGitHubSyncJobRoute);
+
 connectionRoutes.post('/gitlab/sync', requireSession, postGitLabSyncRoute);
+connectionRoutes.get('/gitlab/sync/:jobId', requireSession, getGitLabSyncJobRoute);
+
 connectionRoutes.post('/x/sync', requireSession, postXSyncRoute);
+connectionRoutes.get('/x/sync/:jobId', requireSession, getXSyncJobRoute);
+
 connectionRoutes.delete('/:provider', requireSession, deleteConnectionRoute);
 
 export default connectionRoutes;

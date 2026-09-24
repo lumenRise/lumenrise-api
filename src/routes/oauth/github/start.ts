@@ -7,6 +7,7 @@ import type { GitHubOAuthStartResult } from '../../../types/integration/github.j
 
 const startGitHubOAuthRoute: RequestHandler = async (_req, res) => {
   const flow = await createGitHubAuthorization('register', null);
+
   const response: ApiResponse<GitHubOAuthStartResult> = {
     status: 'success',
     message: 'GitHub authorization started',

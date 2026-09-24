@@ -9,6 +9,7 @@ const transport =
         options: { colorize: true },
       }
     : undefined;
+    
 const log = pino({ level: env.LOG_LEVEL, transport });
 
 export default log;

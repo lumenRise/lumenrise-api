@@ -6,8 +6,8 @@ import gitlabOAuthRoutes from './gitlab/index.js';
 
 const oauthRoutes = Router();
 
+oauthRoutes.use('/x', xOAuthRoutes);
 oauthRoutes.use('/github', githubOAuthRoutes);
 oauthRoutes.use('/gitlab', gitlabOAuthRoutes);
-oauthRoutes.use('/x', xOAuthRoutes);
 
 export default oauthRoutes;

@@ -29,6 +29,7 @@ githubRepositoryFactSchema.index(
   { snapshot: 1, repositoryId: 1 },
   { unique: true, name: 'github_repository_facts_snapshot_repository_unique' },
 );
+
 githubRepositoryFactSchema.index(
   { identity: 1, collectedAt: -1 },
   { name: 'github_repository_facts_identity_collected' },

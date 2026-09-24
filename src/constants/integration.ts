@@ -5,21 +5,25 @@ import type {
 } from '../types/integration/model.js';
 
 const OAUTH_PURPOSES = ['register', 'connect'] as const satisfies readonly OAuthPurpose[];
+
 const EXTERNAL_ACCOUNT_PROVIDERS = [
   'github',
   'gitlab',
   'x',
 ] as const satisfies readonly ExternalAccountProvider[];
+
 const EXTERNAL_ACCOUNT_STATUSES = [
   'connected',
   'disconnected',
 ] as const satisfies readonly ExternalAccountStatus[];
+
 const GITHUB_SYNC_LEASE_MS = 3_600_000;
 const GITHUB_SYNC_MIN_INTERVAL_MS = 900_000;
 const GITLAB_SYNC_LEASE_MS = 3_600_000;
 const GITLAB_SYNC_MIN_INTERVAL_MS = 900_000;
 const X_SYNC_LEASE_MS = 3_600_000;
 const X_SYNC_MIN_INTERVAL_MS = 900_000;
+
 const INTEGRATION_SYNC_JOB_STATUSES = [
   'queued',
   'running',

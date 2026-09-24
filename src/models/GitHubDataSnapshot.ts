@@ -21,6 +21,7 @@ const contributionPeriodSchema = new Schema(
   },
   { _id: false, versionKey: false },
 );
+
 const metricsSchema = new Schema(
   {
     accountAgeDays: { type: Number, required: true },
@@ -49,6 +50,7 @@ const metricsSchema = new Schema(
   },
   { _id: false, versionKey: false },
 );
+
 const coverageSchema = new Schema(
   {
     profile: { type: Boolean, required: true },
@@ -57,6 +59,7 @@ const coverageSchema = new Schema(
   },
   { _id: false, versionKey: false },
 );
+
 const githubDataSnapshotSchema = new Schema<GitHubDataSnapshotRecord>(
   {
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },

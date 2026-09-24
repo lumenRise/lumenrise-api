@@ -27,6 +27,7 @@ gitlabEventFactSchema.index(
   { snapshot: 1, eventId: 1 },
   { unique: true, name: 'gitlab_event_facts_snapshot_event_unique' },
 );
+
 gitlabEventFactSchema.index(
   { identity: 1, eventCreatedAt: -1 },
   { name: 'gitlab_event_facts_identity_event_created' },

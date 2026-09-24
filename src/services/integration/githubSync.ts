@@ -1,53 +1,15 @@
-import type { Types } from 'mongoose';
-
 import ExternalAccount from '../../models/ExternalAccount.js';
 import { collectGitHubData } from '../reputation/githubData.js';
+import { getAuthenticatedGitHubUser } from '../oauth/github.js';
 import type { GitHubSyncOutcome } from '../../types/integration/sync.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
 import { calculateAndStoreDeveloperReputation } from '../reputation/developerScore.js';
-import { getProviderCredential, storeProviderCredential } from './providerCredential.js';
-import { getAuthenticatedGitHubUser, refreshGitHubAccessToken } from '../oauth/github.js';
+import { TOKEN_REFRESH_WINDOW_MS } from '../../constants/services/integration/githubSync.js';
 import { GITHUB_SYNC_LEASE_MS, GITHUB_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
+import { getRetryAfterSeconds } from '../../utils/services/integration/githubSync/getRetryAfterSeconds.js';
+import { needsCredentialRefresh } from '../../utils/services/integration/githubSync/needsCredentialRefresh.js';
+import { resolveGitHubAccessToken } from '../../utils/services/integration/githubSync/resolveGitHubAccessToken.js';
 
-const TOKEN_REFRESH_WINDOW_MS = 300_000;
-const getRetryAfterSeconds = (availableAt: Date, now = new Date()): number =>
-  Math.max(1, Math.ceil((availableAt.getTime() - now.getTime()) / 1_000));
-const needsCredentialRefresh = (expiresAt: Date | null, now = new Date()): boolean =>
-  expiresAt !== null && expiresAt.getTime() <= now.getTime() + TOKEN_REFRESH_WINDOW_MS;
-const resolveGitHubAccessToken = async (
-  externalAccountId: Types.ObjectId,
-): Promise<string | null> => {
-  const credential = await getProviderCredential(externalAccountId);
-
-  if (!credential || credential.provider !== 'github') {
-    return null;
-  }
-
-  if (!needsCredentialRefresh(credential.accessTokenExpiresAt)) {
-    return credential.accessToken;
-  }
-
-  if (
-    !credential.refreshToken ||
-    (credential.refreshTokenExpiresAt && credential.refreshTokenExpiresAt <= new Date())
-  ) {
-    return null;
-  }
-
-  const token = await refreshGitHubAccessToken(credential.refreshToken);
-  const accessToken = token.access_token as string;
-
-  await storeProviderCredential(externalAccountId, 'github', {
-    accessToken,
-    refreshToken: token.refresh_token ?? credential.refreshToken,
-    accessTokenExpiresAt: token.expires_in ? new Date(Date.now() + token.expires_in * 1_000) : null,
-    refreshTokenExpiresAt: token.refresh_token_expires_in
-      ? new Date(Date.now() + token.refresh_token_expires_in * 1_000)
-      : credential.refreshTokenExpiresAt,
-  });
-
-  return accessToken;
-};
 const syncGitHubAccount = async (
   account: ExternalAccountDocument,
   now = new Date(),
@@ -120,6 +82,7 @@ const syncGitHubAccount = async (
       },
       { runValidators: true },
     );
+
     await calculateAndStoreDeveloperReputation(leasedAccount.identity);
 
     return { state: 'synchronized', snapshot };
@@ -132,3 +95,5 @@ const syncGitHubAccount = async (
 };
 
 export { getRetryAfterSeconds, needsCredentialRefresh, syncGitHubAccount };
+
+export { TOKEN_REFRESH_WINDOW_MS };

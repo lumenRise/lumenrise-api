@@ -1,41 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import summarizeStellarActivityPage from '../../src/services/stellar/summarizeActivityPage.js';
-import type {
-  StellarOperationResult,
-  StellarOperationsResult,
-} from '../../src/types/stellar/operations.js';
+import createPage from '../utils/stellarActivityScan/createPage.js';
+import createOperation from '../utils/stellarActivityScan/createOperation.js';
 import {
   createEmptyStellarActivityAggregate,
   mergeStellarActivityPage,
 } from '../../src/services/stellar/mergeActivityPage.js';
-
-const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
-const createOperation = (
-  pagingToken: string,
-  transactionHash: string,
-  createdAt: string,
-): StellarOperationResult => ({
-  pagingToken,
-  transactionHash,
-  createdAt,
-  type: 'payment',
-  typeId: 1,
-  sourceAccount: address,
-  details: {},
-});
-const createPage = (
-  items: StellarOperationResult[],
-  nextCursor: string | null,
-): StellarOperationsResult => ({
-  address,
-  ownershipVerified: false,
-  order: 'desc',
-  limit: 2,
-  items,
-  summary: summarizeStellarActivityPage(address, items),
-  nextCursor,
-});
 
 describe('Stellar activity scan aggregation', () => {
   it('deduplicates transaction and UTC day at a page boundary', () => {

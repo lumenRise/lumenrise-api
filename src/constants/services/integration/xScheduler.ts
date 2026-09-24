@@ -1,0 +1,3 @@
+const X_SYNC_SCAN_INTERVAL_MS = 300_000;
+
+export { X_SYNC_SCAN_INTERVAL_MS };

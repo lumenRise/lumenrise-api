@@ -6,6 +6,7 @@ const STELLAR_OFFER_OPERATION_TYPES = new Set([
   'manage_buy_offer',
   'create_passive_sell_offer',
 ]);
+
 const summarizeStellarActivityPage = (
   address: string,
   operations: StellarOperationResult[],
