@@ -1,44 +1,12 @@
-import type { Types } from 'mongoose';
-
+import { getRetryAfterSeconds } from './githubSync.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
 import { collectGitLabData } from '../reputation/gitlabData.js';
+import { getAuthenticatedGitLabUser } from '../oauth/gitlab.js';
 import type { GitLabSyncOutcome } from '../../types/integration/sync.js';
-import { getRetryAfterSeconds, needsCredentialRefresh } from './githubSync.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
 import { calculateAndStoreDeveloperReputation } from '../reputation/developerScore.js';
-import { getProviderCredential, storeProviderCredential } from './providerCredential.js';
-import { getAuthenticatedGitLabUser, refreshGitLabAccessToken } from '../oauth/gitlab.js';
 import { GITLAB_SYNC_LEASE_MS, GITLAB_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
-
-const resolveGitLabAccessToken = async (
-  externalAccountId: Types.ObjectId,
-): Promise<string | null> => {
-  const credential = await getProviderCredential(externalAccountId);
-
-  if (!credential || credential.provider !== 'gitlab') {
-    return null;
-  }
-
-  if (!needsCredentialRefresh(credential.accessTokenExpiresAt)) {
-    return credential.accessToken;
-  }
-
-  if (!credential.refreshToken) {
-    return null;
-  }
-
-  const token = await refreshGitLabAccessToken(credential.refreshToken);
-  const accessToken = token.access_token as string;
-
-  await storeProviderCredential(externalAccountId, 'gitlab', {
-    accessToken,
-    refreshToken: token.refresh_token ?? credential.refreshToken,
-    accessTokenExpiresAt: token.expires_in ? new Date(Date.now() + token.expires_in * 1_000) : null,
-    refreshTokenExpiresAt: null,
-  });
-
-  return accessToken;
-};
+import { resolveGitLabAccessToken } from '../../utils/services/integration/gitlabSync/resolveGitLabAccessToken.js';
 
 const syncGitLabAccount = async (
   account: ExternalAccountDocument,

@@ -1,12 +1,5 @@
 import type { RuntimeConfiguration } from '../../types/configuration.js';
-
-const parseUrl = (value: string, name: string): URL => {
-  try {
-    return new URL(value);
-  } catch {
-    throw new Error(`${name} must be a valid absolute URL`);
-  }
-};
+import { parseUrl } from '../../utils/services/configuration/validateRuntimeConfiguration/parseUrl.js';
 
 const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void => {
   const hasGitHubClientId = configuration.GITHUB_CLIENT_ID.length > 0;

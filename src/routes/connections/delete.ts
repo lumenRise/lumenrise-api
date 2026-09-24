@@ -10,13 +10,9 @@ import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import { revokeGitLabAccessToken } from '../../services/oauth/gitlab.js';
 import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
-import { EXTERNAL_ACCOUNT_PROVIDERS } from '../../constants/integration.js';
-import type { ExternalAccountProvider } from '../../types/integration/model.js';
 import { getProviderCredential } from '../../services/integration/providerCredential.js';
 import { calculateAndStoreDeveloperReputation } from '../../services/reputation/developerScore.js';
-
-const isExternalAccountProvider = (provider: string): provider is ExternalAccountProvider =>
-  EXTERNAL_ACCOUNT_PROVIDERS.some((candidate) => candidate === provider);
+import { isExternalAccountProvider } from '../../utils/routes/connections/delete/isExternalAccountProvider.js';
 
 const deleteConnectionRoute: RequestHandler = async (req, res) => {
   const providerParam = req.params.provider;

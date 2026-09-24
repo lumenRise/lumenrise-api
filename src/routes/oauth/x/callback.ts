@@ -1,36 +1,15 @@
 import type { RequestHandler } from 'express';
 
-import env from '../../../env.js';
 import log from '../../../logger.js';
 import { setSessionCookie } from '../../../services/auth/session.js';
 import { OAUTH_STATE_COOKIE_NAME } from '../../../constants/auth.js';
 import { completeXAuthorization } from '../../../services/oauth/x.js';
-import type { XOAuthResultStatus } from '../../../types/integration/x.js';
+import { createClientRedirect } from '../../../utils/routes/oauth/x/callback/createClientRedirect.js';
 import {
   clearOAuthStateCookie,
   matchesOAuthStateCookie,
 } from '../../../services/oauth/stateCookie.js';
 
-const createClientRedirect = (
-  status: XOAuthResultStatus,
-  username?: string,
-  syncJobId?: string,
-): string => {
-  const redirectUrl = new URL('/onboarding', env.CLIENT_ORIGIN);
-
-  redirectUrl.searchParams.set('provider', 'x');
-  redirectUrl.searchParams.set('status', status);
-
-  if (username) {
-    redirectUrl.searchParams.set('username', username);
-  }
-
-  if (syncJobId) {
-    redirectUrl.searchParams.set('syncJobId', syncJobId);
-  }
-
-  return redirectUrl.toString();
-};
 const callbackXOAuthRoute: RequestHandler = async (req, res) => {
   const code = typeof req.query.code === 'string' ? req.query.code : null;
   const state = typeof req.query.state === 'string' ? req.query.state : null;

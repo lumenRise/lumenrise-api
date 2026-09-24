@@ -1,64 +1,17 @@
 import { Types } from 'mongoose';
-import { createHash, randomBytes } from 'node:crypto';
-import { Keypair, Networks } from '@stellar/stellar-sdk';
+import { Keypair } from '@stellar/stellar-sdk';
 
-import env from '../../env.js';
+import type { WalletAuthPurpose } from '../../types/auth/wallet.js';
 import WalletAuthChallenge from '../../models/WalletAuthChallenge.js';
-import type { WalletAuthChallengeResult, WalletAuthPurpose } from '../../types/auth/wallet.js';
+import { hashName } from '../../utils/services/auth/walletChallenge/hashName.js';
+import { hashWalletMessage } from '../../utils/services/auth/walletChallenge/hashWalletMessage.js';
+import { getNetworkPassphrase } from '../../utils/services/auth/walletChallenge/getNetworkPassphrase.js';
+import { createWalletChallenge } from '../../utils/services/auth/walletChallenge/createWalletChallenge.js';
+import {
+  CHALLENGE_TTL_MS,
+  SIGNED_MESSAGE_PREFIX,
+} from '../../constants/services/auth/walletChallenge.js';
 
-const CHALLENGE_TTL_MS = 5 * 60_000;
-const SIGNED_MESSAGE_PREFIX = 'Stellar Signed Message:\n';
-
-const hashName = (name: string): string => createHash('sha256').update(name).digest('hex');
-
-const getNetworkPassphrase = (): string =>
-  env.STELLAR_AUTH_NETWORK === 'public' ? Networks.PUBLIC : Networks.TESTNET;
-
-const hashWalletMessage = (message: string): Buffer =>
-  createHash('sha256').update(SIGNED_MESSAGE_PREFIX).update(message, 'utf8').digest();
-
-const createWalletChallenge = async (
-  address: string,
-  purpose: WalletAuthPurpose,
-  name: string | null = null,
-): Promise<WalletAuthChallengeResult> => {
-  const challengeId = new Types.ObjectId();
-  const nonce = randomBytes(24).toString('base64url');
-  const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
-  const nameHash = name === null ? null : hashName(name);
-  const networkPassphrase = getNetworkPassphrase();
-
-  const message = [
-    'Lumenrise Wallet Authentication',
-    'Version: 1',
-    `Purpose: ${purpose}`,
-    `Network: ${networkPassphrase}`,
-    `Address: ${address}`,
-    `Challenge ID: ${challengeId.toString()}`,
-    `Nonce: ${nonce}`,
-    `Name: ${name ?? 'none'}`,
-    `Name Hash: ${nameHash ?? 'none'}`,
-    `Expires At: ${expiresAt.toISOString()}`,
-  ].join('\n');
-
-  await WalletAuthChallenge.create({
-    _id: challengeId,
-    address,
-    purpose,
-    nameHash,
-    messageHash: hashWalletMessage(message).toString('hex'),
-    expiresAt,
-  });
-
-  return {
-    challengeId: challengeId.toString(),
-    address,
-    purpose,
-    message,
-    networkPassphrase,
-    expiresAt: expiresAt.toISOString(),
-  };
-};
 const consumeSignedWalletChallenge = async (
   challengeId: string,
   address: string,
@@ -119,3 +72,5 @@ export {
   getNetworkPassphrase,
   hashWalletMessage,
 };
+
+export { SIGNED_MESSAGE_PREFIX, CHALLENGE_TTL_MS };

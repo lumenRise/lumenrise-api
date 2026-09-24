@@ -1,0 +1,4 @@
+const CHALLENGE_TTL_MS = 5 * 60_000;
+const SIGNED_MESSAGE_PREFIX = 'Stellar Signed Message:\n';
+
+export { CHALLENGE_TTL_MS, SIGNED_MESSAGE_PREFIX };
