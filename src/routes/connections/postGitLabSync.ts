@@ -4,6 +4,9 @@ import ExternalAccount from '../../models/ExternalAccount.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import { enqueueGitLabSync } from '../../services/integration/syncQueue.js';
 import type { IntegrationSyncJobResult } from '../../types/integration/sync.js';
+import reserveManualRefresh from '../../services/refresh/reserveManualRefresh.js';
+import releaseManualRefresh from '../../services/refresh/releaseManualRefresh.js';
+import sendManualRefreshLimit from '../../utils/routes/sendManualRefreshLimit.js';
 import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
 
 const postGitLabSyncRoute: RequestHandler = async (req, res) => {
@@ -23,7 +26,20 @@ const postGitLabSyncRoute: RequestHandler = async (req, res) => {
     return res.status(404).json(response);
   }
 
-  const job = await enqueueGitLabSync(account);
+  const reservation = await reserveManualRefresh(account.identity, 'gitlab-sync');
+
+  if (!reservation.allowed) {
+    return sendManualRefreshLimit(res, reservation.retryAt!);
+  }
+
+  let job;
+
+  try {
+    job = await enqueueGitLabSync(account);
+  } catch (error) {
+    await releaseManualRefresh(account.identity, 'gitlab-sync', reservation.reservedUntil!);
+    throw error;
+  }
 
   const response: ApiResponse<IntegrationSyncJobResult> = {
     status: 'success',

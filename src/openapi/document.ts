@@ -14,6 +14,7 @@ const openApiDocument = {
     { name: 'System' },
     { name: 'Authentication' },
     { name: 'Connections' },
+    { name: 'Policies' },
     { name: 'Reputation' },
     { name: 'Stellar' },
   ],
