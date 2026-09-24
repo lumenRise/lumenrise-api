@@ -6,7 +6,7 @@ const syncProviderPaths = (provider: string, displayName: string) => ({
       tags: ['Connections'],
       summary: `Queue ${displayName} synchronization`,
       description:
-        'Requires a connected provider account. A background worker processes the job; inspect the returned status URL.',
+        'Requires a connected provider account. Manual requests are limited to one per provider per identity every 15 minutes. A background worker processes the job; inspect the returned status URL.',
       operationId: `queue${displayName}Sync`,
       responses: {
         '202': {
@@ -17,6 +17,7 @@ const syncProviderPaths = (provider: string, displayName: string) => ({
         },
         '401': { $ref: '#/components/responses/Unauthorized' },
         '404': { $ref: '#/components/responses/NotFound' },
+        '429': { $ref: '#/components/responses/TooManyRequests' },
       },
     },
   },

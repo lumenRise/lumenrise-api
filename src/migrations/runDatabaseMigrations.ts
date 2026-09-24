@@ -13,6 +13,7 @@ import createProviderCredentialIndexes from './20260922CreateProviderCredentialI
 import createIntegrationSyncJobIndexes from './20260922CreateIntegrationSyncJobIndexes.js';
 import createStellarActivityScanIndexes from './20260924CreateStellarActivityScanIndexes.js';
 import createWalletAuthChallengeIndexes from './20260924CreateWalletAuthChallengeIndexes.js';
+import createManualRefreshCooldownIndexes from './20260925CreateManualRefreshCooldownIndexes.js';
 
 const migrations: readonly MigrationDefinition[] = [
   createIdentityIndexes,
@@ -27,6 +28,7 @@ const migrations: readonly MigrationDefinition[] = [
   createStellarActivityScanIndexes,
   createWalletAuthChallengeIndexes,
   createPolicyIndexes,
+  createManualRefreshCooldownIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();

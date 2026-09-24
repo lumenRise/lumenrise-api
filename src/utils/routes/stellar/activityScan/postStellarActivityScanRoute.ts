@@ -2,9 +2,11 @@ import type { RequestHandler } from 'express';
 
 import log from '../../../../logger.js';
 import { getAddress } from './getAddress.js';
+import sendManualRefreshLimit from '../../sendManualRefreshLimit.js';
 import type { ApiResponse, EmptyResult } from '../../../../types/response.js';
 import isValidStellarGAddress from '../../../stellar/isValidStellarGAddress.js';
 import type { StellarActivityScanResult } from '../../../../types/stellar/scan.js';
+import reserveManualRefresh from '../../../../services/refresh/reserveManualRefresh.js';
 import {
   enqueueStellarActivityScan,
   toStellarActivityScanResult,
@@ -24,6 +26,12 @@ const postStellarActivityScanRoute: RequestHandler = async (req, res) => {
   }
 
   try {
+    const reservation = await reserveManualRefresh(req.auth!.identityId, 'stellar-activity-scan');
+
+    if (!reservation.allowed) {
+      return sendManualRefreshLimit(res, reservation.retryAt!);
+    }
+
     const queued = await enqueueStellarActivityScan(req.auth!.identityId, address);
 
     if (queued.conflict) {

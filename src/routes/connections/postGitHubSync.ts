@@ -4,6 +4,8 @@ import ExternalAccount from '../../models/ExternalAccount.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import { enqueueGitHubSync } from '../../services/integration/syncQueue.js';
 import type { IntegrationSyncJobResult } from '../../types/integration/sync.js';
+import reserveManualRefresh from '../../services/refresh/reserveManualRefresh.js';
+import sendManualRefreshLimit from '../../utils/routes/sendManualRefreshLimit.js';
 import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
 
 const postGitHubSyncRoute: RequestHandler = async (req, res) => {
@@ -21,6 +23,12 @@ const postGitHubSyncRoute: RequestHandler = async (req, res) => {
     };
 
     return res.status(404).json(response);
+  }
+
+  const reservation = await reserveManualRefresh(account.identity, 'github-sync');
+
+  if (!reservation.allowed) {
+    return sendManualRefreshLimit(res, reservation.retryAt!);
   }
 
   const job = await enqueueGitHubSync(account);

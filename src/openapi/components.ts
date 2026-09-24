@@ -64,6 +64,99 @@ const openApiComponents = {
       },
     },
     EmptyResult: { type: 'object', additionalProperties: false },
+    PolicyRule: {
+      type: 'object',
+      required: ['dimension', 'minScore', 'maxAgeSeconds'],
+      additionalProperties: false,
+      properties: {
+        dimension: { type: 'string', enum: ['developer', 'social', 'stellar'] },
+        minScore: { type: 'number', minimum: 0, maximum: 100 },
+        maxAgeSeconds: { type: 'integer', minimum: 60, maximum: 31_536_000 },
+      },
+    },
+    PolicyDefinition: {
+      type: 'object',
+      required: ['key', 'version', 'match', 'rules'],
+      additionalProperties: false,
+      properties: {
+        key: { type: 'string', pattern: '^[a-z][a-z0-9-]{2,63}$' },
+        version: { type: 'integer', minimum: 1 },
+        match: { type: 'string', enum: ['all', 'any'] },
+        rules: {
+          type: 'array',
+          minItems: 1,
+          maxItems: 3,
+          items: { $ref: '#/components/schemas/PolicyRule' },
+        },
+      },
+    },
+    Policy: {
+      allOf: [
+        { $ref: '#/components/schemas/PolicyDefinition' },
+        {
+          type: 'object',
+          required: ['id', 'createdAt'],
+          properties: { id: objectId, createdAt: dateTime },
+        },
+      ],
+    },
+    PolicyList: {
+      type: 'object',
+      required: ['policies'],
+      properties: {
+        policies: { type: 'array', items: { $ref: '#/components/schemas/Policy' } },
+      },
+    },
+    PolicyEvaluation: {
+      type: 'object',
+      required: ['policyKey', 'policyVersion', 'decision', 'evaluatedAt', 'expiresAt', 'rules'],
+      properties: {
+        policyKey: { type: 'string' },
+        policyVersion: { type: 'integer' },
+        decision: { type: 'string', enum: ['eligible', 'ineligible', 'insufficient_data'] },
+        evaluatedAt: dateTime,
+        expiresAt: nullableDateTime,
+        rules: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: [
+              'dimension',
+              'minScore',
+              'maxAgeSeconds',
+              'outcome',
+              'reason',
+              'actualScore',
+              'algorithmVersion',
+              'calculatedAt',
+              'sourceIds',
+              'validUntil',
+            ],
+            properties: {
+              dimension: { type: 'string', enum: ['developer', 'social', 'stellar'] },
+              minScore: { type: 'number' },
+              maxAgeSeconds: { type: 'integer' },
+              outcome: { type: 'string', enum: ['pass', 'fail', 'unknown'] },
+              reason: {
+                type: 'string',
+                enum: [
+                  'threshold_met',
+                  'below_threshold',
+                  'score_unavailable',
+                  'score_incomplete',
+                  'score_stale',
+                ],
+              },
+              actualScore: { oneOf: [{ type: 'number' }, { type: 'null' }] },
+              algorithmVersion: nullableString,
+              calculatedAt: nullableDateTime,
+              sourceIds: { type: 'array', items: { type: 'string' } },
+              validUntil: nullableDateTime,
+            },
+          },
+        },
+      },
+    },
     HealthResult: {
       type: 'object',
       required: ['service', 'state', 'timestamp', 'uptime'],
@@ -668,6 +761,12 @@ const openApiComponents = {
     },
     Conflict: {
       description: 'The request conflicts with current state.',
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
+    },
+    TooManyRequests: {
+      description:
+        'A manual refresh or evaluation was requested too recently. Retry-After is in seconds.',
+      headers: { 'Retry-After': { schema: { type: 'integer', minimum: 1 } } },
       content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
     },
     BadGateway: {

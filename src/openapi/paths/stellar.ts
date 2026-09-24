@@ -64,13 +64,14 @@ const stellarPaths = {
       summary: 'Queue a resumable Stellar activity scan',
       operationId: 'queueStellarActivityScan',
       description:
-        'Scans operations available from the configured Horizon server. The same identity may have only one active scan at a time.',
+        'Scans operations available from the configured Horizon server. The same identity may have only one active scan at a time and may request one new scan every 15 minutes.',
       parameters: [addressParameter],
       responses: {
         '202': jsonResponse('Scan queued.', { $ref: '#/components/schemas/StellarScan' }),
         '400': { $ref: '#/components/responses/BadRequest' },
         '401': { $ref: '#/components/responses/Unauthorized' },
         '409': { $ref: '#/components/responses/Conflict' },
+        '429': { $ref: '#/components/responses/TooManyRequests' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },
     },
