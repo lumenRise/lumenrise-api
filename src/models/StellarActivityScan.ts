@@ -26,7 +26,7 @@ const stellarActivityScanSchema = new Schema<StellarActivityScanRecord>(
     lastProcessedAt: { type: Date, default: null },
     lastError: { type: String, default: null, maxlength: 2_000 },
   },
-  { timestamps: true, versionKey: false },
+  { timestamps: true, versionKey: false, minimize: false },
 );
 
 stellarActivityScanSchema.pre('validate', function validateScanState() {

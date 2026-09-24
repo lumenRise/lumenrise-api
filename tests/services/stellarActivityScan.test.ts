@@ -48,6 +48,21 @@ describe('Stellar activity scan aggregation', () => {
     expect(result.lastTransactionHash).toBeNull();
   });
 
+  it('merges a previously stored aggregate without empty operation counts', () => {
+    const current = createEmptyStellarActivityAggregate();
+
+    delete (current as Partial<typeof current>).operationTypeCounts;
+
+    const result = mergeStellarActivityPage(
+      current,
+      createPage([createOperation('1', 'a', '2026-09-24T12:00:00Z')], null),
+      null,
+      null,
+    );
+
+    expect(result.summary.operationTypeCounts).toEqual({ payment: 1 });
+  });
+
   it('rejects ascending pages in a descending scan', () => {
     const page = createPage([], null);
 

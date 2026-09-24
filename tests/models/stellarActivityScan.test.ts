@@ -19,6 +19,7 @@ describe('StellarActivityScan model', () => {
 
     expect(scan.cursor).toBeNull();
     expect(scan.summary).toMatchObject({ scope: 'scanned_pages', operationCount: 0 });
+    expect(scan.toObject().summary.operationTypeCounts).toEqual({});
     expect(scan.pagesProcessed).toBe(0);
   });
 
