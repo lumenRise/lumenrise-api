@@ -1,22 +1,18 @@
 import { Types } from 'mongoose';
 import { createHash, randomBytes } from 'node:crypto';
-import {
-  Account,
-  Keypair,
-  Networks,
-  Operation,
-  Transaction,
-  TransactionBuilder,
-} from '@stellar/stellar-sdk';
+import { Keypair, Networks } from '@stellar/stellar-sdk';
 
 import env from '../../env.js';
 import WalletAuthChallenge from '../../models/WalletAuthChallenge.js';
 import type { WalletAuthChallengeResult, WalletAuthPurpose } from '../../types/auth/wallet.js';
 
 const CHALLENGE_TTL_MS = 5 * 60_000;
+const SIGNED_MESSAGE_PREFIX = 'Stellar Signed Message:\n';
 const hashName = (name: string): string => createHash('sha256').update(name).digest('hex');
 const getNetworkPassphrase = (): string =>
   env.STELLAR_AUTH_NETWORK === 'public' ? Networks.PUBLIC : Networks.TESTNET;
+const hashWalletMessage = (message: string): Buffer =>
+  createHash('sha256').update(SIGNED_MESSAGE_PREFIX).update(message, 'utf8').digest();
 const createWalletChallenge = async (
   address: string,
   purpose: WalletAuthPurpose,
@@ -24,21 +20,28 @@ const createWalletChallenge = async (
 ): Promise<WalletAuthChallengeResult> => {
   const challengeId = new Types.ObjectId();
   const nonce = randomBytes(24).toString('base64url');
-  const transaction = new TransactionBuilder(new Account(address, '-1'), {
-    fee: '100',
-    networkPassphrase: getNetworkPassphrase(),
-  })
-    .addOperation(Operation.manageData({ name: 'lumenrise_auth_v1', value: nonce }))
-    .setTimeout(0)
-    .build();
   const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
+  const nameHash = name === null ? null : hashName(name);
+  const networkPassphrase = getNetworkPassphrase();
+  const message = [
+    'Lumenrise Wallet Authentication',
+    'Version: 1',
+    `Purpose: ${purpose}`,
+    `Network: ${networkPassphrase}`,
+    `Address: ${address}`,
+    `Challenge ID: ${challengeId.toString()}`,
+    `Nonce: ${nonce}`,
+    `Name: ${name ?? 'none'}`,
+    `Name Hash: ${nameHash ?? 'none'}`,
+    `Expires At: ${expiresAt.toISOString()}`,
+  ].join('\n');
 
   await WalletAuthChallenge.create({
     _id: challengeId,
     address,
     purpose,
-    nameHash: name === null ? null : hashName(name),
-    transactionHash: Buffer.from(transaction.hash()).toString('hex'),
+    nameHash,
+    messageHash: hashWalletMessage(message).toString('hex'),
     expiresAt,
   });
 
@@ -46,8 +49,8 @@ const createWalletChallenge = async (
     challengeId: challengeId.toString(),
     address,
     purpose,
-    unsignedTransaction: transaction.toXDR(),
-    networkPassphrase: getNetworkPassphrase(),
+    message,
+    networkPassphrase,
     expiresAt: expiresAt.toISOString(),
   };
 };
@@ -55,10 +58,10 @@ const consumeSignedWalletChallenge = async (
   challengeId: string,
   address: string,
   purpose: WalletAuthPurpose,
-  signedTransaction: string,
+  signature: string,
   name: string | null = null,
 ): Promise<boolean> => {
-  if (!Types.ObjectId.isValid(challengeId) || signedTransaction.length > 10_000) {
+  if (!Types.ObjectId.isValid(challengeId) || !/^[A-Za-z0-9+/]{86}==$/.test(signature)) {
     return false;
   }
 
@@ -76,14 +79,14 @@ const consumeSignedWalletChallenge = async (
   }
 
   try {
-    const transaction = TransactionBuilder.fromXDR(signedTransaction, getNetworkPassphrase());
+    const signatureBytes = Buffer.from(signature, 'base64');
 
     if (
-      !(transaction instanceof Transaction) ||
-      transaction.source !== address ||
-      Buffer.from(transaction.hash()).toString('hex') !== challenge.transactionHash ||
-      !transaction.signatures.some((signature) =>
-        Keypair.fromPublicKey(address).verify(transaction.hash(), signature.signature),
+      signatureBytes.length !== 64 ||
+      signatureBytes.toString('base64') !== signature ||
+      !Keypair.fromPublicKey(address).verify(
+        Buffer.from(challenge.messageHash, 'hex'),
+        signatureBytes,
       )
     ) {
       return false;
@@ -105,4 +108,9 @@ const consumeSignedWalletChallenge = async (
   return consumed !== null;
 };
 
-export { consumeSignedWalletChallenge, createWalletChallenge, getNetworkPassphrase };
+export {
+  consumeSignedWalletChallenge,
+  createWalletChallenge,
+  getNetworkPassphrase,
+  hashWalletMessage,
+};

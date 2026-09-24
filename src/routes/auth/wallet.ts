@@ -60,15 +60,15 @@ const postWalletAuthRoute =
   async (req, res) => {
     const address = parseAddress(req.body?.address);
     const challengeId = req.body?.challengeId;
-    const signedTransaction = req.body?.signedTransaction;
+    const signature = req.body?.signature;
     const name = req.body?.name;
 
     if (
       !isValidStellarGAddress(address) ||
       typeof challengeId !== 'string' ||
-      typeof signedTransaction !== 'string' ||
-      signedTransaction.length === 0 ||
-      signedTransaction.length > 10_000 ||
+      typeof signature !== 'string' ||
+      signature.length === 0 ||
+      signature.length > 200 ||
       (purpose === 'register' &&
         (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 80))
     ) {
@@ -84,8 +84,8 @@ const postWalletAuthRoute =
     try {
       const outcome =
         purpose === 'register'
-          ? await registerWalletIdentity(address, name.trim(), challengeId, signedTransaction)
-          : await loginWalletIdentity(address, challengeId, signedTransaction);
+          ? await registerWalletIdentity(address, name.trim(), challengeId, signature)
+          : await loginWalletIdentity(address, challengeId, signature);
 
       if (!outcome.ok) {
         const status =

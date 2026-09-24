@@ -6,7 +6,7 @@ interface WalletAuthChallengeRecord {
   address: string;
   purpose: WalletAuthPurpose;
   nameHash: string | null;
-  transactionHash: string;
+  messageHash: string;
   expiresAt: Date;
   consumedAt: Date | null;
   createdAt: Date;
@@ -16,7 +16,7 @@ interface WalletAuthChallengeResult {
   challengeId: string;
   address: string;
   purpose: WalletAuthPurpose;
-  unsignedTransaction: string;
+  message: string;
   networkPassphrase: string;
   expiresAt: string;
 }

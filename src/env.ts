@@ -43,7 +43,7 @@ const schema = defineConfig({
     type: 'enum',
     values: ['testnet', 'public'],
     default: 'testnet',
-    description: 'Stellar network for wallet authentication transactions.',
+    description: 'Stellar network bound to wallet authentication messages.',
   },
   SYNC_WORKER_POLL_INTERVAL_MS: {
     type: 'number',

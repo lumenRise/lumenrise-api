@@ -11,10 +11,10 @@ const registerWalletIdentity = async (
   address: string,
   name: string,
   challengeId: string,
-  signedTransaction: string,
+  signature: string,
 ): Promise<WalletAuthServiceResult> => {
   if (
-    !(await consumeSignedWalletChallenge(challengeId, address, 'register', signedTransaction, name))
+    !(await consumeSignedWalletChallenge(challengeId, address, 'register', signature, name))
   ) {
     return { ok: false, reason: 'invalid_proof' };
   }
@@ -59,9 +59,9 @@ const registerWalletIdentity = async (
 const loginWalletIdentity = async (
   address: string,
   challengeId: string,
-  signedTransaction: string,
+  signature: string,
 ): Promise<WalletAuthServiceResult> => {
-  if (!(await consumeSignedWalletChallenge(challengeId, address, 'login', signedTransaction))) {
+  if (!(await consumeSignedWalletChallenge(challengeId, address, 'login', signature))) {
     return { ok: false, reason: 'invalid_proof' };
   }
 

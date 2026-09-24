@@ -19,7 +19,7 @@ const walletAuthChallengeSchema = new Schema<WalletAuthChallengeRecord>(
       immutable: true,
       match: /^[a-f0-9]{64}$/,
     },
-    transactionHash: {
+    messageHash: {
       type: String,
       required: true,
       immutable: true,

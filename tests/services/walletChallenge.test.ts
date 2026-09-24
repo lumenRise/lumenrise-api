@@ -1,34 +1,42 @@
 import { createHash } from 'node:crypto';
-import type { Transaction } from '@stellar/stellar-sdk';
+import { Keypair } from '@stellar/stellar-sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Keypair, TransactionBuilder } from '@stellar/stellar-sdk';
 
 import WalletAuthChallenge from '../../src/models/WalletAuthChallenge.js';
 import {
   consumeSignedWalletChallenge,
   createWalletChallenge,
+  hashWalletMessage,
 } from '../../src/services/auth/walletChallenge.js';
 
-describe('wallet authentication challenge', () => {
+describe('wallet message challenge', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('accepts a wallet-signed challenge exactly once', async () => {
+  it('uses the SEP-53 canonical message hash', () => {
+    const wallet = Keypair.fromSecret('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW');
+    const signature = Buffer.from(wallet.sign(hashWalletMessage('Hello, World!'))).toString(
+      'base64',
+    );
+
+    expect(signature).toBe(
+      'fO5dbYhXUhBMhe6kId/cuVq/AfEnHRHEvsP8vXh03M1uLpi5e46yO2Q8rEBzu3feXQewcQE5GArp88u6ePK6BA==',
+    );
+  });
+
+  it('accepts a SEP-53 signature exactly once and binds the registration name', async () => {
     const wallet = Keypair.random();
 
     vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
+
     const challenge = await createWalletChallenge(wallet.publicKey(), 'register', 'Alice');
-    const transaction = TransactionBuilder.fromXDR(
-      challenge.unsignedTransaction,
-      challenge.networkPassphrase,
-    ) as Transaction;
-
-    transaction.sign(wallet);
-
+    const signature = Buffer.from(wallet.sign(hashWalletMessage(challenge.message))).toString(
+      'base64',
+    );
     const stored = {
       _id: challenge.challengeId,
-      transactionHash: Buffer.from(transaction.hash()).toString('hex'),
+      messageHash: hashWalletMessage(challenge.message).toString('hex'),
     };
     const findChallenge = vi
       .spyOn(WalletAuthChallenge, 'findOne')
@@ -38,12 +46,14 @@ describe('wallet authentication challenge', () => {
       .mockResolvedValueOnce(stored as never)
       .mockResolvedValueOnce(null);
 
+    expect(challenge.message).toContain(`Address: ${wallet.publicKey()}`);
+    expect(challenge.message).toContain('Purpose: register');
     expect(
       await consumeSignedWalletChallenge(
         challenge.challengeId,
         wallet.publicKey(),
         'register',
-        transaction.toXDR(),
+        signature,
         'Alice',
       ),
     ).toBe(true);
@@ -52,7 +62,7 @@ describe('wallet authentication challenge', () => {
         challenge.challengeId,
         wallet.publicKey(),
         'register',
-        transaction.toXDR(),
+        signature,
         'Alice',
       ),
     ).toBe(false);
@@ -67,19 +77,16 @@ describe('wallet authentication challenge', () => {
     const wallet = Keypair.random();
 
     vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
+
     const challenge = await createWalletChallenge(wallet.publicKey(), 'login');
-    const transaction = TransactionBuilder.fromXDR(
-      challenge.unsignedTransaction,
-      challenge.networkPassphrase,
-    ) as Transaction;
-
-    transaction.sign(Keypair.random());
-
+    const signature = Buffer.from(
+      Keypair.random().sign(hashWalletMessage(challenge.message)),
+    ).toString('base64');
     const consumed = vi.spyOn(WalletAuthChallenge, 'findOneAndUpdate');
 
     vi.spyOn(WalletAuthChallenge, 'findOne').mockResolvedValue({
       _id: challenge.challengeId,
-      transactionHash: Buffer.from(transaction.hash()).toString('hex'),
+      messageHash: hashWalletMessage(challenge.message).toString('hex'),
     } as never);
 
     expect(
@@ -87,32 +94,25 @@ describe('wallet authentication challenge', () => {
         challenge.challengeId,
         wallet.publicKey(),
         'login',
-        transaction.toXDR(),
+        signature,
       ),
     ).toBe(false);
     expect(consumed).not.toHaveBeenCalled();
   });
 
-  it('rejects altered transaction content even with a valid wallet signature', async () => {
+  it('rejects a signature for altered message content', async () => {
     const wallet = Keypair.random();
 
     vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
-    const challenge = await createWalletChallenge(wallet.publicKey(), 'login');
-    const original = TransactionBuilder.fromXDR(
-      challenge.unsignedTransaction,
-      challenge.networkPassphrase,
-    ) as Transaction;
-    const otherChallenge = await createWalletChallenge(wallet.publicKey(), 'login');
-    const altered = TransactionBuilder.fromXDR(
-      otherChallenge.unsignedTransaction,
-      otherChallenge.networkPassphrase,
-    ) as Transaction;
 
-    altered.sign(wallet);
+    const challenge = await createWalletChallenge(wallet.publicKey(), 'login');
+    const signature = Buffer.from(
+      wallet.sign(hashWalletMessage(`${challenge.message}\nAltered`)),
+    ).toString('base64');
 
     vi.spyOn(WalletAuthChallenge, 'findOne').mockResolvedValue({
       _id: challenge.challengeId,
-      transactionHash: Buffer.from(original.hash()).toString('hex'),
+      messageHash: hashWalletMessage(challenge.message).toString('hex'),
     } as never);
 
     expect(
@@ -120,23 +120,25 @@ describe('wallet authentication challenge', () => {
         challenge.challengeId,
         wallet.publicKey(),
         'login',
-        altered.toXDR(),
+        signature,
       ),
     ).toBe(false);
   });
 
-  it('rejects an expired or already consumed challenge', async () => {
+  it('rejects expired challenges before checking the signature', async () => {
     const wallet = Keypair.random();
 
     vi.spyOn(WalletAuthChallenge, 'findOne').mockResolvedValue(null);
+
     const consume = vi.spyOn(WalletAuthChallenge, 'findOneAndUpdate');
+    const signature = Buffer.alloc(64).toString('base64');
 
     expect(
       await consumeSignedWalletChallenge(
         '507f1f77bcf86cd799439011',
         wallet.publicKey(),
         'login',
-        'AAAA',
+        signature,
       ),
     ).toBe(false);
     expect(consume).not.toHaveBeenCalled();

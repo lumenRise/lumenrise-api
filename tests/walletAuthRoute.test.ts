@@ -32,7 +32,7 @@ describe('wallet authentication routes', () => {
       challengeId: '507f1f77bcf86cd799439011',
       address,
       purpose: 'register',
-      unsignedTransaction: 'AAAA',
+      message: 'Lumenrise Wallet Authentication',
       networkPassphrase: 'Test SDF Network ; September 2015',
       expiresAt: new Date().toISOString(),
     });
@@ -54,7 +54,7 @@ describe('wallet authentication routes', () => {
       address,
       name: 'Alice',
       challengeId: '507f1f77bcf86cd799439011',
-      signedTransaction: 'AAAA',
+      signature: 'AAAA',
     });
 
     expect(response.status).toBe(401);
@@ -77,7 +77,7 @@ describe('wallet authentication routes', () => {
     const response = await request(app).post('/v1/auth/wallet/login').send({
       address,
       challengeId: '507f1f77bcf86cd799439011',
-      signedTransaction: 'AAAA',
+      signature: 'AAAA',
     });
 
     expect(response.status).toBe(200);
