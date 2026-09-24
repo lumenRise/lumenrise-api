@@ -9,11 +9,14 @@ import type { GitHubRepositoriesResult } from '../../types/reputation/github.js'
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAXIMUM_PAGE_SIZE = 100;
+
 const getDeveloperRepositoriesRoute: RequestHandler = async (req, res) => {
   const requestedLimit = Number(req.query.limit ?? DEFAULT_PAGE_SIZE);
+
   const limit = Number.isInteger(requestedLimit)
     ? Math.min(Math.max(requestedLimit, 1), MAXIMUM_PAGE_SIZE)
     : DEFAULT_PAGE_SIZE;
+
   const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : null;
 
   if (cursor && !Types.ObjectId.isValid(cursor)) {
@@ -62,8 +65,10 @@ const getDeveloperRepositoriesRoute: RequestHandler = async (req, res) => {
   })
     .sort({ _id: 1 })
     .limit(limit + 1);
+
   const hasNextPage = facts.length > limit;
   const page = hasNextPage ? facts.slice(0, limit) : facts;
+
   const response: ApiResponse<GitHubRepositoriesResult> = {
     status: 'success',
     message: 'GitHub repositories retrieved',

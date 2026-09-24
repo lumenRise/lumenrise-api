@@ -24,11 +24,13 @@ const GITHUB_USER_API_URL = 'https://api.github.com/user';
 const GITHUB_APPLICATIONS_API_URL = 'https://api.github.com/applications';
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
+
 const assertGitHubConfiguration = (): void => {
   if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) {
     throw new Error('GitHub OAuth is not configured');
   }
 };
+
 const createGitHubAuthorization = async (
   purpose: GitHubOAuthPurpose,
   identityId: Types.ObjectId | null,
@@ -79,6 +81,7 @@ const requestGitHubToken = async (body: URLSearchParams): Promise<GitHubTokenRes
     },
     body,
   });
+
   const result = (await response.json()) as GitHubTokenResponse;
 
   if (!response.ok || !result.access_token) {
@@ -87,6 +90,7 @@ const requestGitHubToken = async (body: URLSearchParams): Promise<GitHubTokenRes
 
   return result;
 };
+
 const exchangeGitHubCode = async (
   code: string,
   codeVerifier: string,
@@ -101,6 +105,7 @@ const exchangeGitHubCode = async (
 
   return requestGitHubToken(body);
 };
+
 const refreshGitHubAccessToken = async (refreshToken: string): Promise<GitHubTokenResponse> => {
   assertGitHubConfiguration();
 
@@ -113,12 +118,14 @@ const refreshGitHubAccessToken = async (refreshToken: string): Promise<GitHubTok
 
   return requestGitHubToken(body);
 };
+
 const revokeGitHubAccessToken = async (accessToken: string): Promise<void> => {
   assertGitHubConfiguration();
 
   const authorization = Buffer.from(`${env.GITHUB_CLIENT_ID}:${env.GITHUB_CLIENT_SECRET}`).toString(
     'base64',
   );
+
   const response = await fetch(
     `${GITHUB_APPLICATIONS_API_URL}/${encodeURIComponent(env.GITHUB_CLIENT_ID)}/token`,
     {
@@ -181,6 +188,7 @@ const connectGitHubAccount = async (
   }
 
   const now = new Date();
+
   const externalAccount = await ExternalAccount.findOneAndUpdate(
     { provider: 'github', providerAccountId },
     {
@@ -207,6 +215,7 @@ const connectGitHubAccount = async (
 
   return { identityId, externalAccount };
 };
+
 const completeGitHubAuthorization = async (
   code: string,
   state: string,

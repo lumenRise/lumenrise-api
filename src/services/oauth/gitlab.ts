@@ -20,11 +20,13 @@ import type {
 
 const OAUTH_STATE_TTL_MS = 600_000;
 const getGitLabUrl = (path: string): string => new URL(path, env.GITLAB_BASE_URL).toString();
+
 const assertGitLabConfiguration = (): void => {
   if (!env.GITLAB_CLIENT_ID || !env.GITLAB_CLIENT_SECRET) {
     throw new Error('GitLab OAuth is not configured');
   }
 };
+
 const createGitLabAuthorization = async (
   purpose: GitLabOAuthPurpose,
   identityId: Types.ObjectId | null,
@@ -75,6 +77,7 @@ const requestGitLabToken = async (body: URLSearchParams): Promise<GitLabTokenRes
     },
     body,
   });
+
   const result = (await response.json()) as GitLabTokenResponse;
 
   if (!response.ok || !result.access_token) {
@@ -119,6 +122,7 @@ const revokeGitLabAccessToken = async (accessToken: string): Promise<void> => {
     client_secret: env.GITLAB_CLIENT_SECRET,
     token: accessToken,
   });
+
   const response = await fetch(getGitLabUrl('/oauth/revoke'), {
     method: 'POST',
     headers: {
@@ -132,6 +136,7 @@ const revokeGitLabAccessToken = async (accessToken: string): Promise<void> => {
     throw new Error(`GitLab token revocation failed with status ${response.status}`);
   }
 };
+
 const getAuthenticatedGitLabUser = async (accessToken: string): Promise<GitLabUser> => {
   const response = await fetch(getGitLabUrl('/api/v4/user'), {
     headers: {
@@ -173,6 +178,7 @@ const connectGitLabAccount = async (
   }
 
   const now = new Date();
+
   const externalAccount = await ExternalAccount.findOneAndUpdate(
     { provider: 'gitlab', providerAccountId },
     {
@@ -199,6 +205,7 @@ const connectGitLabAccount = async (
 
   return { identityId, externalAccount };
 };
+
 const completeGitLabAuthorization = async (
   code: string,
   state: string,
@@ -206,6 +213,7 @@ const completeGitLabAuthorization = async (
   assertGitLabConfiguration();
 
   const stateHash = createHash('sha256').update(state).digest('hex');
+
   const oauthState = await OAuthState.findOneAndUpdate(
     {
       provider: 'gitlab',

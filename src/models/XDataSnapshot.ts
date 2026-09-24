@@ -9,6 +9,7 @@ const coverageSchema = new Schema(
   },
   { _id: false, versionKey: false },
 );
+
 const metricsSchema = new Schema(
   {
     accountAgeDays: { type: Number, required: true },
@@ -33,6 +34,7 @@ const metricsSchema = new Schema(
   },
   { _id: false, versionKey: false },
 );
+
 const xDataSnapshotSchema = new Schema<XDataSnapshotRecord>(
   {
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },
@@ -59,6 +61,7 @@ xDataSnapshotSchema.index(
   { identity: 1, collectedAt: -1 },
   { name: 'x_data_snapshots_identity_collected' },
 );
+
 xDataSnapshotSchema.index(
   { externalAccount: 1, collectedAt: -1 },
   { name: 'x_data_snapshots_account_collected' },

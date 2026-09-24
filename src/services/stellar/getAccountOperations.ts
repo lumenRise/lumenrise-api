@@ -9,6 +9,7 @@ import type {
 } from '../../types/stellar/operations.js';
 
 const STELLAR_OPERATIONS_PAGE_LIMIT = 200;
+
 const operationCommonFields = new Set([
   '_links',
   'id',
@@ -20,6 +21,7 @@ const operationCommonFields = new Set([
   'transaction_successful',
   'source_account',
 ]);
+
 const getStellarAccountOperations = async (
   address: string,
   cursor: string | null = null,
@@ -98,6 +100,7 @@ const getStellarAccountOperations = async (
       details,
     };
   });
+
   const lastCursor = items.at(-1)?.pagingToken ?? null;
 
   if (cursor !== null && lastCursor === cursor) {

@@ -15,8 +15,10 @@ const getSessionCookieOptions = (expires?: Date): CookieOptions => ({
   path: '/',
   ...(expires ? { expires } : {}),
 });
+
 const hashSessionToken = (token: string): string =>
   createHash('sha256').update(token).digest('hex');
+
 const issueSession = async (identityId: Types.ObjectId): Promise<IssuedSession> => {
   const token = randomBytes(32).toString('base64url');
   const now = new Date();
@@ -31,9 +33,11 @@ const issueSession = async (identityId: Types.ObjectId): Promise<IssuedSession> 
 
   return { token, expiresAt };
 };
+
 const setSessionCookie = (res: Response, session: IssuedSession): void => {
   res.cookie(SESSION_COOKIE_NAME, session.token, getSessionCookieOptions(session.expiresAt));
 };
+
 const clearSessionCookie = (res: Response): void => {
   res.clearCookie(SESSION_COOKIE_NAME, getSessionCookieOptions());
 };

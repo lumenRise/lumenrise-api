@@ -10,6 +10,7 @@ import type { IssuedWalletSession, WalletAuthTokenPayload } from '../../types/au
 const developmentSecret = randomBytes(32).toString('hex');
 const getSecret = (): string => env.AUTH_JWT_SECRET || developmentSecret;
 const signPart = (part: string): Buffer => createHmac('sha256', getSecret()).update(part).digest();
+
 const createWalletToken = (payload: WalletAuthTokenPayload): string => {
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -17,6 +18,7 @@ const createWalletToken = (payload: WalletAuthTokenPayload): string => {
 
   return `${unsigned}.${signPart(unsigned).toString('base64url')}`;
 };
+
 const verifyWalletToken = (token: string): WalletAuthTokenPayload | null => {
   const parts = token.split('.');
 
@@ -68,6 +70,7 @@ const issueWalletSession = async (
   const sessionId = new Types.ObjectId();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + env.SESSION_TTL_DAYS * 86_400_000);
+
   const token = createWalletToken({
     iss: 'lumenrise-api',
     aud: 'lumenrise-client',

@@ -14,8 +14,10 @@ import {
 
 const MAX_SYNC_JOB_ATTEMPTS = 5;
 const SYNC_JOB_LEASE_MS = 3_600_000;
+
 const calculateSyncRetryDelay = (attempts: number): number =>
   Math.min(60_000 * 2 ** Math.max(0, attempts - 1), 3_600_000);
+
 const calculateGitHubSyncSchedule = (lastSyncedAt: Date | null, now = new Date()): Date => {
   if (!lastSyncedAt) {
     return now;
@@ -23,6 +25,7 @@ const calculateGitHubSyncSchedule = (lastSyncedAt: Date | null, now = new Date()
 
   return new Date(Math.max(now.getTime(), lastSyncedAt.getTime() + GITHUB_SYNC_MIN_INTERVAL_MS));
 };
+
 const calculateGitLabSyncSchedule = (lastSyncedAt: Date | null, now = new Date()): Date => {
   if (!lastSyncedAt) {
     return now;
@@ -30,6 +33,7 @@ const calculateGitLabSyncSchedule = (lastSyncedAt: Date | null, now = new Date()
 
   return new Date(Math.max(now.getTime(), lastSyncedAt.getTime() + GITLAB_SYNC_MIN_INTERVAL_MS));
 };
+
 const calculateXSyncSchedule = (lastSyncedAt: Date | null, now = new Date()): Date => {
   if (!lastSyncedAt) {
     return now;
@@ -37,6 +41,7 @@ const calculateXSyncSchedule = (lastSyncedAt: Date | null, now = new Date()): Da
 
   return new Date(Math.max(now.getTime(), lastSyncedAt.getTime() + X_SYNC_MIN_INTERVAL_MS));
 };
+
 const enqueueIntegrationSync = async (
   account: ExternalAccountDocument,
   provider: IntegrationSyncJobProvider,
@@ -100,6 +105,7 @@ const enqueueIntegrationSync = async (
     return existingJob;
   }
 };
+
 const enqueueGitHubSync = async (
   account: ExternalAccountDocument,
   now = new Date(),
@@ -108,6 +114,7 @@ const enqueueGitHubSync = async (
 
   return enqueueIntegrationSync(account, 'github', scheduledAt, 'GitHub');
 };
+
 const enqueueGitLabSync = async (
   account: ExternalAccountDocument,
   now = new Date(),
@@ -116,6 +123,7 @@ const enqueueGitLabSync = async (
 
   return enqueueIntegrationSync(account, 'gitlab', scheduledAt, 'GitLab');
 };
+
 const enqueueXSync = async (
   account: ExternalAccountDocument,
   now = new Date(),
@@ -124,6 +132,7 @@ const enqueueXSync = async (
 
   return enqueueIntegrationSync(account, 'x', scheduledAt, 'X');
 };
+
 const claimIntegrationSyncJob = async (
   now = new Date(),
 ): Promise<IntegrationSyncJobDocument | null> =>
@@ -147,6 +156,7 @@ const claimIntegrationSyncJob = async (
     },
     { sort: { scheduledAt: 1 }, runValidators: true, returnDocument: 'after' },
   );
+
 const completeIntegrationSyncJob = async (
   job: IntegrationSyncJobDocument,
   snapshotId: Types.ObjectId,
@@ -166,6 +176,7 @@ const completeIntegrationSyncJob = async (
     { runValidators: true },
   );
 };
+
 const failIntegrationSyncJob = async (
   job: IntegrationSyncJobDocument,
   error: string,
@@ -194,6 +205,7 @@ const failIntegrationSyncJob = async (
     { runValidators: true },
   );
 };
+
 const deferIntegrationSyncJob = async (
   job: IntegrationSyncJobDocument,
   retryAfterSeconds: number,

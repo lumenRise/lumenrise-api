@@ -18,6 +18,7 @@ const GITLAB_DATA_VERSION = 'gitlab-data-v1';
 const GITLAB_PAGE_SIZE = 100;
 const MILLISECONDS_PER_DAY = 86_400_000;
 const getGitLabUrl = (path: string): URL => new URL(path, env.GITLAB_BASE_URL);
+
 const getNextPageUrl = (response: Response): string | null => {
   const link = response.headers.get('link');
 
@@ -79,6 +80,7 @@ const fetchGitLabCollection = async <T>(
 
   return items;
 };
+
 const collectOwnedGitLabProjects = async (
   userId: number,
   accessToken: string,
@@ -88,6 +90,7 @@ const collectOwnedGitLabProjects = async (
     order_by: 'id',
     sort: 'asc',
   });
+
 const collectContributedGitLabProjects = async (
   userId: number,
   accessToken: string,
@@ -101,6 +104,7 @@ const collectContributedGitLabProjects = async (
       sort: 'asc',
     },
   );
+
 const collectGitLabEvents = async (
   userId: number,
   accessToken: string,
@@ -109,6 +113,7 @@ const collectGitLabEvents = async (
     scope: 'all',
     sort: 'asc',
   });
+
 const collectGitLabAssociationCounts = async (
   userId: number,
   accessToken: string,
@@ -126,6 +131,7 @@ const collectGitLabAssociationCounts = async (
 
   return (await response.json()) as GitLabAssociationCounts;
 };
+
 const mergeGitLabProjects = (
   ownedProjects: GitLabProject[],
   contributedProjects: GitLabProject[],
@@ -149,6 +155,7 @@ const mergeGitLabProjects = (
 
   return [...projects.values()];
 };
+
 const buildGitLabMetrics = (
   user: GitLabUser,
   projects: GitLabCollectedProject[],
@@ -158,6 +165,7 @@ const buildGitLabMetrics = (
 ): GitLabDataMetrics => {
   const sumProjects = (value: (project: GitLabProject) => number): number =>
     projects.reduce((total, item) => total + value(item.project), 0);
+
   const accountAgeDays = Math.max(
     0,
     Math.floor(
@@ -192,6 +200,7 @@ const buildGitLabMetrics = (
     noteEventCount: events.filter((event) => event.target_type === 'Note').length,
   };
 };
+
 const storeGitLabProjectFacts = async (
   snapshotId: Types.ObjectId,
   identityId: Types.ObjectId,
@@ -227,6 +236,7 @@ const storeGitLabProjectFacts = async (
     await GitLabProjectFact.insertMany(facts.slice(index, index + 500));
   }
 };
+
 const storeGitLabEventFacts = async (
   snapshotId: Types.ObjectId,
   identityId: Types.ObjectId,
@@ -256,6 +266,7 @@ const storeGitLabEventFacts = async (
     await GitLabEventFact.insertMany(facts.slice(index, index + 500));
   }
 };
+
 const collectGitLabData = async (
   identityId: Types.ObjectId,
   externalAccountId: Types.ObjectId,
@@ -270,24 +281,32 @@ const collectGitLabData = async (
       collectGitLabEvents(user.id, accessToken),
       collectGitLabAssociationCounts(user.id, accessToken),
     ]);
+
   const ownedProjects = ownedResult.status === 'fulfilled' ? ownedResult.value : [];
+
   const contributedProjects =
     contributedResult.status === 'fulfilled' ? contributedResult.value : [];
+
   const events = eventsResult.status === 'fulfilled' ? eventsResult.value : [];
-  const associations =
-    associationsResult.status === 'fulfilled' ? associationsResult.value : null;
+
+  const associations = associationsResult.status === 'fulfilled' ? associationsResult.value : null;
+
   const projects = mergeGitLabProjects(ownedProjects, contributedProjects);
+
   const complete =
     ownedResult.status === 'fulfilled' &&
     contributedResult.status === 'fulfilled' &&
     eventsResult.status === 'fulfilled' &&
     associationsResult.status === 'fulfilled';
+
   const activityFrom = events.reduce<Date | null>((oldest, event) => {
     const createdAt = new Date(event.created_at);
 
     return !oldest || createdAt < oldest ? createdAt : oldest;
   }, null);
+
   const metrics = buildGitLabMetrics(user, projects, events, associations, collectedAt);
+
   const snapshot = await GitLabDataSnapshot.create({
     identity: identityId,
     externalAccount: externalAccountId,
@@ -309,20 +328,8 @@ const collectGitLabData = async (
   });
 
   await Promise.all([
-    storeGitLabProjectFacts(
-      snapshot._id,
-      identityId,
-      user.id.toString(),
-      projects,
-      collectedAt,
-    ),
-    storeGitLabEventFacts(
-      snapshot._id,
-      identityId,
-      user.id.toString(),
-      events,
-      collectedAt,
-    ),
+    storeGitLabProjectFacts(snapshot._id, identityId, user.id.toString(), projects, collectedAt),
+    storeGitLabEventFacts(snapshot._id, identityId, user.id.toString(), events, collectedAt),
   ]);
 
   return snapshot;

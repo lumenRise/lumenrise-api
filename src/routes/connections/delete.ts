@@ -17,6 +17,7 @@ import { calculateAndStoreDeveloperReputation } from '../../services/reputation/
 
 const isExternalAccountProvider = (provider: string): provider is ExternalAccountProvider =>
   EXTERNAL_ACCOUNT_PROVIDERS.some((candidate) => candidate === provider);
+
 const deleteConnectionRoute: RequestHandler = async (req, res) => {
   const providerParam = req.params.provider;
   const provider = typeof providerParam === 'string' ? providerParam : null;
@@ -34,6 +35,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
   const disconnectedAt = new Date();
 
   let providerAccessToken: string | null = null;
+
   const account = await ExternalAccount.findOneAndUpdate(
     {
       identity: req.auth?.identityId,
@@ -108,6 +110,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     },
     { runValidators: true },
   );
+
   await ProviderCredential.deleteOne({ externalAccount: account._id });
 
   if (provider === 'x') {

@@ -69,6 +69,7 @@ const reputationSignalSchema = new Schema<ReputationSignalRecord>(
     versionKey: false,
   },
 );
+
 const reputationSourceSchema = new Schema<ReputationSourceRecord>(
   {
     provider: {
@@ -96,6 +97,7 @@ const reputationSourceSchema = new Schema<ReputationSourceRecord>(
     versionKey: false,
   },
 );
+
 const reputationSnapshotSchema = new Schema<ReputationSnapshotRecord>(
   {
     identity: {
@@ -166,6 +168,7 @@ reputationSnapshotSchema.index(
   { identity: 1, category: 1, calculatedAt: -1 },
   { name: 'reputation_snapshots_identity_category_calculated' },
 );
+
 reputationSnapshotSchema.index(
   { algorithmVersion: 1, category: 1 },
   { name: 'reputation_snapshots_algorithm_category' },

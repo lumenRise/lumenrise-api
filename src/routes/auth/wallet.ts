@@ -14,6 +14,7 @@ import type {
 
 const parseAddress = (value: unknown): string =>
   typeof value === 'string' ? value.trim().toUpperCase() : '';
+
 const postWalletChallengeRoute: RequestHandler = async (req, res) => {
   const address = parseAddress(req.body?.address);
   const purpose = req.body?.purpose;
@@ -40,6 +41,7 @@ const postWalletChallengeRoute: RequestHandler = async (req, res) => {
       purpose as WalletAuthPurpose,
       purpose === 'register' ? name.trim() : null,
     );
+
     const response: ApiResponse<WalletAuthChallengeResult> = {
       status: 'success',
       message: 'Wallet challenge created',

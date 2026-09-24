@@ -15,6 +15,7 @@ const enqueueDueXSyncs = async (now = new Date()): Promise<number> => {
   }
 
   const dueBefore = new Date(now.getTime() - env.X_AUTO_SYNC_INTERVAL_HOURS * 3_600_000);
+
   const accounts = ExternalAccount.find({
     provider: 'x',
     status: 'connected',
@@ -39,6 +40,7 @@ const enqueueDueXSyncs = async (now = new Date()): Promise<number> => {
 
   return enqueued;
 };
+
 const scheduleXScan = (): void => {
   if (activeScan) {
     return;
@@ -57,6 +59,7 @@ const scheduleXScan = (): void => {
       activeScan = null;
     });
 };
+
 const startXScheduler = (): void => {
   if (schedulerTimer) {
     return;

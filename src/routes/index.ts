@@ -10,9 +10,9 @@ import connectionRoutes from './connections/index.js';
 const router = Router();
 
 router.use('/v1/auth', authRoutes);
-router.use('/v1/stellar', stellarRoutes);
 router.use('/v1/oauth', oauthRoutes);
 router.use('/v1/health', healthRoutes);
+router.use('/v1/stellar', stellarRoutes);
 router.use('/v1/connections', connectionRoutes);
 router.use('/v1/reputation', reputationRoutes);
 

@@ -15,6 +15,7 @@ const connectGitHubOAuthRoute: RequestHandler = async (req, res) => {
   }
 
   const flow = await createGitHubAuthorization('connect', req.auth.identityId);
+
   const response: ApiResponse<GitHubOAuthStartResult> = {
     status: 'success',
     message: 'GitHub connection started',

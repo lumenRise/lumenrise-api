@@ -35,6 +35,7 @@ const callbackGitLabOAuthRoute: RequestHandler = async (req, res) => {
   const code = typeof req.query.code === 'string' ? req.query.code : null;
   const state = typeof req.query.state === 'string' ? req.query.state : null;
   const denied = typeof req.query.error === 'string';
+
   const stateMatches = state
     ? matchesOAuthStateCookie(req.cookies[OAUTH_STATE_COOKIE_NAME], state)
     : false;
@@ -52,11 +53,7 @@ const callbackGitLabOAuthRoute: RequestHandler = async (req, res) => {
 
     return res.redirect(
       302,
-      createClientRedirect(
-        'success',
-        result.connection.username,
-        result.connection.syncJobId,
-      ),
+      createClientRedirect('success', result.connection.username, result.connection.syncJobId),
     );
   } catch (error) {
     log.warn({ error }, 'GitLab OAuth callback failed');

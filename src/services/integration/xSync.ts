@@ -40,6 +40,7 @@ const resolveXAccessToken = async (externalAccountId: Types.ObjectId): Promise<s
 
   return accessToken;
 };
+
 const syncXAccount = async (
   account: ExternalAccountDocument,
   now = new Date(),
@@ -56,6 +57,7 @@ const syncXAccount = async (
   }
 
   const syncLeaseUntil = new Date(now.getTime() + X_SYNC_LEASE_MS);
+
   const leasedAccount = await ExternalAccount.findOneAndUpdate(
     {
       _id: account._id,
@@ -99,6 +101,7 @@ const syncXAccount = async (
       user,
       accessToken,
     );
+
     const updateResult = await ExternalAccount.updateOne(
       { _id: leasedAccount._id, provider: 'x', status: 'connected', syncLeaseUntil },
       {
@@ -132,6 +135,7 @@ const syncXAccount = async (
       category: 'social',
       _id: { $ne: reputation._id },
     });
+
     await IntegrationSyncJob.updateMany(
       {
         externalAccount: leasedAccount._id,
@@ -140,6 +144,7 @@ const syncXAccount = async (
       },
       { $set: { resultSnapshot: null } },
     );
+
     await XDataSnapshot.deleteMany({
       externalAccount: leasedAccount._id,
       _id: { $ne: snapshot._id },

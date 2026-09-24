@@ -14,6 +14,7 @@ import type {
 const X_DATA_VERSION = 'x-data-v1';
 const X_TIMELINE_PAGE_SIZE = 100;
 const MILLISECONDS_PER_DAY = 86_400_000;
+
 const getXTimelineUrl = (userId: string, paginationToken?: string): URL => {
   const url = new URL(`https://api.x.com/2/users/${userId}/tweets`);
 
@@ -26,6 +27,7 @@ const getXTimelineUrl = (userId: string, paginationToken?: string): URL => {
 
   return url;
 };
+
 const collectXPosts = async (userId: string, accessToken: string): Promise<XPost[]> => {
   const posts: XPost[] = [];
   const observedPaginationTokens = new Set<string>();
@@ -145,6 +147,7 @@ const buildXMetrics = (user: XUser, posts: XPost[], collectedAt: Date): XDataMet
     impressionCount,
   };
 };
+
 const collectXData = async (
   identityId: Types.ObjectId,
   externalAccountId: Types.ObjectId,
@@ -162,6 +165,7 @@ const collectXData = async (
 
     return !oldest || createdAt < oldest ? createdAt : oldest;
   }, null);
+
   const metrics = buildXMetrics(user, posts, collectedAt);
 
   return XDataSnapshot.create({

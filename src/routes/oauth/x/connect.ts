@@ -15,6 +15,7 @@ const connectXOAuthRoute: RequestHandler = async (req, res) => {
   }
 
   const flow = await createXAuthorization('connect', req.auth.identityId);
+
   const response: ApiResponse<XOAuthStartResult> = {
     status: 'success',
     message: 'X connection started',

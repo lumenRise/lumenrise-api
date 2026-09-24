@@ -51,10 +51,12 @@ stellarActivityScanSchema.index(
     name: 'stellar_activity_one_active_per_identity',
   },
 );
+
 stellarActivityScanSchema.index(
   { status: 1, scheduledAt: 1, leaseUntil: 1 },
   { name: 'stellar_activity_scan_claim' },
 );
+
 stellarActivityScanSchema.index(
   { identity: 1, address: 1, createdAt: -1 },
   { name: 'stellar_activity_scan_identity_address' },

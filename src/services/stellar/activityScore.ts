@@ -5,11 +5,13 @@ import type {
 } from '../../types/stellar/score.js';
 
 const STELLAR_ACTIVITY_ALGORITHM_VERSION = 'stellar-activity-v1';
+
 const round = (value: number, precision: number): number => {
   const multiplier = 10 ** precision;
 
   return Math.round((value + Number.EPSILON) * multiplier) / multiplier;
 };
+
 const normalizeActivitySignal = (rawValue: number, scale: number): number => {
   if (!Number.isFinite(rawValue) || rawValue < 0 || !Number.isFinite(scale) || scale <= 0) {
     throw new Error('Invalid Stellar activity score signal');
@@ -17,6 +19,7 @@ const normalizeActivitySignal = (rawValue: number, scale: number): number => {
 
   return round(100 * (1 - Math.exp(-rawValue / scale)), 4);
 };
+
 const calculateStellarActivityScore = (
   scan: StellarActivityScanDocument,
 ): StellarActivityScoreResult => {
@@ -25,6 +28,7 @@ const calculateStellarActivityScore = (
   }
 
   const metrics = scan.summary;
+
   const definitions = [
     { key: 'active_day_count', rawValue: metrics.activeDayCount, baseWeight: 0.4, scale: 45 },
     {
@@ -46,7 +50,9 @@ const calculateStellarActivityScore = (
       scale: 6,
     },
   ];
+
   const totalWeight = definitions.reduce((total, signal) => total + signal.baseWeight, 0);
+
   const signals: StellarActivityScoreSignal[] = definitions.map((definition) => {
     const normalizedScore = normalizeActivitySignal(definition.rawValue, definition.scale);
     const weight = round(definition.baseWeight / totalWeight, 6);

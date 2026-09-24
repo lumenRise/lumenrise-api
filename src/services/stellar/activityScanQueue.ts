@@ -11,8 +11,10 @@ import type {
 
 const SCAN_LEASE_MS = 30_000;
 const MAX_CONSECUTIVE_FAILURES = 5;
+
 const retryDelay = (failures: number): number =>
   Math.min(60_000 * 2 ** Math.max(0, failures - 1), 3_600_000);
+
 const toStellarActivityScanResult = (
   scan: StellarActivityScanDocument,
 ): StellarActivityScanResult => ({
@@ -29,6 +31,7 @@ const toStellarActivityScanResult = (
   completedAt: scan.completedAt?.toISOString() ?? null,
   lastError: scan.lastError,
 });
+
 const enqueueStellarActivityScan = async (
   identity: Types.ObjectId,
   address: string,
@@ -72,6 +75,7 @@ const enqueueStellarActivityScan = async (
     return { scan, conflict: scan.address !== address || scan.sourceUrl !== sourceUrl };
   }
 };
+
 const claimStellarActivityScan = async (
   now = new Date(),
 ): Promise<StellarActivityScanDocument | null> =>
@@ -86,6 +90,7 @@ const claimStellarActivityScan = async (
     { $set: { status: 'running', leaseUntil: new Date(now.getTime() + SCAN_LEASE_MS) } },
     { sort: { scheduledAt: 1 }, runValidators: true, returnDocument: 'after' },
   );
+  
 const failStellarActivityScan = async (
   scan: StellarActivityScanDocument,
   message: string,

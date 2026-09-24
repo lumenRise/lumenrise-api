@@ -9,6 +9,7 @@ import { getStellarActivityScanRoute, postStellarActivityScanRoute } from './act
 const stellarRoutes = Router();
 
 stellarRoutes.get('/accounts/:address', requireSession, getStellarAccountRoute);
+stellarRoutes.get('/accounts/:address/activity-scan', requireSession, getStellarActivityScanRoute);
 stellarRoutes.get(
   '/accounts/:address/operations',
   requireSession,
@@ -19,7 +20,6 @@ stellarRoutes.post(
   requireSession,
   postStellarActivityScanRoute,
 );
-stellarRoutes.get('/accounts/:address/activity-scan', requireSession, getStellarActivityScanRoute);
 stellarRoutes.get(
   '/accounts/:address/activity-score',
   requireSession,

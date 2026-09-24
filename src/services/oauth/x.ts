@@ -27,11 +27,13 @@ const X_REVOKE_URL = 'https://api.x.com/2/oauth2/revoke';
 const X_AUTHORIZE_URL = 'https://x.com/i/oauth2/authorize';
 const X_AUTHENTICATED_USER_URL =
   'https://api.x.com/2/users/me?user.fields=created_at,description,is_identity_verified,location,profile_image_url,protected,public_metrics,url,verified,verified_type';
+
 const assertXConfiguration = (): void => {
   if (!env.X_CLIENT_ID || !env.X_CLIENT_SECRET) {
     throw new Error('X OAuth is not configured');
   }
 };
+
 const createXAuthorization = async (
   purpose: XOAuthPurpose,
   identityId: Types.ObjectId | null,
@@ -73,12 +75,14 @@ const createXAuthorization = async (
     state,
   };
 };
+
 const createXBasicAuthorization = (): string => {
   const clientId = encodeURIComponent(env.X_CLIENT_ID);
   const clientSecret = encodeURIComponent(env.X_CLIENT_SECRET);
 
   return `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`;
 };
+
 const requestXToken = async (body: URLSearchParams): Promise<XTokenResponse> => {
   const response = await fetch(X_TOKEN_URL, {
     method: 'POST',
@@ -97,6 +101,7 @@ const requestXToken = async (body: URLSearchParams): Promise<XTokenResponse> => 
 
   return result;
 };
+
 const exchangeXCode = async (code: string, codeVerifier: string): Promise<XTokenResponse> => {
   const body = new URLSearchParams({
     code,
@@ -107,6 +112,7 @@ const exchangeXCode = async (code: string, codeVerifier: string): Promise<XToken
 
   return requestXToken(body);
 };
+
 const refreshXAccessToken = async (refreshToken: string): Promise<XTokenResponse> => {
   assertXConfiguration();
 
@@ -117,6 +123,7 @@ const refreshXAccessToken = async (refreshToken: string): Promise<XTokenResponse
 
   return requestXToken(body);
 };
+
 const revokeXAccessToken = async (accessToken: string): Promise<void> => {
   assertXConfiguration();
 
@@ -135,6 +142,7 @@ const revokeXAccessToken = async (accessToken: string): Promise<void> => {
     throw new Error(`X token revocation failed with status ${response.status}`);
   }
 };
+
 const getAuthenticatedXUser = async (accessToken: string): Promise<XUser> => {
   const response = await fetch(X_AUTHENTICATED_USER_URL, {
     headers: {
@@ -167,6 +175,7 @@ const getAuthenticatedXUser = async (accessToken: string): Promise<XUser> => {
 
   return result.data;
 };
+
 const connectXAccount = async (
   user: XUser,
   purpose: XOAuthPurpose,
@@ -196,6 +205,7 @@ const connectXAccount = async (
   }
 
   const now = new Date();
+
   const externalAccount = await ExternalAccount.findOneAndUpdate(
     { provider: 'x', providerAccountId: user.id },
     {
@@ -222,6 +232,7 @@ const connectXAccount = async (
 
   return { identityId, externalAccount };
 };
+
 const completeXAuthorization = async (
   code: string,
   state: string,
@@ -229,6 +240,7 @@ const completeXAuthorization = async (
   assertXConfiguration();
 
   const stateHash = createHash('sha256').update(state).digest('hex');
+
   const oauthState = await OAuthState.findOneAndUpdate(
     {
       provider: 'x',

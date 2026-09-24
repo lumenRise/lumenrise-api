@@ -35,6 +35,7 @@ walletAuthChallengeSchema.index(
   { expiresAt: 1 },
   { expireAfterSeconds: 0, name: 'wallet_auth_challenges_expiry' },
 );
+
 walletAuthChallengeSchema.index(
   { address: 1, purpose: 1, createdAt: -1 },
   { name: 'wallet_auth_challenges_address_purpose' },

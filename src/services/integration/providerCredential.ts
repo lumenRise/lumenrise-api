@@ -27,6 +27,7 @@ const getProviderCredential = async (
     refreshTokenExpiresAt: credential.refreshTokenExpiresAt,
   };
 };
+
 const storeProviderCredential = async (
   externalAccountId: Types.ObjectId,
   provider: ExternalAccountProvider,

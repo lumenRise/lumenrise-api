@@ -72,6 +72,7 @@ oauthStateSchema.pre('validate', function validatePurposeIdentity() {
 });
 
 oauthStateSchema.index({ stateHash: 1 }, { unique: true, name: 'oauth_states_state_hash_unique' });
+
 oauthStateSchema.index(
   { expiresAt: 1 },
   { expireAfterSeconds: 0, name: 'oauth_states_expiry_ttl' },

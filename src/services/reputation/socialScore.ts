@@ -8,11 +8,13 @@ import type {
 } from '../../types/reputation/socialScoring.js';
 
 const SOCIAL_ALGORITHM_VERSION = 'social-v1';
+
 const round = (value: number, precision: number): number => {
   const multiplier = 10 ** precision;
 
   return Math.round((value + Number.EPSILON) * multiplier) / multiplier;
 };
+
 const normalizeSocialSignal = (rawValue: number, scale: number): number => {
   if (!Number.isFinite(scale) || scale <= 0) {
     throw new Error('Social signal scale must be positive');
@@ -24,6 +26,7 @@ const normalizeSocialSignal = (rawValue: number, scale: number): number => {
 
   return round(100 * (1 - Math.exp(-rawValue / scale)), 4);
 };
+
 const calculateSocialScore = (inputs: SocialSignalInput[]): SocialScoreCalculation => {
   if (inputs.some((input) => !Number.isFinite(input.baseWeight) || input.baseWeight <= 0)) {
     throw new Error('Social signal weights must be positive');
@@ -53,6 +56,7 @@ const calculateSocialScore = (inputs: SocialSignalInput[]): SocialScoreCalculati
       observedAt: input.observedAt,
     };
   });
+
   const score = round(
     signals.reduce((total, signal) => total + signal.contribution, 0),
     2,
@@ -63,6 +67,7 @@ const calculateSocialScore = (inputs: SocialSignalInput[]): SocialScoreCalculati
 const createXSocialSignals = (snapshot: XDataSnapshotDocument): SocialSignalInput[] => {
   const observedAt = snapshot.collectedAt;
   const metrics = snapshot.metrics;
+
   const signals: SocialSignalInput[] = [
     {
       key: 'account_age_days',
@@ -143,6 +148,7 @@ const createXSocialSignals = (snapshot: XDataSnapshotDocument): SocialSignalInpu
 
   return signals;
 };
+
 const calculateAndStoreSocialReputation = async (
   snapshot: XDataSnapshotDocument,
   calculatedAt = new Date(),
@@ -159,6 +165,7 @@ const calculateAndStoreSocialReputation = async (
   }
 
   const calculation = calculateSocialScore(createXSocialSignals(snapshot));
+
   const reputation = await ReputationSnapshot.create({
     identity: snapshot.identity,
     category: 'social',
@@ -176,6 +183,7 @@ const calculateAndStoreSocialReputation = async (
     ],
     calculatedAt,
   });
+
   const stillConnected = await ExternalAccount.exists({
     _id: account._id,
     status: 'connected',

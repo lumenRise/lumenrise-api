@@ -94,6 +94,7 @@ externalAccountSchema.index(
   { provider: 1, providerAccountId: 1 },
   { unique: true, name: 'external_accounts_provider_account_unique' },
 );
+
 externalAccountSchema.index(
   { identity: 1, provider: 1 },
   {
@@ -102,6 +103,7 @@ externalAccountSchema.index(
     name: 'external_accounts_one_connected_provider_per_identity',
   },
 );
+
 externalAccountSchema.index(
   { identity: 1, status: 1 },
   { name: 'external_accounts_identity_status' },

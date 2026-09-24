@@ -32,6 +32,7 @@ const getStellarReputationRoute: RequestHandler = async (req, res) => {
       address: account.address,
       sourceUrl: env.STELLAR_HORIZON_URL,
     }).sort({ createdAt: -1 });
+
     const response: ApiResponse<StellarReputationResult> = {
       status: 'success',
       message: 'Stellar reputation retrieved',

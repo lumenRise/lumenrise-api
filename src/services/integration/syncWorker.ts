@@ -19,6 +19,7 @@ let activeTick: Promise<void> | null = null;
 
 const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : 'Unknown synchronization error';
+
 const synchronizeAccount = async (
   job: IntegrationSyncJobDocument,
   account: NonNullable<Awaited<ReturnType<typeof ExternalAccount.findOne>>>,
@@ -33,6 +34,7 @@ const synchronizeAccount = async (
 
   return syncXAccount(account);
 };
+
 const processIntegrationSyncJob = async (job: IntegrationSyncJobDocument): Promise<void> => {
   const account = await ExternalAccount.findOne({
     _id: job.externalAccount,
@@ -68,6 +70,7 @@ const processIntegrationSyncJob = async (job: IntegrationSyncJobDocument): Promi
   } catch (error) {
     if (job.provider === 'x' && error instanceof XRateLimitError) {
       await deferIntegrationSyncJob(job, error.retryAfterSeconds);
+
       log.warn(
         { syncJobId: job._id, retryAfterSeconds: error.retryAfterSeconds },
         'X sync deferred',
@@ -78,12 +81,14 @@ const processIntegrationSyncJob = async (job: IntegrationSyncJobDocument): Promi
 
     if (job.provider === 'x' && error instanceof XApiResponseError) {
       await failIntegrationSyncJob(job, error.message, error.retryable);
+
       log.warn({ error, syncJobId: job._id }, 'X API synchronization request failed');
 
       return;
     }
 
     await failIntegrationSyncJob(job, getErrorMessage(error), true);
+
     log.warn({ error, syncJobId: job._id }, 'Integration synchronization job failed');
   }
 };

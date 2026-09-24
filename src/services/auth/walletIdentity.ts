@@ -29,6 +29,7 @@ const registerWalletIdentity = async (
       const now = new Date();
 
       await Identity.create([{ _id: identityId, name }], { session: databaseSession });
+
       await StellarAccount.create(
         [{ identity: identityId, address, isPrimary: true, connectedAt: now }],
         { session: databaseSession },
@@ -56,6 +57,7 @@ const registerWalletIdentity = async (
     throw error;
   }
 };
+
 const loginWalletIdentity = async (
   address: string,
   challengeId: string,

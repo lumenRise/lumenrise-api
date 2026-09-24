@@ -13,6 +13,7 @@ import {
 
 const getAddress = (value: unknown): string =>
   typeof value === 'string' ? value.toUpperCase() : '';
+
 const postStellarActivityScanRoute: RequestHandler = async (req, res) => {
   const address = getAddress(req.params.address);
 

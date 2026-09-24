@@ -39,6 +39,7 @@ const resolveGitLabAccessToken = async (
 
   return accessToken;
 };
+
 const syncGitLabAccount = async (
   account: ExternalAccountDocument,
   now = new Date(),
@@ -55,6 +56,7 @@ const syncGitLabAccount = async (
   }
 
   const syncLeaseUntil = new Date(now.getTime() + GITLAB_SYNC_LEASE_MS);
+
   const leasedAccount = await ExternalAccount.findOneAndUpdate(
     {
       _id: account._id,
@@ -112,6 +114,7 @@ const syncGitLabAccount = async (
       },
       { runValidators: true },
     );
+
     await calculateAndStoreDeveloperReputation(leasedAccount.identity);
 
     return { state: 'synchronized', snapshot };

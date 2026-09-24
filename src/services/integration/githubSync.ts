@@ -10,10 +10,13 @@ import { getAuthenticatedGitHubUser, refreshGitHubAccessToken } from '../oauth/g
 import { GITHUB_SYNC_LEASE_MS, GITHUB_SYNC_MIN_INTERVAL_MS } from '../../constants/integration.js';
 
 const TOKEN_REFRESH_WINDOW_MS = 300_000;
+
 const getRetryAfterSeconds = (availableAt: Date, now = new Date()): number =>
   Math.max(1, Math.ceil((availableAt.getTime() - now.getTime()) / 1_000));
+
 const needsCredentialRefresh = (expiresAt: Date | null, now = new Date()): boolean =>
   expiresAt !== null && expiresAt.getTime() <= now.getTime() + TOKEN_REFRESH_WINDOW_MS;
+
 const resolveGitHubAccessToken = async (
   externalAccountId: Types.ObjectId,
 ): Promise<string | null> => {
@@ -48,6 +51,7 @@ const resolveGitHubAccessToken = async (
 
   return accessToken;
 };
+
 const syncGitHubAccount = async (
   account: ExternalAccountDocument,
   now = new Date(),
@@ -120,6 +124,7 @@ const syncGitHubAccount = async (
       },
       { runValidators: true },
     );
+
     await calculateAndStoreDeveloperReputation(leasedAccount.identity);
 
     return { state: 'synchronized', snapshot };

@@ -30,6 +30,7 @@ const processStellarActivityScan = async (scan: StellarActivityScanDocument): Pr
       scan.lastDay,
       scan.lastTransactionHash,
     );
+
     const completed = page.nextCursor === null;
     const now = new Date();
 
@@ -61,6 +62,7 @@ const processStellarActivityScan = async (scan: StellarActivityScanDocument): Pr
     log.warn({ error, scanId: scan._id }, 'Stellar activity scan page failed');
   }
 };
+
 const runStellarActivityScanWorkerTick = async (): Promise<void> => {
   const scan = await claimStellarActivityScan();
 
@@ -68,6 +70,7 @@ const runStellarActivityScanWorkerTick = async (): Promise<void> => {
     await processStellarActivityScan(scan);
   }
 };
+
 const scheduleWorkerTick = (): void => {
   if (activeTick) {
     return;
@@ -81,6 +84,7 @@ const scheduleWorkerTick = (): void => {
       activeTick = null;
     });
 };
+
 const startStellarActivityScanWorker = (): void => {
   if (workerTimer) {
     return;
@@ -90,6 +94,7 @@ const startStellarActivityScanWorker = (): void => {
   workerTimer = setInterval(scheduleWorkerTick, env.SYNC_WORKER_POLL_INTERVAL_MS);
   workerTimer.unref();
 };
+
 const stopStellarActivityScanWorker = async (): Promise<void> => {
   if (workerTimer) {
     clearInterval(workerTimer);

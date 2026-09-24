@@ -14,6 +14,7 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
     identity: req.auth?.identityId,
     status: 'connected',
   }).sort({ connectedAt: 1 });
+
   const connections = await Promise.all(
     accounts.map(async (account): Promise<ConnectionResult> => {
       const githubData =
@@ -22,19 +23,23 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
               collectedAt: -1,
             })
           : null;
+
       const gitlabData =
         account.provider === 'gitlab'
           ? await GitLabDataSnapshot.findOne({ externalAccount: account._id }).sort({
               collectedAt: -1,
             })
           : null;
+
       const xData =
         account.provider === 'x'
           ? await XDataSnapshot.findOne({ externalAccount: account._id }).sort({
               collectedAt: -1,
             })
           : null;
+
       const providerData = githubData ?? gitlabData ?? xData;
+
       const syncJob =
         account.provider === 'github' || account.provider === 'gitlab' || account.provider === 'x'
           ? await IntegrationSyncJob.findOne({ externalAccount: account._id }).sort({
@@ -61,6 +66,7 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
       };
     }),
   );
+
   const response: ApiResponse<ConnectionsResult> = {
     status: 'success',
     message: 'Connections retrieved',

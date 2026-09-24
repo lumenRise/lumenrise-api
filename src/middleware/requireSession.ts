@@ -65,6 +65,7 @@ const requireSession: RequestHandler = async (req, res, next) => {
     sessionId: session._id,
     identityId: identity._id,
   };
+
   session.lastSeenAt = now;
   await session.save();
 

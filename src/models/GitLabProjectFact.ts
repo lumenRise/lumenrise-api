@@ -33,6 +33,7 @@ gitlabProjectFactSchema.index(
   { snapshot: 1, projectId: 1 },
   { unique: true, name: 'gitlab_project_facts_snapshot_project_unique' },
 );
+
 gitlabProjectFactSchema.index(
   { identity: 1, collectedAt: -1 },
   { name: 'gitlab_project_facts_identity_collected' },

@@ -8,11 +8,15 @@ import type { WalletAuthChallengeResult, WalletAuthPurpose } from '../../types/a
 
 const CHALLENGE_TTL_MS = 5 * 60_000;
 const SIGNED_MESSAGE_PREFIX = 'Stellar Signed Message:\n';
+
 const hashName = (name: string): string => createHash('sha256').update(name).digest('hex');
+
 const getNetworkPassphrase = (): string =>
   env.STELLAR_AUTH_NETWORK === 'public' ? Networks.PUBLIC : Networks.TESTNET;
+
 const hashWalletMessage = (message: string): Buffer =>
   createHash('sha256').update(SIGNED_MESSAGE_PREFIX).update(message, 'utf8').digest();
+
 const createWalletChallenge = async (
   address: string,
   purpose: WalletAuthPurpose,
@@ -23,6 +27,7 @@ const createWalletChallenge = async (
   const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS);
   const nameHash = name === null ? null : hashName(name);
   const networkPassphrase = getNetworkPassphrase();
+
   const message = [
     'Lumenrise Wallet Authentication',
     'Version: 1',

@@ -7,6 +7,7 @@ const parseUrl = (value: string, name: string): URL => {
     throw new Error(`${name} must be a valid absolute URL`);
   }
 };
+
 const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void => {
   const hasGitHubClientId = configuration.GITHUB_CLIENT_ID.length > 0;
   const hasGitHubClientSecret = configuration.GITHUB_CLIENT_SECRET.length > 0;

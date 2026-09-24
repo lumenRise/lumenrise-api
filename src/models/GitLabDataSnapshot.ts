@@ -11,6 +11,7 @@ const coverageSchema = new Schema(
   },
   { _id: false, versionKey: false },
 );
+
 const metricsSchema = new Schema(
   {
     accountAgeDays: { type: Number, required: true },
@@ -37,6 +38,7 @@ const metricsSchema = new Schema(
   },
   { _id: false, versionKey: false },
 );
+
 const gitlabDataSnapshotSchema = new Schema<GitLabDataSnapshotRecord>(
   {
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },

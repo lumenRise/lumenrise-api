@@ -24,6 +24,7 @@ const postGitLabSyncRoute: RequestHandler = async (req, res) => {
   }
 
   const job = await enqueueGitLabSync(account);
+
   const response: ApiResponse<IntegrationSyncJobResult> = {
     status: 'success',
     message: 'GitLab synchronization queued',

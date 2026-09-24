@@ -24,6 +24,7 @@ const postGitHubSyncRoute: RequestHandler = async (req, res) => {
   }
 
   const job = await enqueueGitHubSync(account);
+
   const response: ApiResponse<IntegrationSyncJobResult> = {
     status: 'success',
     message: 'GitHub synchronization queued',

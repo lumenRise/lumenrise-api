@@ -7,6 +7,7 @@ import type { GitLabOAuthStartResult } from '../../../types/integration/gitlab.j
 
 const startGitLabOAuthRoute: RequestHandler = async (_req, res) => {
   const flow = await createGitLabAuthorization('register', null);
+
   const response: ApiResponse<GitLabOAuthStartResult> = {
     status: 'success',
     message: 'GitLab authorization started',

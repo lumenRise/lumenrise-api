@@ -15,6 +15,7 @@ const connectGitLabOAuthRoute: RequestHandler = async (req, res) => {
   }
 
   const flow = await createGitLabAuthorization('connect', req.auth.identityId);
+
   const response: ApiResponse<GitLabOAuthStartResult> = {
     status: 'success',
     message: 'GitLab connection started',

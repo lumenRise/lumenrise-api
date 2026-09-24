@@ -35,6 +35,7 @@ const closeServer = (): Promise<void> => {
     });
   });
 };
+
 const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
   log.info({ signal }, 'Shutdown started');
 
@@ -47,17 +48,20 @@ const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
     await disconnectDatabase();
   }
 };
+
 const handleShutdown = (signal: NodeJS.Signals): void => {
   void shutdown(signal).catch((error: unknown) => {
     log.error({ error }, 'Graceful shutdown failed');
     process.exitCode = 1;
   });
 };
+
 const bootstrap = async (): Promise<void> => {
   validateRuntimeConfiguration(env);
 
   await connectDatabase();
   await runDatabaseMigrations();
+
   startIntegrationSyncWorker();
   startStellarActivityScanWorker();
   startXScheduler();

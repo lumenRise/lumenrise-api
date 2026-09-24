@@ -15,11 +15,13 @@ import type {
 } from '../../types/reputation/scoring.js';
 
 const DEVELOPER_ALGORITHM_VERSION = 'developer-v1';
+
 const round = (value: number, precision: number): number => {
   const multiplier = 10 ** precision;
 
   return Math.round((value + Number.EPSILON) * multiplier) / multiplier;
 };
+
 const normalizeDiminishingReturns = (rawValue: number, scale: number): number => {
   if (!Number.isFinite(scale) || scale <= 0) {
     throw new Error('Developer signal scale must be positive');
@@ -33,6 +35,7 @@ const normalizeDiminishingReturns = (rawValue: number, scale: number): number =>
 
   return round(100 * (1 - Math.exp(-value / scale)), 4);
 };
+
 const calculateDeveloperScore = (
   inputs: DeveloperSignalInput[],
   status: DeveloperReputationStatus,
@@ -72,6 +75,7 @@ const calculateDeveloperScore = (
 
   return { status, score, signals };
 };
+
 const createGitHubSignals = (
   snapshot: GitHubDataSnapshotDocument,
 ): DeveloperSignalInput[] => {
@@ -162,6 +166,7 @@ const createGitHubSignals = (
 
   return signals;
 };
+
 const createGitLabSignals = (
   snapshot: GitLabDataSnapshotDocument,
 ): DeveloperSignalInput[] => {
@@ -249,6 +254,7 @@ const createGitLabSignals = (
 
   return signals;
 };
+
 const calculateAndStoreDeveloperReputation = async (
   identityId: Types.ObjectId,
   calculatedAt = new Date(),
@@ -258,8 +264,10 @@ const calculateAndStoreDeveloperReputation = async (
     provider: { $in: ['github', 'gitlab'] },
     status: 'connected',
   });
+
   const githubAccount = accounts.find((account) => account.provider === 'github');
   const gitlabAccount = accounts.find((account) => account.provider === 'gitlab');
+
   const [githubSnapshot, gitlabSnapshot] = await Promise.all([
     githubAccount
       ? GitHubDataSnapshot.findOne({ externalAccount: githubAccount._id }).sort({ collectedAt: -1 })
@@ -268,6 +276,7 @@ const calculateAndStoreDeveloperReputation = async (
       ? GitLabDataSnapshot.findOne({ externalAccount: gitlabAccount._id }).sort({ collectedAt: -1 })
       : null,
   ]);
+
   const inputs: DeveloperSignalInput[] = [];
   const sources: DeveloperReputationSourceInput[] = [];
 
@@ -310,6 +319,7 @@ const calculateAndStoreDeveloperReputation = async (
     sources.length === accounts.length && sources.every((source) => source.status === 'complete')
       ? 'complete'
       : 'partial';
+
   const calculation = calculateDeveloperScore(inputs, status);
 
   return ReputationSnapshot.create({

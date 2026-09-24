@@ -5,6 +5,7 @@ import type { EncryptedSecret } from '../../types/integration/credential.js';
 
 const ALGORITHM = 'aes-256-gcm';
 const INITIALIZATION_VECTOR_LENGTH = 12;
+
 const getCredentialEncryptionKey = (): Buffer => {
   if (!/^[a-f\d]{64}$/i.test(env.CREDENTIAL_ENCRYPTION_KEY)) {
     throw new Error('CREDENTIAL_ENCRYPTION_KEY must be a 64-character hexadecimal key');
@@ -12,6 +13,7 @@ const getCredentialEncryptionKey = (): Buffer => {
 
   return Buffer.from(env.CREDENTIAL_ENCRYPTION_KEY, 'hex');
 };
+
 const encryptSecret = (value: string, key = getCredentialEncryptionKey()): EncryptedSecret => {
   const initializationVector = randomBytes(INITIALIZATION_VECTOR_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, initializationVector);
@@ -23,6 +25,7 @@ const encryptSecret = (value: string, key = getCredentialEncryptionKey()): Encry
     authenticationTag: cipher.getAuthTag().toString('base64'),
   };
 };
+
 const decryptSecret = (value: EncryptedSecret, key = getCredentialEncryptionKey()): string => {
   const initializationVector = Buffer.from(value.initializationVector, 'base64');
   const authenticationTag = Buffer.from(value.authenticationTag, 'base64');

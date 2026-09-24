@@ -15,9 +15,10 @@ import type {
   GitHubRepositoryNode,
 } from '../../types/reputation/github.js';
 
-const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
-const GITHUB_DATA_VERSION = 'github-data-v1';
 const MILLISECONDS_PER_DAY = 86_400_000;
+const GITHUB_DATA_VERSION = 'github-data-v1';
+const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
+
 const postGitHubGraphQL = async <T>(
   accessToken: string,
   query: string,
@@ -33,6 +34,7 @@ const postGitHubGraphQL = async <T>(
     },
     body: JSON.stringify({ query, variables }),
   });
+
   const result = (await response.json()) as GitHubGraphQLResponse<T>;
 
   if (!response.ok || result.errors?.length || !result.data) {
@@ -41,6 +43,7 @@ const postGitHubGraphQL = async <T>(
 
   return result.data;
 };
+
 const createContributionRanges = (accountCreatedAt: Date, collectedAt: Date) => {
   const ranges: GitHubContributionRange[] = [];
 
@@ -67,6 +70,7 @@ const createContributionRanges = (accountCreatedAt: Date, collectedAt: Date) => 
 
   return ranges;
 };
+
 const collectContributionPeriods = async (
   username: string,
   accessToken: string,
@@ -75,6 +79,7 @@ const collectContributionPeriods = async (
   const definitions = ranges
     .map((_range, index) => `$from${index}: DateTime!, $to${index}: DateTime!`)
     .join(', ');
+
   const selections = ranges
     .map(
       (_range, index) => `
@@ -94,6 +99,7 @@ const collectContributionPeriods = async (
       `,
     )
     .join('\n');
+
   const query = `
     query GitHubContributions($login: String!, ${definitions}) {
       user(login: $login) {
@@ -101,6 +107,7 @@ const collectContributionPeriods = async (
       }
     }
   `;
+
   const variables: Record<string, unknown> = { login: username };
 
   ranges.forEach((range, index) => {
@@ -124,6 +131,7 @@ const collectContributionPeriods = async (
     return mapContributionPeriod(range, collection);
   });
 };
+
 const mapContributionPeriod = (
   range: GitHubContributionRange,
   collection: GitHubContributionCollectionResponse,
@@ -144,6 +152,7 @@ const mapContributionPeriod = (
   repositoriesWithPullRequestReviewContributions:
     collection.totalRepositoriesWithContributedPullRequestReviews,
 });
+
 const collectAllRepositories = async (
   username: string,
   accessToken: string,
@@ -178,6 +187,7 @@ const collectAllRepositories = async (
       }
     }
   `;
+
   const repositories: GitHubRepositoryNode[] = [];
 
   let after: string | null = null;
@@ -200,6 +210,7 @@ const collectAllRepositories = async (
 
   return repositories;
 };
+
 const sumYearlyContribution = (
   periods: GitHubContributionPeriodRecord[],
   field: keyof GitHubContributionPeriodRecord,
@@ -207,6 +218,7 @@ const sumYearlyContribution = (
   periods
     .filter((period) => period.key.startsWith('year_'))
     .reduce((total, period) => total + Number(period[field]), 0);
+
 const buildMetrics = (
   user: GitHubUser,
   repositories: GitHubRepositoryNode[],
@@ -214,12 +226,14 @@ const buildMetrics = (
   collectedAt: Date,
 ): GitHubDataMetrics => {
   const originalRepositories = repositories.filter((repository) => !repository.isFork);
+
   const accountAgeDays = Math.max(
     0,
     Math.floor(
       (collectedAt.getTime() - new Date(user.created_at).getTime()) / MILLISECONDS_PER_DAY,
     ),
   );
+
   const sumOriginal = (value: (repository: GitHubRepositoryNode) => number): number =>
     originalRepositories.reduce((total, repository) => total + value(repository), 0);
 
@@ -253,6 +267,7 @@ const buildMetrics = (
     ).length,
   };
 };
+
 const storeRepositoryFacts = async (
   snapshotId: Types.ObjectId,
   identityId: Types.ObjectId,
@@ -284,6 +299,7 @@ const storeRepositoryFacts = async (
     await GitHubRepositoryFact.insertMany(facts.slice(index, index + 500));
   }
 };
+
 const collectGitHubData = async (
   identityId: Types.ObjectId,
   externalAccountId: Types.ObjectId,
@@ -292,17 +308,22 @@ const collectGitHubData = async (
   collectedAt = new Date(),
 ): Promise<GitHubDataSnapshotDocument> => {
   const ranges = createContributionRanges(new Date(user.created_at), collectedAt);
+
   const [periodsResult, repositoriesResult] = await Promise.allSettled([
     collectContributionPeriods(user.login, accessToken, ranges),
     collectAllRepositories(user.login, accessToken),
   ]);
+
   const periods = periodsResult.status === 'fulfilled' ? periodsResult.value : [];
   const repositories = repositoriesResult.status === 'fulfilled' ? repositoriesResult.value : [];
+
   const status =
     periodsResult.status === 'fulfilled' && repositoriesResult.status === 'fulfilled'
       ? 'complete'
       : 'partial';
+
   const metrics = buildMetrics(user, repositories, periods, collectedAt);
+
   const snapshot = await GitHubDataSnapshot.create({
     identity: identityId,
     externalAccount: externalAccountId,

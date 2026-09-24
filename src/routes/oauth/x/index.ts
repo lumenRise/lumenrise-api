@@ -6,10 +6,10 @@ import requireSession from '../../../middleware/requireSession.js';
 
 const xOAuthRoutes = Router();
 
+xOAuthRoutes.get('/callback', callbackXOAuthRoute);
+xOAuthRoutes.get('/connect', requireSession, connectXOAuthRoute);
 xOAuthRoutes.get('/start', (_req, res) =>
   res.status(410).json({ status: 'error', message: 'Wallet registration is required', result: {} }),
 );
-xOAuthRoutes.get('/connect', requireSession, connectXOAuthRoute);
-xOAuthRoutes.get('/callback', callbackXOAuthRoute);
 
 export default xOAuthRoutes;
