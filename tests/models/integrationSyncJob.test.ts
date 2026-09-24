@@ -16,6 +16,26 @@ describe('IntegrationSyncJob model', () => {
     expect(job.active).toBe(true);
   });
 
+  it('accepts a queued GitLab synchronization job', async () => {
+    const job = new IntegrationSyncJob({
+      identity: new Types.ObjectId(),
+      externalAccount: new Types.ObjectId(),
+      provider: 'gitlab',
+    });
+
+    await expect(job.validate()).resolves.toBeUndefined();
+  });
+
+  it('accepts a queued X synchronization job', async () => {
+    const job = new IntegrationSyncJob({
+      identity: new Types.ObjectId(),
+      externalAccount: new Types.ObjectId(),
+      provider: 'x',
+    });
+
+    await expect(job.validate()).resolves.toBeUndefined();
+  });
+
   it('requires terminal jobs to be inactive and completed', async () => {
     const job = new IntegrationSyncJob({
       identity: new Types.ObjectId(),

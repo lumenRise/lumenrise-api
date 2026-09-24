@@ -4,6 +4,7 @@ import { EXTERNAL_ACCOUNT_PROVIDERS } from '../constants/integration.js';
 import { REPUTATION_CATEGORIES, REPUTATION_SNAPSHOT_STATUSES } from '../constants/reputation.js';
 import type {
   ReputationSignalRecord,
+  ReputationSourceRecord,
   ReputationSnapshotRecord,
 } from '../types/reputation/model.js';
 
@@ -22,6 +23,22 @@ const reputationSignalSchema = new Schema<ReputationSignalRecord>(
     },
     rawValue: {
       type: Number,
+      required: true,
+    },
+    normalization: {
+      type: String,
+      enum: ['diminishing_returns'],
+      required: true,
+    },
+    scale: {
+      type: Number,
+      min: 0,
+      required: true,
+    },
+    baseWeight: {
+      type: Number,
+      min: 0,
+      max: 1,
       required: true,
     },
     normalizedScore: {
@@ -43,6 +60,33 @@ const reputationSignalSchema = new Schema<ReputationSignalRecord>(
       max: 100,
     },
     observedAt: {
+      type: Date,
+      required: true,
+    },
+  },
+  {
+    _id: false,
+    versionKey: false,
+  },
+);
+const reputationSourceSchema = new Schema<ReputationSourceRecord>(
+  {
+    provider: {
+      type: String,
+      enum: EXTERNAL_ACCOUNT_PROVIDERS,
+      required: true,
+    },
+    snapshot: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    dataVersion: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+    collectedAt: {
       type: Date,
       required: true,
     },
@@ -88,6 +132,11 @@ const reputationSnapshotSchema = new Schema<ReputationSnapshotRecord>(
     },
     signals: {
       type: [reputationSignalSchema],
+      default: [],
+      immutable: true,
+    },
+    sources: {
+      type: [reputationSourceSchema],
       default: [],
       immutable: true,
     },

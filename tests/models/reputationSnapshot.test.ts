@@ -18,10 +18,21 @@ describe('ReputationSnapshot model', () => {
           provider: 'github',
           key: 'public_repository_count',
           rawValue: 24,
+          normalization: 'diminishing_returns',
+          scale: 30,
+          baseWeight: 0.25,
           normalizedScore: 80,
           weight: 0.25,
           contribution: 20,
           observedAt: calculatedAt,
+        },
+      ],
+      sources: [
+        {
+          provider: 'github',
+          snapshot: new Types.ObjectId(),
+          dataVersion: 'github-data-v1',
+          collectedAt: calculatedAt,
         },
       ],
     });
@@ -30,6 +41,7 @@ describe('ReputationSnapshot model', () => {
 
     expect(snapshot.score).toBe(72);
     expect(snapshot.signals).toHaveLength(1);
+    expect(snapshot.sources).toHaveLength(1);
     expect(snapshot.signals[0]?.contribution).toBe(20);
   });
 

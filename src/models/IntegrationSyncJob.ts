@@ -12,7 +12,7 @@ const integrationSyncJobSchema = new Schema<IntegrationSyncJobRecord>(
       required: true,
       immutable: true,
     },
-    provider: { type: String, enum: ['github'], required: true, immutable: true },
+    provider: { type: String, enum: ['github', 'gitlab', 'x'], required: true, immutable: true },
     status: {
       type: String,
       enum: INTEGRATION_SYNC_JOB_STATUSES,
@@ -27,7 +27,7 @@ const integrationSyncJobSchema = new Schema<IntegrationSyncJobRecord>(
     completedAt: { type: Date, default: null },
     leaseUntil: { type: Date, default: null },
     lastError: { type: String, default: null, maxlength: 2_000 },
-    resultSnapshot: { type: Schema.Types.ObjectId, ref: 'GitHubDataSnapshot', default: null },
+    resultSnapshot: { type: Schema.Types.ObjectId, default: null },
   },
   { timestamps: true, versionKey: false },
 );

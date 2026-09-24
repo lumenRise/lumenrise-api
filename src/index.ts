@@ -5,11 +5,16 @@ import env from './env.js';
 import log from './logger.js';
 import { connectDatabase, disconnectDatabase } from './db.js';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations.js';
+import { startXScheduler, stopXScheduler } from './services/integration/xScheduler.js';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration.js';
 import {
   startIntegrationSyncWorker,
   stopIntegrationSyncWorker,
 } from './services/integration/syncWorker.js';
+import {
+  startStellarActivityScanWorker,
+  stopStellarActivityScanWorker,
+} from './services/stellar/activityScanWorker.js';
 
 let server: Server | undefined;
 
@@ -35,7 +40,9 @@ const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
 
   try {
     await closeServer();
+    await stopXScheduler();
     await stopIntegrationSyncWorker();
+    await stopStellarActivityScanWorker();
   } finally {
     await disconnectDatabase();
   }
@@ -52,6 +59,8 @@ const bootstrap = async (): Promise<void> => {
   await connectDatabase();
   await runDatabaseMigrations();
   startIntegrationSyncWorker();
+  startStellarActivityScanWorker();
+  startXScheduler();
 
   server = app.listen(env.PORT, () => {
     log.info({ port: env.PORT }, 'Lumenrise API started');

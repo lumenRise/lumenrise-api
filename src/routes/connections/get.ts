@@ -1,7 +1,9 @@
 import type { RequestHandler } from 'express';
 
+import XDataSnapshot from '../../models/XDataSnapshot.js';
 import type { ApiResponse } from '../../types/response.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
+import GitLabDataSnapshot from '../../models/GitLabDataSnapshot.js';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
@@ -20,8 +22,21 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
               collectedAt: -1,
             })
           : null;
+      const gitlabData =
+        account.provider === 'gitlab'
+          ? await GitLabDataSnapshot.findOne({ externalAccount: account._id }).sort({
+              collectedAt: -1,
+            })
+          : null;
+      const xData =
+        account.provider === 'x'
+          ? await XDataSnapshot.findOne({ externalAccount: account._id }).sort({
+              collectedAt: -1,
+            })
+          : null;
+      const providerData = githubData ?? gitlabData ?? xData;
       const syncJob =
-        account.provider === 'github'
+        account.provider === 'github' || account.provider === 'gitlab' || account.provider === 'x'
           ? await IntegrationSyncJob.findOne({ externalAccount: account._id }).sort({
               createdAt: -1,
             })
@@ -35,11 +50,11 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
         avatarUrl: account.avatarUrl,
         connectedAt: account.connectedAt.toISOString(),
         lastSyncedAt: account.lastSyncedAt?.toISOString() ?? null,
-        data: githubData
+        data: providerData
           ? {
-              status: githubData.status,
-              dataVersion: githubData.dataVersion,
-              collectedAt: githubData.collectedAt.toISOString(),
+              status: providerData.status,
+              dataVersion: providerData.dataVersion,
+              collectedAt: providerData.collectedAt.toISOString(),
             }
           : null,
         sync: syncJob ? createIntegrationSyncJobResult(syncJob) : null,
