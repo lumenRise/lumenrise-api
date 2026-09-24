@@ -1,13 +1,14 @@
 import { Router } from 'express';
 
-import startXOAuthRoute from './start.js';
 import connectXOAuthRoute from './connect.js';
 import callbackXOAuthRoute from './callback.js';
 import requireSession from '../../../middleware/requireSession.js';
 
 const xOAuthRoutes = Router();
 
-xOAuthRoutes.get('/start', startXOAuthRoute);
+xOAuthRoutes.get('/start', (_req, res) =>
+  res.status(410).json({ status: 'error', message: 'Wallet registration is required', result: {} }),
+);
 xOAuthRoutes.get('/connect', requireSession, connectXOAuthRoute);
 xOAuthRoutes.get('/callback', callbackXOAuthRoute);
 

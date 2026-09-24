@@ -29,6 +29,10 @@ const createGitLabAuthorization = async (
   purpose: GitLabOAuthPurpose,
   identityId: Types.ObjectId | null,
 ): Promise<GitLabAuthorizationFlow> => {
+  if (purpose !== 'connect' || !identityId) {
+    throw new Error('Wallet registration is required before connecting GitLab');
+  }
+
   assertGitLabConfiguration();
 
   const state = randomBytes(32).toString('base64url');
@@ -215,6 +219,10 @@ const completeGitLabAuthorization = async (
 
   if (!oauthState) {
     throw new Error('Invalid or expired OAuth state');
+  }
+
+  if (oauthState.purpose !== 'connect' || !oauthState.identity) {
+    throw new Error('Wallet registration is required before connecting GitLab');
   }
 
   const token = await exchangeGitLabCode(code, oauthState.codeVerifier);

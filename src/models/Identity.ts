@@ -5,6 +5,7 @@ import type { IdentityRecord } from '../types/identity/model.js';
 
 const identitySchema = new Schema<IdentityRecord>(
   {
+    name: { type: String, default: null, trim: true, maxlength: 80 },
     status: {
       type: String,
       enum: IDENTITY_STATUSES,

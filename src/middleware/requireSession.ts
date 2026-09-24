@@ -4,10 +4,14 @@ import Session from '../models/Session.js';
 import Identity from '../models/Identity.js';
 import { SESSION_COOKIE_NAME } from '../constants/auth.js';
 import { hashSessionToken } from '../services/auth/session.js';
+import { verifyWalletToken } from '../services/auth/walletToken.js';
 import type { ApiResponse, EmptyResult } from '../types/response.js';
 
 const requireSession: RequestHandler = async (req, res, next) => {
-  const token = req.cookies[SESSION_COOKIE_NAME] as string | undefined;
+  const authorization = req.get('authorization');
+  const bearer = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
+  const cookieValue: unknown = req.cookies[SESSION_COOKIE_NAME];
+  const token = bearer ?? (typeof cookieValue === 'string' ? cookieValue : undefined);
 
   if (!token) {
     const response: ApiResponse<EmptyResult> = {
@@ -19,9 +23,16 @@ const requireSession: RequestHandler = async (req, res, next) => {
     return res.status(401).json(response);
   }
 
+  const payload = bearer ? verifyWalletToken(bearer) : null;
+
+  if (bearer && !payload) {
+    return res.status(401).json({ status: 'error', message: 'Invalid wallet token', result: {} });
+  }
+
   const now = new Date();
   const session = await Session.findOne({
     tokenHash: hashSessionToken(token),
+    ...(payload ? { _id: payload.sid, identity: payload.sub } : {}),
     revokedAt: null,
     expiresAt: { $gt: now },
   });

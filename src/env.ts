@@ -35,6 +35,16 @@ const schema = defineConfig({
     default: 30,
     description: 'Number of days a Lumenrise session remains valid.',
   },
+  AUTH_JWT_SECRET: {
+    default: '',
+    description: 'Secret for signing wallet-auth JWTs; required in production.',
+  },
+  STELLAR_AUTH_NETWORK: {
+    type: 'enum',
+    values: ['testnet', 'public'],
+    default: 'testnet',
+    description: 'Stellar network for wallet authentication transactions.',
+  },
   SYNC_WORKER_POLL_INTERVAL_MS: {
     type: 'number',
     default: 2_000,

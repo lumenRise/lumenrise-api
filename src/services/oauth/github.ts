@@ -33,6 +33,10 @@ const createGitHubAuthorization = async (
   purpose: GitHubOAuthPurpose,
   identityId: Types.ObjectId | null,
 ): Promise<GitHubAuthorizationFlow> => {
+  if (purpose !== 'connect' || !identityId) {
+    throw new Error('Wallet registration is required before connecting GitHub');
+  }
+
   assertGitHubConfiguration();
 
   const state = randomBytes(32).toString('base64url');
@@ -223,6 +227,10 @@ const completeGitHubAuthorization = async (
 
   if (!oauthState) {
     throw new Error('Invalid or expired OAuth state');
+  }
+
+  if (oauthState.purpose !== 'connect' || !oauthState.identity) {
+    throw new Error('Wallet registration is required before connecting GitHub');
   }
 
   const token = await exchangeGitHubCode(code, oauthState.codeVerifier);

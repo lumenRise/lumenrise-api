@@ -13,6 +13,8 @@ interface RuntimeConfiguration {
   X_CALLBACK_URL: string;
   X_AUTO_SYNC_INTERVAL_HOURS: number;
   STELLAR_HORIZON_URL: string;
+  STELLAR_AUTH_NETWORK: 'testnet' | 'public';
+  AUTH_JWT_SECRET: string;
   CREDENTIAL_ENCRYPTION_KEY: string;
 }
 

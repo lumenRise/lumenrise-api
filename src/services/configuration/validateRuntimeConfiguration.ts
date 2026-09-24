@@ -15,6 +15,10 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   const hasXClientId = configuration.X_CLIENT_ID.length > 0;
   const hasXClientSecret = configuration.X_CLIENT_SECRET.length > 0;
 
+  if (configuration.NODE_ENV === 'production' && configuration.AUTH_JWT_SECRET.length < 32) {
+    throw new Error('AUTH_JWT_SECRET must contain at least 32 characters in production');
+  }
+
   if (hasGitHubClientId !== hasGitHubClientSecret) {
     throw new Error('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must be configured together');
   }

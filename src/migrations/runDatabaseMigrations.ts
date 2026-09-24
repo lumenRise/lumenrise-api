@@ -11,6 +11,7 @@ import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes
 import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes.js';
 import createIntegrationSyncJobIndexes from './20260922CreateIntegrationSyncJobIndexes.js';
 import createStellarActivityScanIndexes from './20260924CreateStellarActivityScanIndexes.js';
+import createWalletAuthChallengeIndexes from './20260924CreateWalletAuthChallengeIndexes.js';
 
 const migrations: readonly MigrationDefinition[] = [
   createIdentityIndexes,
@@ -23,6 +24,7 @@ const migrations: readonly MigrationDefinition[] = [
   createProviderCredentialIndexes,
   createIntegrationSyncJobIndexes,
   createStellarActivityScanIndexes,
+  createWalletAuthChallengeIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();

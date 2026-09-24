@@ -36,6 +36,10 @@ const createXAuthorization = async (
   purpose: XOAuthPurpose,
   identityId: Types.ObjectId | null,
 ): Promise<XAuthorizationFlow> => {
+  if (purpose !== 'connect' || !identityId) {
+    throw new Error('Wallet registration is required before connecting X');
+  }
+
   assertXConfiguration();
 
   const state = randomBytes(32).toString('base64url');
@@ -238,6 +242,10 @@ const completeXAuthorization = async (
 
   if (!oauthState) {
     throw new Error('Invalid or expired OAuth state');
+  }
+
+  if (oauthState.purpose !== 'connect' || !oauthState.identity) {
+    throw new Error('Wallet registration is required before connecting X');
   }
 
   const token = await exchangeXCode(code, oauthState.codeVerifier);

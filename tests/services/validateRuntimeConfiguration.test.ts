@@ -18,6 +18,8 @@ const validConfiguration: RuntimeConfiguration = {
   X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',
   X_AUTO_SYNC_INTERVAL_HOURS: 0,
   STELLAR_HORIZON_URL: 'https://horizon-testnet.stellar.org',
+  STELLAR_AUTH_NETWORK: 'testnet',
+  AUTH_JWT_SECRET: 'a'.repeat(32),
   CREDENTIAL_ENCRYPTION_KEY: 'a'.repeat(64),
 };
 
@@ -66,5 +68,15 @@ describe('runtime configuration validation', () => {
     expect(() =>
       validateRuntimeConfiguration({ ...validConfiguration, NODE_ENV: 'production' }),
     ).toThrow('must use HTTPS in production');
+  });
+
+  it('requires a durable JWT signing secret in production', () => {
+    expect(() =>
+      validateRuntimeConfiguration({
+        ...validConfiguration,
+        NODE_ENV: 'production',
+        AUTH_JWT_SECRET: '',
+      }),
+    ).toThrow('AUTH_JWT_SECRET');
   });
 });
