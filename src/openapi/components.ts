@@ -239,6 +239,26 @@ const openApiComponents = {
         calculatedAt: dateTime,
       },
     },
+    ReputationProfile: {
+      type: 'object',
+      required: ['identity', 'developer', 'social', 'stellar'],
+      properties: {
+        identity: {
+          type: 'object',
+          required: ['id', 'name', 'primaryWalletAddress'],
+          properties: {
+            id: { $ref: '#/components/schemas/ObjectId' },
+            name: nullableString,
+            primaryWalletAddress: {
+              oneOf: [{ $ref: '#/components/schemas/StellarAddress' }, { type: 'null' }],
+            },
+          },
+        },
+        developer: { oneOf: [{ $ref: '#/components/schemas/ReputationScore' }, { type: 'null' }] },
+        social: { oneOf: [{ $ref: '#/components/schemas/ReputationScore' }, { type: 'null' }] },
+        stellar: { oneOf: [{ $ref: '#/components/schemas/StellarReputation' }, { type: 'null' }] },
+      },
+    },
     GitHubSnapshot: {
       type: 'object',
       required: [

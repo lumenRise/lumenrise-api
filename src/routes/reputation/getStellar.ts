@@ -6,8 +6,7 @@ import StellarAccount from '../../models/StellarAccount.js';
 import StellarActivityScan from '../../models/StellarActivityScan.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import type { StellarReputationResult } from '../../types/reputation/stellar.js';
-import { calculateStellarActivityScore } from '../../services/stellar/activityScore.js';
-import { toStellarActivityScanResult } from '../../services/stellar/activityScanQueue.js';
+import toStellarReputationResult from '../../utils/reputation/toStellarReputationResult.js';
 
 const getStellarReputationRoute: RequestHandler = async (req, res) => {
   try {
@@ -36,16 +35,7 @@ const getStellarReputationRoute: RequestHandler = async (req, res) => {
     const response: ApiResponse<StellarReputationResult> = {
       status: 'success',
       message: 'Stellar reputation retrieved',
-      result: {
-        address: account.address,
-        ownershipVerified: true,
-        scanStatus: scan?.status ?? 'not_started',
-        scan: scan ? { ...toStellarActivityScanResult(scan), ownershipVerified: true } : null,
-        score:
-          scan?.status === 'completed'
-            ? { ...calculateStellarActivityScore(scan), ownershipVerified: true }
-            : null,
-      },
+      result: toStellarReputationResult(account.address, scan),
     };
 
     return res.status(200).json(response);

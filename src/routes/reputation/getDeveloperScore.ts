@@ -3,6 +3,7 @@ import type { RequestHandler } from 'express';
 import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import type { ReputationSnapshotResult } from '../../types/reputation/model.js';
+import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult.js';
 
 const getDeveloperScoreRoute: RequestHandler = async (req, res) => {
   const snapshot = await ReputationSnapshot.findOne({
@@ -23,31 +24,7 @@ const getDeveloperScoreRoute: RequestHandler = async (req, res) => {
   const response: ApiResponse<ReputationSnapshotResult> = {
     status: 'success',
     message: 'Developer score retrieved',
-    result: {
-      category: snapshot.category,
-      status: snapshot.status,
-      algorithmVersion: snapshot.algorithmVersion,
-      score: snapshot.score,
-      signals: snapshot.signals.map((signal) => ({
-        provider: signal.provider,
-        key: signal.key,
-        rawValue: signal.rawValue,
-        normalization: signal.normalization,
-        scale: signal.scale,
-        baseWeight: signal.baseWeight,
-        normalizedScore: signal.normalizedScore,
-        weight: signal.weight,
-        contribution: signal.contribution,
-        observedAt: signal.observedAt.toISOString(),
-      })),
-      sources: snapshot.sources.map((source) => ({
-        provider: source.provider,
-        snapshotId: source.snapshot.toString(),
-        dataVersion: source.dataVersion,
-        collectedAt: source.collectedAt.toISOString(),
-      })),
-      calculatedAt: snapshot.calculatedAt.toISOString(),
-    },
+    result: toReputationSnapshotResult(snapshot),
   };
 
   return res.status(200).json(response);

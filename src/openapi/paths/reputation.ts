@@ -16,6 +16,23 @@ const paginationParameters = [
 ];
 
 const reputationPaths = {
+  '/v1/reputation/profile': {
+    get: {
+      tags: ['Reputation'],
+      summary: 'Get the current identity reputation profile',
+      operationId: 'getReputationProfile',
+      description:
+        'Combines existing developer, social and verified primary Stellar wallet evidence without calculating an overall score. Unavailable or disconnected sections are null; each available score retains its own algorithm version and source timestamps.',
+      responses: {
+        '200': jsonResponse('Reputation profile retrieved.', {
+          $ref: '#/components/schemas/ReputationProfile',
+        }),
+        '401': { $ref: '#/components/responses/Unauthorized' },
+        '404': { $ref: '#/components/responses/NotFound' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
   '/v1/reputation/developer': {
     get: {
       tags: ['Reputation'],
