@@ -32,6 +32,7 @@ const expectedOperations = [
   'POST /v1/connections/x/sync',
   'GET /v1/connections/x/sync/{jobId}',
   'GET /v1/reputation/developer',
+  'GET /v1/reputation/profile',
   'GET /v1/reputation/developer/repositories',
   'GET /v1/reputation/developer/score',
   'GET /v1/reputation/developer/gitlab',
