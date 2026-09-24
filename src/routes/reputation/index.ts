@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import getProfileRoute from './getProfile.js';
 import getXSocialRoute from './getXSocial.js';
 import getSocialScoreRoute from './getSocialScore.js';
 import getStellarReputationRoute from './getStellar.js';
@@ -13,6 +14,7 @@ import getDeveloperRepositoriesRoute from './getDeveloperRepositories.js';
 
 const reputationRoutes = Router();
 
+reputationRoutes.get('/profile', requireSession, getProfileRoute);
 reputationRoutes.get('/developer', requireSession, getDeveloperReputationRoute);
 reputationRoutes.get('/social/x', requireSession, getXSocialRoute);
 reputationRoutes.get('/social/score', requireSession, getSocialScoreRoute);
