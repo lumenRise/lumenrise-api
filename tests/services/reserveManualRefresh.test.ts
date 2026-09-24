@@ -23,6 +23,7 @@ describe('manual refresh reservation', () => {
     await expect(reserveManualRefresh(identity, 'github-sync', now)).resolves.toEqual({
       allowed: true,
       retryAt: null,
+      reservedUntil: nextAllowedAt,
     });
     expect(ManualRefreshCooldown.findOneAndUpdate).toHaveBeenCalledWith(
       {
@@ -49,6 +50,7 @@ describe('manual refresh reservation', () => {
     await expect(reserveManualRefresh(identity, 'github-sync', now)).resolves.toEqual({
       allowed: false,
       retryAt,
+      reservedUntil: null,
     });
   });
 });

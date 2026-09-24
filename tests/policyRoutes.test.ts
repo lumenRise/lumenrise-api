@@ -7,6 +7,7 @@ import Policy from '../src/models/Policy.js';
 import evaluatePolicy from '../src/services/policy/evaluatePolicy.js';
 import getReputationProfile from '../src/services/reputation/profile.js';
 import reserveManualRefresh from '../src/services/refresh/reserveManualRefresh.js';
+import releaseManualRefresh from '../src/services/refresh/releaseManualRefresh.js';
 
 const identityId = new Types.ObjectId();
 const policyId = new Types.ObjectId();
@@ -31,6 +32,7 @@ vi.mock('../src/models/Policy.js', () => ({
 vi.mock('../src/services/reputation/profile.js', () => ({ default: vi.fn() }));
 vi.mock('../src/services/policy/evaluatePolicy.js', () => ({ default: vi.fn() }));
 vi.mock('../src/services/refresh/reserveManualRefresh.js', () => ({ default: vi.fn() }));
+vi.mock('../src/services/refresh/releaseManualRefresh.js', () => ({ default: vi.fn() }));
 
 describe('policy routes', () => {
   beforeEach(() => {
@@ -56,16 +58,18 @@ describe('policy routes', () => {
     vi.mocked(Policy.findOne).mockReturnValue({
       sort: vi.fn().mockResolvedValue(policy),
     } as never);
+    vi.mocked(getReputationProfile).mockResolvedValue({ identity: {} } as never);
     vi.mocked(reserveManualRefresh).mockResolvedValue({
       allowed: false,
       retryAt: new Date(Date.now() + 900_000),
+      reservedUntil: null,
     });
 
     const response = await request(app).post('/v1/policies/stellar-active/evaluate');
 
     expect(response.status).toBe(429);
     expect(Number(response.headers['retry-after'])).toBeGreaterThan(0);
-    expect(getReputationProfile).not.toHaveBeenCalled();
+    expect(getReputationProfile).toHaveBeenCalledWith(identityId);
   });
 
   it('reads only the latest version owned by the current identity', async () => {
@@ -96,7 +100,11 @@ describe('policy routes', () => {
     vi.mocked(Policy.findOne).mockReturnValue({
       sort: vi.fn().mockResolvedValue(policy),
     } as never);
-    vi.mocked(reserveManualRefresh).mockResolvedValue({ allowed: true, retryAt: null });
+    vi.mocked(reserveManualRefresh).mockResolvedValue({
+      allowed: true,
+      retryAt: null,
+      reservedUntil: new Date(Date.now() + 900_000),
+    });
     vi.mocked(getReputationProfile).mockResolvedValue({ identity: {} } as never);
     vi.mocked(evaluatePolicy).mockReturnValue(evaluation as never);
 
@@ -111,6 +119,32 @@ describe('policy routes', () => {
     expect(reserveManualRefresh).toHaveBeenCalledWith(
       identityId,
       'policy-evaluation:stellar-active',
+    );
+  });
+
+  it('releases the evaluation cooldown when evaluation fails', async () => {
+    const reservedUntil = new Date(Date.now() + 900_000);
+
+    vi.mocked(Policy.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(policy),
+    } as never);
+    vi.mocked(getReputationProfile).mockResolvedValue({ identity: {} } as never);
+    vi.mocked(reserveManualRefresh).mockResolvedValue({
+      allowed: true,
+      retryAt: null,
+      reservedUntil,
+    });
+    vi.mocked(evaluatePolicy).mockImplementation(() => {
+      throw new Error('Evaluation failed');
+    });
+
+    const response = await request(app).post('/v1/policies/stellar-active/evaluate');
+
+    expect(response.status).toBe(503);
+    expect(releaseManualRefresh).toHaveBeenCalledWith(
+      identityId,
+      'policy-evaluation:stellar-active',
+      reservedUntil,
     );
   });
 });
