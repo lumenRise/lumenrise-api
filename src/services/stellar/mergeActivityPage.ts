@@ -26,7 +26,7 @@ const mergeStellarActivityPage = (
     ? new Date(lastOperation.createdAt).toISOString().slice(0, 10)
     : lastDay;
 
-  const operationTypeCounts = new Map(Object.entries(current.operationTypeCounts));
+  const operationTypeCounts = new Map(Object.entries(current.operationTypeCounts ?? {}));
 
   for (const [type, count] of Object.entries(page.summary.operationTypeCounts)) {
     operationTypeCounts.set(type, (operationTypeCounts.get(type) ?? 0) + count);
