@@ -7,6 +7,7 @@ import type { ApiResponse, EmptyResult } from '../../../../types/response.js';
 import isValidStellarGAddress from '../../../stellar/isValidStellarGAddress.js';
 import type { StellarActivityScanResult } from '../../../../types/stellar/scan.js';
 import reserveManualRefresh from '../../../../services/refresh/reserveManualRefresh.js';
+import releaseManualRefresh from '../../../../services/refresh/releaseManualRefresh.js';
 import {
   enqueueStellarActivityScan,
   toStellarActivityScanResult,
@@ -25,16 +26,22 @@ const postStellarActivityScanRoute: RequestHandler = async (req, res) => {
     return res.status(400).json(response);
   }
 
+  let reservedUntil: Date | null = null;
+
   try {
     const reservation = await reserveManualRefresh(req.auth!.identityId, 'stellar-activity-scan');
-
     if (!reservation.allowed) {
       return sendManualRefreshLimit(res, reservation.retryAt!);
     }
 
+    reservedUntil = reservation.reservedUntil;
+
     const queued = await enqueueStellarActivityScan(req.auth!.identityId, address);
 
     if (queued.conflict) {
+      await releaseManualRefresh(req.auth!.identityId, 'stellar-activity-scan', reservedUntil!);
+      reservedUntil = null;
+
       const response: ApiResponse<EmptyResult> = {
         status: 'error',
         message: 'Another Stellar activity scan is already active',
@@ -52,6 +59,10 @@ const postStellarActivityScanRoute: RequestHandler = async (req, res) => {
 
     return res.status(202).json(response);
   } catch (error) {
+    if (reservedUntil) {
+      await releaseManualRefresh(req.auth!.identityId, 'stellar-activity-scan', reservedUntil);
+    }
+
     log.error({ error, address }, 'Stellar activity scan enqueue failed');
 
     const response: ApiResponse<EmptyResult> = {

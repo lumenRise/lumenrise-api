@@ -7,6 +7,7 @@ import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import getReputationProfile from '../../services/reputation/profile.js';
 import type { PolicyEvaluation } from '../../types/policy/evaluation.js';
 import reserveManualRefresh from '../../services/refresh/reserveManualRefresh.js';
+import releaseManualRefresh from '../../services/refresh/releaseManualRefresh.js';
 import sendManualRefreshLimit from '../../utils/routes/sendManualRefreshLimit.js';
 
 const evaluatePolicyRoute: RequestHandler = async (req, res) => {
@@ -22,6 +23,8 @@ const evaluatePolicyRoute: RequestHandler = async (req, res) => {
     return res.status(400).json(response);
   }
 
+  let reservedUntil: Date | null = null;
+
   try {
     const policy = await Policy.findOne({ ownerIdentity: req.auth!.identityId, key }).sort({
       version: -1,
@@ -29,6 +32,12 @@ const evaluatePolicyRoute: RequestHandler = async (req, res) => {
 
     if (!policy) {
       return res.status(404).json({ status: 'error', message: 'Policy not found', result: {} });
+    }
+
+    const profile = await getReputationProfile(req.auth!.identityId);
+
+    if (!profile) {
+      return res.status(404).json({ status: 'error', message: 'Identity not found', result: {} });
     }
 
     const reservation = await reserveManualRefresh(
@@ -40,11 +49,7 @@ const evaluatePolicyRoute: RequestHandler = async (req, res) => {
       return sendManualRefreshLimit(res, reservation.retryAt!);
     }
 
-    const profile = await getReputationProfile(req.auth!.identityId);
-
-    if (!profile) {
-      return res.status(404).json({ status: 'error', message: 'Identity not found', result: {} });
-    }
+    reservedUntil = reservation.reservedUntil;
 
     const response: ApiResponse<PolicyEvaluation> = {
       status: 'success',
@@ -54,6 +59,10 @@ const evaluatePolicyRoute: RequestHandler = async (req, res) => {
 
     return res.status(200).json(response);
   } catch (error) {
+    if (reservedUntil) {
+      await releaseManualRefresh(req.auth!.identityId, `policy-evaluation:${key}`, reservedUntil);
+    }
+
     log.error({ error, identityId: req.auth!.identityId, key }, 'Policy evaluation failed');
 
     return res.status(503).json({

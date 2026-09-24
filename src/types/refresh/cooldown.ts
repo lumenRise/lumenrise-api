@@ -11,6 +11,7 @@ type ManualRefreshCooldownDocument = HydratedDocument<ManualRefreshCooldownRecor
 interface ManualRefreshReservation {
   allowed: boolean;
   retryAt: Date | null;
+  reservedUntil: Date | null;
 }
 
 export type {

@@ -26,7 +26,7 @@ const reserveManualRefresh = async (
     );
 
     if (cooldown) {
-      return { allowed: true, retryAt: null };
+      return { allowed: true, retryAt: null, reservedUntil: nextAllowedAt };
     }
   } catch (error) {
     if (typeof error !== 'object' || error === null || Reflect.get(error, 'code') !== 11_000) {
@@ -39,6 +39,7 @@ const reserveManualRefresh = async (
   return {
     allowed: false,
     retryAt: cooldown?.nextAllowedAt ?? nextAllowedAt,
+    reservedUntil: null,
   };
 };
 
