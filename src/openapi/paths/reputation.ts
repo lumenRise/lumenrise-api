@@ -16,6 +16,23 @@ const paginationParameters = [
 ];
 
 const reputationPaths = {
+  '/v1/reputation/sybil/evidence': {
+    get: {
+      tags: ['Reputation'],
+      summary: 'Get diagnostic evidence for the authenticated identity',
+      operationId: 'getSybilEvidence',
+      description:
+        'Read-only, versioned observations from existing wallet registration, OAuth connections and stored snapshots. No Sybil verdict, risk score, cross-identity analysis or policy effect. Completed Horizon scans cover available history only.',
+      responses: {
+        '200': jsonResponse('Sybil evidence retrieved.', {
+          $ref: '#/components/schemas/SybilEvidence',
+        }),
+        '401': { $ref: '#/components/responses/Unauthorized' },
+        '404': { $ref: '#/components/responses/NotFound' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
   '/v1/reputation/profile': {
     get: {
       tags: ['Reputation'],

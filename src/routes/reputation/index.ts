@@ -5,6 +5,7 @@ import getXSocialRoute from './getXSocial.js';
 import getSocialScoreRoute from './getSocialScore.js';
 import getStellarReputationRoute from './getStellar.js';
 import getGitLabEventsRoute from './getGitLabEvents.js';
+import getSybilEvidenceRoute from './getSybilEvidence.js';
 import getDeveloperReputationRoute from './getDeveloper.js';
 import getGitLabProjectsRoute from './getGitLabProjects.js';
 import getDeveloperScoreRoute from './getDeveloperScore.js';
@@ -15,6 +16,7 @@ import getDeveloperRepositoriesRoute from './getDeveloperRepositories.js';
 const reputationRoutes = Router();
 
 reputationRoutes.get('/profile', requireSession, getProfileRoute);
+reputationRoutes.get('/sybil/evidence', requireSession, getSybilEvidenceRoute);
 reputationRoutes.get('/developer', requireSession, getDeveloperReputationRoute);
 reputationRoutes.get('/social/x', requireSession, getXSocialRoute);
 reputationRoutes.get('/social/score', requireSession, getSocialScoreRoute);
