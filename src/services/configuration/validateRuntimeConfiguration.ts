@@ -43,6 +43,7 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
 
   const clientOrigin = parseUrl(configuration.CLIENT_ORIGIN, 'CLIENT_ORIGIN');
   const stellarHorizonUrl = parseUrl(configuration.STELLAR_HORIZON_URL, 'STELLAR_HORIZON_URL');
+  const stellarRpcUrl = parseUrl(configuration.STELLAR_RPC_URL, 'STELLAR_RPC_URL');
   const gitlabBaseUrl = parseUrl(configuration.GITLAB_BASE_URL, 'GITLAB_BASE_URL');
   const githubCallbackUrl = parseUrl(configuration.GITHUB_CALLBACK_URL, 'GITHUB_CALLBACK_URL');
   const gitlabCallbackUrl = parseUrl(configuration.GITLAB_CALLBACK_URL, 'GITLAB_CALLBACK_URL');
@@ -53,6 +54,7 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
     (clientOrigin.protocol !== 'https:' ||
       gitlabBaseUrl.protocol !== 'https:' ||
       stellarHorizonUrl.protocol !== 'https:' ||
+      stellarRpcUrl.protocol !== 'https:' ||
       githubCallbackUrl.protocol !== 'https:' ||
       gitlabCallbackUrl.protocol !== 'https:' ||
       xCallbackUrl.protocol !== 'https:')
@@ -62,6 +64,10 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
 
   if (!['http:', 'https:'].includes(stellarHorizonUrl.protocol)) {
     throw new Error('STELLAR_HORIZON_URL must use HTTP or HTTPS');
+  }
+
+  if (!['http:', 'https:'].includes(stellarRpcUrl.protocol)) {
+    throw new Error('STELLAR_RPC_URL must use HTTP or HTTPS');
   }
 };
 

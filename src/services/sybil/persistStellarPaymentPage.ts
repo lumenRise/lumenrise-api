@@ -2,6 +2,8 @@ import { withDatabaseTransaction } from '../../db.js';
 import StellarPaymentFact from '../../models/StellarPaymentFact.js';
 import StellarActivityScan from '../../models/StellarActivityScan.js';
 import type { StellarOperationsResult } from '../../types/stellar/operations.js';
+import SorobanTransactionEvidence from '../../models/SorobanTransactionEvidence.js';
+import type { SorobanTransactionEvidenceInput } from '../../types/stellar/soroban.js';
 import extractStellarPaymentFacts from '../../utils/sybil/extractStellarPaymentFacts.js';
 import type {
   StellarActivityMergeResult,
@@ -13,6 +15,7 @@ const persistStellarPaymentPage = async (
   page: StellarOperationsResult,
   merged: StellarActivityMergeResult,
   now: Date,
+  sorobanEvidence: SorobanTransactionEvidenceInput[] = [],
 ): Promise<void> => {
   const facts = extractStellarPaymentFacts(scan, page);
   const completed = page.nextCursor === null;
@@ -40,20 +43,42 @@ const persistStellarPaymentPage = async (
       { runValidators: true, session },
     );
 
-    if (updated.matchedCount !== 1 || facts.length === 0) {
+    if (updated.matchedCount !== 1) {
       return;
     }
 
-    await StellarPaymentFact.bulkWrite(
-      facts.map((fact) => ({
-        updateOne: {
-          filter: { scan: fact.scan, operationId: fact.operationId },
-          update: { $setOnInsert: fact },
-          upsert: true,
-        },
-      })),
-      { session },
-    );
+    if (facts.length > 0) {
+      await StellarPaymentFact.bulkWrite(
+        facts.map((fact) => ({
+          updateOne: {
+            filter: { scan: fact.scan, operationId: fact.operationId },
+            update: { $setOnInsert: fact },
+            upsert: true,
+          },
+        })),
+        { session },
+      );
+    }
+
+    if (sorobanEvidence.length > 0) {
+      await SorobanTransactionEvidence.bulkWrite(
+        sorobanEvidence.map(({ operationIds, initiatedOperation, ...evidence }) => ({
+          updateOne: {
+            filter: { scan: evidence.scan, transactionHash: evidence.transactionHash },
+            update: {
+              $setOnInsert: {
+                ...evidence,
+                ...(!initiatedOperation ? { initiatedOperation: false } : {}),
+              },
+              $addToSet: { operationIds: { $each: operationIds } },
+              ...(initiatedOperation ? { $set: { initiatedOperation: true } } : {}),
+            },
+            upsert: true,
+          },
+        })),
+        { session },
+      );
+    }
   });
 };
 

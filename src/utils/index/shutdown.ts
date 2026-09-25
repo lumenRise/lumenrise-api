@@ -3,6 +3,7 @@ import { closeServer } from './closeServer.js';
 import { disconnectDatabase } from '../../db.js';
 import { stopXScheduler } from '../../services/integration/xScheduler.js';
 import { stopIntegrationSyncWorker } from '../../services/integration/syncWorker.js';
+import { stopSorobanEvidenceWorker } from '../../services/stellar/sorobanEvidenceWorker.js';
 import { stopStellarActivityScanWorker } from '../../services/stellar/activityScanWorker.js';
 
 const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
@@ -13,6 +14,7 @@ const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
     await stopXScheduler();
     await stopIntegrationSyncWorker();
     await stopStellarActivityScanWorker();
+    await stopSorobanEvidenceWorker();
   } finally {
     await disconnectDatabase();
   }

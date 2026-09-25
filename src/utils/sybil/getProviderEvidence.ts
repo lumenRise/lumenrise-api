@@ -23,6 +23,15 @@ const getProviderEvidence = async (
           status: snapshot.status,
           dataVersion: snapshot.dataVersion,
           collectedAt: snapshot.collectedAt.toISOString(),
+          profileCovered: snapshot.coverage.profile,
+          activityCovered: 'contributions' in snapshot.coverage && snapshot.coverage.contributions,
+          accountAgeDays: snapshot.metrics.accountAgeDays,
+          commitCount:
+            'allTimeCommits' in snapshot.metrics
+              ? snapshot.metrics.allTimeCommits
+              : 'pushedCommitCount' in snapshot.metrics
+                ? snapshot.metrics.pushedCommitCount
+                : null,
         }
       : null,
   };

@@ -4,6 +4,7 @@ import { failStellarActivityScan } from '../../../../services/stellar/activitySc
 import { mergeStellarActivityPage } from '../../../../services/stellar/mergeActivityPage.js';
 import getStellarAccountOperations from '../../../../services/stellar/getAccountOperations.js';
 import persistStellarPaymentPage from '../../../../services/sybil/persistStellarPaymentPage.js';
+import getSorobanEvidenceForPage from '../../../../services/stellar/getSorobanEvidenceForPage.js';
 
 const processStellarActivityScan = async (scan: StellarActivityScanDocument): Promise<void> => {
   try {
@@ -28,8 +29,9 @@ const processStellarActivityScan = async (scan: StellarActivityScanDocument): Pr
     );
 
     const now = new Date();
+    const sorobanEvidence = getSorobanEvidenceForPage(scan, page);
 
-    await persistStellarPaymentPage(scan, page, merged, now);
+    await persistStellarPaymentPage(scan, page, merged, now, sorobanEvidence);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown Stellar scan error';
 

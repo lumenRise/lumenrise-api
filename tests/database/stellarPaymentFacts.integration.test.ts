@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { randomUUID } from 'node:crypto';
-import { Keypair } from '@stellar/stellar-sdk';
+import { Keypair, Networks, rpc } from '@stellar/stellar-sdk';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import createPage from '../utils/stellarActivityScan/createPage.js';
@@ -8,7 +8,10 @@ import StellarPaymentFact from '../../src/models/StellarPaymentFact.js';
 import StellarActivityScan from '../../src/models/StellarActivityScan.js';
 import createOperation from '../utils/stellarActivityScan/createOperation.js';
 import type { StellarActivityScanDocument } from '../../src/types/stellar/scan.js';
+import SorobanTransactionEvidence from '../../src/models/SorobanTransactionEvidence.js';
+import { processSorobanEvidence } from '../../src/services/stellar/sorobanEvidenceWorker.js';
 import persistStellarPaymentPage from '../../src/services/sybil/persistStellarPaymentPage.js';
+import getSorobanEvidenceForPage from '../../src/services/stellar/getSorobanEvidenceForPage.js';
 import {
   createEmptyStellarActivityAggregate,
   mergeStellarActivityPage,
@@ -24,7 +27,11 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB Stellar paym
       dbName: databaseName,
       serverSelectionTimeoutMS: 5_000,
     });
-    await Promise.all([StellarActivityScan.createIndexes(), StellarPaymentFact.createIndexes()]);
+    await Promise.all([
+      StellarActivityScan.createIndexes(),
+      StellarPaymentFact.createIndexes(),
+      SorobanTransactionEvidence.createIndexes(),
+    ]);
   });
 
   afterAll(async () => {
@@ -40,7 +47,11 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB Stellar paym
       ...createOperation('5', 'transaction', '2026-09-25T12:00:00Z'),
       details: { from: address, to: counterparty },
     };
-    const page = createPage([operation], null);
+    const invocation = {
+      ...createOperation('6', 'contract-transaction', '2026-09-25T12:00:00Z'),
+      type: 'invoke_host_function',
+    };
+    const page = createPage([operation, invocation], null);
     const leaseUntil = new Date(Date.now() + 60_000);
     const scan = await StellarActivityScan.create({
       identity: new mongoose.Types.ObjectId(),
@@ -55,20 +66,34 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB Stellar paym
     });
     const merged = mergeStellarActivityPage(scan.summary, page, null, null);
     const now = new Date();
+    const candidates = getSorobanEvidenceForPage(scan as StellarActivityScanDocument, page);
     const write = vi
-      .spyOn(StellarPaymentFact, 'bulkWrite')
+      .spyOn(SorobanTransactionEvidence, 'bulkWrite')
       .mockRejectedValueOnce(new Error('Simulated fact write failure'));
 
     await expect(
-      persistStellarPaymentPage(scan as StellarActivityScanDocument, page, merged, now),
+      persistStellarPaymentPage(scan as StellarActivityScanDocument, page, merged, now, candidates),
     ).rejects.toThrow('Simulated fact write failure');
     expect((await StellarActivityScan.findById(scan._id))?.pagesProcessed).toBe(0);
     expect(await StellarPaymentFact.countDocuments({ scan: scan._id })).toBe(0);
+    expect(await SorobanTransactionEvidence.countDocuments({ scan: scan._id })).toBe(0);
 
     write.mockRestore();
 
-    await persistStellarPaymentPage(scan as StellarActivityScanDocument, page, merged, now);
-    await persistStellarPaymentPage(scan as StellarActivityScanDocument, page, merged, now);
+    await persistStellarPaymentPage(
+      scan as StellarActivityScanDocument,
+      page,
+      merged,
+      now,
+      candidates,
+    );
+    await persistStellarPaymentPage(
+      scan as StellarActivityScanDocument,
+      page,
+      merged,
+      now,
+      candidates,
+    );
 
     expect((await StellarActivityScan.findById(scan._id))?.status).toBe('completed');
     expect((await StellarActivityScan.findById(scan._id))?.pagesProcessed).toBe(1);
@@ -82,5 +107,38 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB Stellar paym
       operationId: '5',
       requestedByIdentity: scan.identity,
     });
+    expect(await SorobanTransactionEvidence.countDocuments({ scan: scan._id })).toBe(1);
+    expect(await SorobanTransactionEvidence.findOne({ scan: scan._id })).toMatchObject({
+      transactionHash: 'contract-transaction',
+      operationIds: ['6'],
+      rpcStatus: 'queued',
+    });
+
+    const network = vi
+      .spyOn(rpc.Server.prototype, 'getNetwork')
+      .mockResolvedValue({ passphrase: Networks.TESTNET } as never);
+    const transaction = vi.spyOn(rpc.Server.prototype, 'getTransaction').mockResolvedValue({
+      status: 'SUCCESS',
+      txHash: 'contract-transaction',
+      ledger: 123,
+      envelopeXdr: { toXdr: () => 'envelope-xdr' },
+      resultMetaXdr: { toXdr: () => 'meta-xdr' },
+      returnValue: { toXdr: () => 'return-xdr' },
+      events: { contractEventsXdr: [] },
+    } as never);
+
+    try {
+      await processSorobanEvidence();
+      expect(await SorobanTransactionEvidence.findOne({ scan: scan._id })).toMatchObject({
+        rpcStatus: 'success',
+        ledger: 123,
+        envelopeXdr: 'envelope-xdr',
+        resultMetaXdr: 'meta-xdr',
+        returnValueXdr: 'return-xdr',
+      });
+    } finally {
+      network.mockRestore();
+      transaction.mockRestore();
+    }
   });
 });

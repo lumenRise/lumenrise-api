@@ -101,14 +101,44 @@ const openApiComponents = {
         'algorithmVersion',
         'generatedAt',
         'assessment',
+        'corroboration',
         'observations',
         'limitations',
       ],
       properties: {
         identityId: objectId,
-        algorithmVersion: { type: 'string', const: 'sybil-evidence-v1' },
+        algorithmVersion: { type: 'string', const: 'sybil-evidence-v2' },
         generatedAt: dateTime,
         assessment: { type: 'string', const: 'not_assessed' },
+        corroboration: {
+          type: 'object',
+          description:
+            'Activity corroboration across GitHub, GitLab and the registered primary Stellar wallet. Not a Sybil risk score or policy input.',
+          required: ['algorithmVersion', 'status', 'score', 'missingSources', 'signals'],
+          properties: {
+            algorithmVersion: { type: 'string', const: 'activity-corroboration-v1' },
+            status: { type: 'string', enum: ['available', 'insufficient_data'] },
+            score: { oneOf: [{ type: 'number', minimum: 0, maximum: 100 }, { type: 'null' }] },
+            missingSources: {
+              type: 'array',
+              items: { type: 'string', enum: ['github', 'gitlab', 'stellar'] },
+            },
+            signals: {
+              type: 'array',
+              items: {
+                type: 'object',
+                required: ['source', 'key', 'rawValue', 'normalizedValue', 'sourceId'],
+                properties: {
+                  source: { type: 'string', enum: ['github', 'gitlab', 'stellar'] },
+                  key: { type: 'string' },
+                  rawValue: { type: 'number', minimum: 0 },
+                  normalizedValue: { type: 'number', minimum: 0, maximum: 100 },
+                  sourceId: objectId,
+                },
+              },
+            },
+          },
+        },
         observations: {
           type: 'array',
           items: {
@@ -816,6 +846,182 @@ const openApiComponents = {
         },
         scan: { oneOf: [{ $ref: '#/components/schemas/StellarScan' }, { type: 'null' }] },
         score: { oneOf: [{ $ref: '#/components/schemas/StellarActivityScore' }, { type: 'null' }] },
+      },
+    },
+    SorobanEvidence: {
+      type: 'object',
+      required: [
+        'scanId',
+        'address',
+        'ownershipVerified',
+        'source',
+        'scanStatus',
+        'availableHistoryScanned',
+        'coverage',
+        'items',
+        'nextCursor',
+      ],
+      properties: {
+        scanId: objectId,
+        address: stellarAddress,
+        ownershipVerified: { type: 'boolean', const: false },
+        source: { type: 'string', const: 'horizon_and_stellar_rpc' },
+        scanStatus: { type: 'string', enum: ['queued', 'running', 'completed', 'failed'] },
+        availableHistoryScanned: { type: 'boolean' },
+        coverage: {
+          type: 'object',
+          required: [
+            'discoveredTransactions',
+            'rpcQueued',
+            'rpcRunning',
+            'rpcSuccess',
+            'rpcFailed',
+            'rpcNotFound',
+            'rpcUnavailable',
+          ],
+          properties: Object.fromEntries(
+            [
+              'discoveredTransactions',
+              'rpcQueued',
+              'rpcRunning',
+              'rpcSuccess',
+              'rpcFailed',
+              'rpcNotFound',
+              'rpcUnavailable',
+            ].map((key) => [key, { type: 'integer', minimum: 0 }]),
+          ),
+        },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: [
+              'transactionHash',
+              'operationIds',
+              'initiatedOperation',
+              'observedAt',
+              'rpcStatus',
+              'attempts',
+              'ledger',
+              'returnValueXdr',
+              'envelope',
+              'events',
+            ],
+            properties: {
+              transactionHash: { type: 'string' },
+              operationIds: { type: 'array', items: { type: 'string' } },
+              initiatedOperation: { type: 'boolean' },
+              observedAt: dateTime,
+              rpcStatus: {
+                type: 'string',
+                enum: ['queued', 'running', 'success', 'failed', 'not_found', 'unavailable'],
+              },
+              attempts: { type: 'integer', minimum: 0 },
+              ledger: { oneOf: [{ type: 'integer' }, { type: 'null' }] },
+              returnValueXdr: nullableString,
+              envelope: {
+                description:
+                  'Decoded envelope evidence, or null if RPC did not return a parseable envelope. No signature or ownership inference.',
+                oneOf: [
+                  { type: 'null' },
+                  {
+                    type: 'object',
+                    required: ['envelopeType', 'transactionSource', 'feeSource', 'operations'],
+                    properties: {
+                      envelopeType: { type: 'string' },
+                      transactionSource: { type: 'string' },
+                      feeSource: nullableString,
+                      operations: {
+                        type: 'array',
+                        description:
+                          'Invoke-host-function operations only; operationIndex is zero-based in the inner transaction.',
+                        items: {
+                          type: 'object',
+                          required: [
+                            'operationIndex',
+                            'sourceAccount',
+                            'explicitSourceAccount',
+                            'hostFunctionType',
+                            'contractAddress',
+                            'functionName',
+                            'authorizations',
+                          ],
+                          properties: {
+                            operationIndex: { type: 'integer', minimum: 0 },
+                            sourceAccount: {
+                              type: 'string',
+                              description: 'Effective operation source, not a verified signer.',
+                            },
+                            explicitSourceAccount: nullableString,
+                            hostFunctionType: { type: 'string' },
+                            contractAddress: nullableString,
+                            functionName: nullableString,
+                            authorizations: {
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                required: ['credentialType', 'address', 'delegates', 'invocations'],
+                                properties: {
+                                  credentialType: { type: 'string' },
+                                  address: nullableString,
+                                  delegates: {
+                                    type: 'array',
+                                    description:
+                                      'Addresses in a delegated credential tree, not verified signers.',
+                                    items: {
+                                      type: 'object',
+                                      required: ['address', 'depth'],
+                                      properties: {
+                                        address: { type: 'string' },
+                                        depth: { type: 'integer', minimum: 0 },
+                                      },
+                                    },
+                                  },
+                                  invocations: {
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      required: [
+                                        'depth',
+                                        'type',
+                                        'contractAddress',
+                                        'functionName',
+                                      ],
+                                      properties: {
+                                        depth: { type: 'integer', minimum: 0 },
+                                        type: { type: 'string' },
+                                        contractAddress: nullableString,
+                                        functionName: nullableString,
+                                      },
+                                    },
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+              events: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  required: ['operationIndex', 'eventIndex', 'contractId', 'eventXdr'],
+                  properties: {
+                    operationIndex: { type: 'integer', minimum: 0 },
+                    eventIndex: { type: 'integer', minimum: 0 },
+                    contractId: nullableString,
+                    eventXdr: { type: 'string', description: 'Base64-encoded ContractEvent XDR.' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        nextCursor: { oneOf: [objectId, { type: 'null' }] },
       },
     },
   },

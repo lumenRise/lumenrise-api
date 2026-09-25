@@ -109,6 +109,37 @@ const stellarPaths = {
       },
     },
   },
+  '/v1/stellar/accounts/{address}/soroban-evidence': {
+    get: {
+      tags: ['Stellar'],
+      summary: 'Read unscored Soroban evidence discovered during an account activity scan',
+      operationId: 'getSorobanEvidence',
+      description:
+        'The Horizon account operation scan discovers invoke_host_function transactions. A separate Stellar RPC worker collects contract-event XDR, contract IDs and return values where the RPC retention window permits. A related transaction is not proof of signing, ownership or protocol participation. NOT_FOUND and unavailable records are coverage gaps, not evidence of no activity. Older scans are not backfilled; no project classification, score or Sybil verdict is produced.',
+      parameters: [
+        addressParameter,
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100, default: 50 },
+        },
+        {
+          in: 'query',
+          name: 'cursor',
+          schema: { $ref: '#/components/schemas/ObjectId' },
+        },
+      ],
+      responses: {
+        '200': jsonResponse('Soroban evidence retrieved.', {
+          $ref: '#/components/schemas/SorobanEvidence',
+        }),
+        '400': { $ref: '#/components/responses/BadRequest' },
+        '401': { $ref: '#/components/responses/Unauthorized' },
+        '404': { $ref: '#/components/responses/NotFound' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
 } as const;
 
 export default stellarPaths;
