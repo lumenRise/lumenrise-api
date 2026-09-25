@@ -64,6 +64,49 @@ const openApiComponents = {
       },
     },
     EmptyResult: { type: 'object', additionalProperties: false },
+    SybilEvidence: {
+      type: 'object',
+      required: [
+        'identityId',
+        'algorithmVersion',
+        'generatedAt',
+        'assessment',
+        'observations',
+        'limitations',
+      ],
+      properties: {
+        identityId: objectId,
+        algorithmVersion: { type: 'string', const: 'sybil-evidence-v1' },
+        generatedAt: dateTime,
+        assessment: { type: 'string', const: 'not_assessed' },
+        observations: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: [
+              'source',
+              'ownership',
+              'coverage',
+              'sourceIds',
+              'observedAt',
+              'sourceVersion',
+            ],
+            properties: {
+              source: { type: 'string', enum: ['stellar', 'github', 'gitlab', 'x'] },
+              ownership: {
+                type: 'string',
+                enum: ['wallet_registration', 'oauth_connection', 'not_connected'],
+              },
+              coverage: { type: 'string', enum: ['complete', 'partial', 'missing'] },
+              sourceIds: { type: 'array', items: { type: 'string' } },
+              observedAt: nullableDateTime,
+              sourceVersion: nullableString,
+            },
+          },
+        },
+        limitations: { type: 'array', items: { type: 'string' } },
+      },
+    },
     PolicyRule: {
       type: 'object',
       required: ['dimension', 'minScore', 'maxAgeSeconds'],

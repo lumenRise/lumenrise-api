@@ -16,6 +16,7 @@ const expectedOperations = [
   'POST /v1/policies',
   'GET /v1/policies/{key}',
   'POST /v1/policies/{key}/evaluate',
+  'GET /v1/reputation/sybil/evidence',
   'GET /v1/auth/session',
   'DELETE /v1/auth/session',
   'GET /v1/oauth/github/connect',

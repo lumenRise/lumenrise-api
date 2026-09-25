@@ -1,15 +1,17 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import StellarActivityScan from '../../src/models/StellarActivityScan.js';
 import type { StellarActivityScanDocument } from '../../src/types/stellar/scan.js';
 import type { StellarOperationsResult } from '../../src/types/stellar/operations.js';
+import { failStellarActivityScan } from '../../src/services/stellar/activityScanQueue.js';
 import getStellarAccountOperations from '../../src/services/stellar/getAccountOperations.js';
+import persistStellarPaymentPage from '../../src/services/sybil/persistStellarPaymentPage.js';
 import { processStellarActivityScan } from '../../src/services/stellar/activityScanWorker.js';
 
 vi.mock('../../src/services/stellar/getAccountOperations.js', () => ({ default: vi.fn() }));
-vi.mock('../../src/models/StellarActivityScan.js', () => ({
-  default: { updateOne: vi.fn() },
+vi.mock('../../src/services/sybil/persistStellarPaymentPage.js', () => ({ default: vi.fn() }));
+vi.mock('../../src/services/stellar/activityScanQueue.js', () => ({
+  failStellarActivityScan: vi.fn(),
 }));
 
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
@@ -83,9 +85,8 @@ describe('Stellar activity scan worker', () => {
     vi.clearAllMocks();
   });
 
-  it('saves the merged final page with a lease-and-cursor guard', async () => {
+  it('passes the merged final page to the transactional persister', async () => {
     vi.mocked(getStellarAccountOperations).mockResolvedValue(page);
-    vi.mocked(StellarActivityScan.updateOne).mockResolvedValue({} as never);
     const scan = createScan();
 
     await processStellarActivityScan(scan);
@@ -97,36 +98,27 @@ describe('Stellar activity scan worker', () => {
       'desc',
       scan.sourceUrl,
     );
-    expect(StellarActivityScan.updateOne).toHaveBeenCalledWith(
-      { _id: scan._id, status: 'running', leaseUntil: scan.leaseUntil, cursor: '100' },
-      {
-        $set: expect.objectContaining({
-          status: 'completed',
-          active: false,
-          cursor: '100',
-          pagesProcessed: 2,
-          summary: expect.objectContaining({
-            operationCount: 2,
-            distinctTransactionCount: 1,
-            activeDayCount: 1,
-          }),
+    expect(persistStellarPaymentPage).toHaveBeenCalledWith(
+      scan,
+      page,
+      expect.objectContaining({
+        summary: expect.objectContaining({
+          operationCount: 2,
+          distinctTransactionCount: 1,
+          activeDayCount: 1,
         }),
-      },
-      { runValidators: true },
+      }),
+      expect.any(Date),
     );
   });
 
   it('does not advance the cursor on a transient Horizon failure', async () => {
     vi.mocked(getStellarAccountOperations).mockRejectedValue(new Error('Horizon unavailable'));
-    vi.mocked(StellarActivityScan.updateOne).mockResolvedValue({} as never);
     const scan = createScan();
 
     await processStellarActivityScan(scan);
 
-    expect(StellarActivityScan.updateOne).toHaveBeenCalledWith(
-      { _id: scan._id, status: 'running', leaseUntil: scan.leaseUntil, cursor: '100' },
-      { $set: expect.objectContaining({ status: 'queued', active: true, consecutiveFailures: 1 }) },
-      { runValidators: true },
-    );
+    expect(persistStellarPaymentPage).not.toHaveBeenCalled();
+    expect(failStellarActivityScan).toHaveBeenCalledWith(scan, 'Horizon unavailable', true);
   });
 });
