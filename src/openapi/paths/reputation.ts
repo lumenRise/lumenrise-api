@@ -22,7 +22,7 @@ const reputationPaths = {
       summary: 'Get diagnostic evidence for the authenticated identity',
       operationId: 'getSybilEvidence',
       description:
-        'Read-only, versioned observations from existing wallet registration, OAuth connections and stored snapshots. No Sybil verdict, risk score, cross-identity analysis or policy effect. Completed Horizon scans cover available history only.',
+        'Read-only, versioned observations plus an activity corroboration score across complete, recent GitHub, GitLab and primary-wallet Horizon data. Missing or stale inputs produce a null score. This is not a Sybil risk score, verdict, unique-person proof or policy input; no cross-identity analysis. Horizon scans cover available history only.',
       responses: {
         '200': jsonResponse('Sybil evidence retrieved.', {
           $ref: '#/components/schemas/SybilEvidence',

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import getStellarAccountRoute from './getAccount.js';
+import getSorobanEvidenceRoute from './getSorobanEvidence.js';
 import requireSession from '../../middleware/requireSession.js';
 import getStellarActivityScoreRoute from './getActivityScore.js';
 import getStellarAccountOperationsRoute from './getAccountOperations.js';
@@ -9,6 +10,7 @@ import { getStellarActivityScanRoute, postStellarActivityScanRoute } from './act
 const stellarRoutes = Router();
 
 stellarRoutes.get('/accounts/:address', requireSession, getStellarAccountRoute);
+stellarRoutes.get('/accounts/:address/soroban-evidence', requireSession, getSorobanEvidenceRoute);
 stellarRoutes.get('/accounts/:address/activity-scan', requireSession, getStellarActivityScanRoute);
 stellarRoutes.get(
   '/accounts/:address/operations',

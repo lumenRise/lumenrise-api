@@ -1,4 +1,5 @@
 import { SYBIL_EVIDENCE_VERSION } from '../../constants/sybil.js';
+import calculateActivityCorroboration from './calculateActivityCorroboration.js';
 import type { ReputationProfileResult } from '../../types/reputation/profile.js';
 import type {
   SybilEvidenceResult,
@@ -51,12 +52,15 @@ const buildSybilEvidence = (
     algorithmVersion: SYBIL_EVIDENCE_VERSION,
     generatedAt: generatedAt.toISOString(),
     assessment: 'not_assessed',
+    corroboration: calculateActivityCorroboration(profile, providers, generatedAt),
     observations,
     limitations: [
       'Wallet proof establishes control at registration, not a unique person.',
       'OAuth connections establish account control, not independent people.',
       'Horizon may not retain complete historical activity.',
       'No cross-identity analysis or Sybil decision is performed.',
+      'Activity corroboration is not a Sybil probability or proof of a unique person; coordinated accounts can have high activity.',
+      'Soroban RPC evidence is not included because its address and historical coverage are incomplete.',
     ],
   };
 };

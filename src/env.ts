@@ -99,6 +99,10 @@ const schema = defineConfig({
     default: 'https://horizon-testnet.stellar.org',
     description: 'Horizon base URL used for read-only Stellar account lookups.',
   },
+  STELLAR_RPC_URL: {
+    default: 'https://soroban-testnet.stellar.org',
+    description: 'Read-only Stellar RPC endpoint for recent Soroban transaction evidence.',
+  },
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',
     description: '64-character hexadecimal key used to encrypt provider credentials.',
@@ -107,7 +111,7 @@ const schema = defineConfig({
 
 const source =
   process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'production' ? undefined : 'file';
-  
+
 const env = createEnv(schema, { source });
 
 export default env;

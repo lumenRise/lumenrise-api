@@ -9,6 +9,7 @@ import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes.js';
 import createGitLabDataIndexes from './20260923CreateGitLabDataIndexes.js';
 import createReputationIndexes from './20260922CreateReputationIndexes.js';
 import createDeveloperApiIndexes from './20260925CreateDeveloperApiIndexes.js';
+import createSorobanEvidenceIndexes from './20260926CreateSorobanEvidenceIndexes.js';
 import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes.js';
 import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes.js';
 import createIntegrationSyncJobIndexes from './20260922CreateIntegrationSyncJobIndexes.js';
@@ -33,6 +34,7 @@ const migrations: readonly MigrationDefinition[] = [
   createManualRefreshCooldownIndexes,
   createStellarPaymentFactIndexes,
   createDeveloperApiIndexes,
+  createSorobanEvidenceIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();
