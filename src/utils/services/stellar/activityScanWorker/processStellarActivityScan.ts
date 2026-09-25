@@ -1,9 +1,9 @@
 import log from '../../../../logger.js';
-import StellarActivityScan from '../../../../models/StellarActivityScan.js';
 import type { StellarActivityScanDocument } from '../../../../types/stellar/scan.js';
 import { failStellarActivityScan } from '../../../../services/stellar/activityScanQueue.js';
 import { mergeStellarActivityPage } from '../../../../services/stellar/mergeActivityPage.js';
 import getStellarAccountOperations from '../../../../services/stellar/getAccountOperations.js';
+import persistStellarPaymentPage from '../../../../services/sybil/persistStellarPaymentPage.js';
 
 const processStellarActivityScan = async (scan: StellarActivityScanDocument): Promise<void> => {
   try {
@@ -27,30 +27,9 @@ const processStellarActivityScan = async (scan: StellarActivityScanDocument): Pr
       scan.lastTransactionHash,
     );
 
-    const completed = page.nextCursor === null;
     const now = new Date();
 
-    await StellarActivityScan.updateOne(
-      { _id: scan._id, status: 'running', leaseUntil: scan.leaseUntil, cursor: scan.cursor },
-      {
-        $set: {
-          status: completed ? 'completed' : 'queued',
-          active: !completed,
-          cursor: page.nextCursor ?? scan.cursor,
-          summary: merged.summary,
-          lastDay: merged.lastDay,
-          lastTransactionHash: merged.lastTransactionHash,
-          pagesProcessed: scan.pagesProcessed + 1,
-          consecutiveFailures: 0,
-          scheduledAt: now,
-          leaseUntil: null,
-          completedAt: completed ? now : null,
-          lastProcessedAt: now,
-          lastError: null,
-        },
-      },
-      { runValidators: true },
-    );
+    await persistStellarPaymentPage(scan, page, merged, now);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown Stellar scan error';
 

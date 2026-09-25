@@ -64,7 +64,7 @@ const stellarPaths = {
       summary: 'Queue a resumable Stellar activity scan',
       operationId: 'queueStellarActivityScan',
       description:
-        'Scans operations available from the configured Horizon server. The same identity may have only one active scan at a time and may request one new scan every 15 minutes.',
+        'Scans operations available from the configured Horizon server. New scans also store validated payment counterparties for later diagnostic analysis; this does not prove ownership of the scanned address or classify anyone as Sybil. Earlier scans are not backfilled. The same identity may have only one active scan at a time and may request one new scan every 15 minutes.',
       parameters: [addressParameter],
       responses: {
         '202': jsonResponse('Scan queued.', { $ref: '#/components/schemas/StellarScan' }),
