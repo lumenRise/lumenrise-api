@@ -157,6 +157,20 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
     expect(Number(second.headers['retry-after'])).toBeGreaterThan(0);
   });
 
+  it('reports linked evidence without claiming a Sybil verdict', async () => {
+    const response = await request(app)
+      .get('/v1/reputation/sybil/evidence')
+      .auth(token, { type: 'bearer' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.assessment).toBe('not_assessed');
+    expect(response.body.result.observations).toMatchObject([
+      { source: 'stellar', ownership: 'wallet_registration' },
+      { source: 'github', ownership: 'oauth_connection', coverage: 'missing' },
+    ]);
+    expect(response.body.result).not.toHaveProperty('score');
+  });
+
   it('allows only one concurrent reservation and does not release its successor', async () => {
     const identity = new mongoose.Types.ObjectId(identityId);
     const target = 'concurrent-integration-test';
