@@ -50,6 +50,7 @@ const openApiComponents = {
   securitySchemes: {
     bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
     sessionCookie: { type: 'apiKey', in: 'cookie', name: 'lumenrise_session' },
+    developerApiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
   },
   schemas: {
     StellarAddress: stellarAddress,
@@ -64,6 +65,35 @@ const openApiComponents = {
       },
     },
     EmptyResult: { type: 'object', additionalProperties: false },
+    DeveloperApiKey: {
+      type: 'object',
+      required: ['id', 'label', 'prefix', 'expiresAt', 'revokedAt', 'createdAt'],
+      properties: {
+        id: objectId,
+        label: { type: 'string' },
+        prefix: { type: 'string' },
+        expiresAt: dateTime,
+        revokedAt: nullableDateTime,
+        createdAt: dateTime,
+      },
+    },
+    DeveloperApiKeyCreated: {
+      allOf: [
+        { $ref: '#/components/schemas/DeveloperApiKey' },
+        {
+          type: 'object',
+          required: ['apiKey'],
+          properties: { apiKey: { type: 'string', description: 'Shown once. Store it securely.' } },
+        },
+      ],
+    },
+    DeveloperApiKeyList: {
+      type: 'object',
+      required: ['keys'],
+      properties: {
+        keys: { type: 'array', items: { $ref: '#/components/schemas/DeveloperApiKey' } },
+      },
+    },
     SybilEvidence: {
       type: 'object',
       required: [
@@ -807,8 +837,7 @@ const openApiComponents = {
       content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
     },
     TooManyRequests: {
-      description:
-        'A manual refresh or evaluation was requested too recently. Retry-After is in seconds.',
+      description: 'The request exceeded a cooldown or quota. Retry-After is in seconds.',
       headers: { 'Retry-After': { schema: { type: 'integer', minimum: 1 } } },
       content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
     },

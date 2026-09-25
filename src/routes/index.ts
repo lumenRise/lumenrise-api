@@ -6,6 +6,7 @@ import oauthRoutes from './oauth/index.js';
 import healthRoutes from './health/index.js';
 import policyRoutes from './policies/index.js';
 import stellarRoutes from './stellar/index.js';
+import developerRoutes from './developers/index.js';
 import reputationRoutes from './reputation/index.js';
 import connectionRoutes from './connections/index.js';
 
@@ -13,6 +14,7 @@ const router = Router();
 
 router.use('/v1/auth', authRoutes);
 router.use('/v1/policies', policyRoutes);
+router.use('/v1/developers', developerRoutes);
 router.use('/v1', docsRoutes);
 router.use('/v1/oauth', oauthRoutes);
 router.use('/v1/health', healthRoutes);
