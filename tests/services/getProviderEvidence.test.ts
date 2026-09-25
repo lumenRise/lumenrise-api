@@ -32,6 +32,15 @@ describe('provider evidence ownership', () => {
         status: 'complete',
         dataVersion: 'v1',
         collectedAt,
+        coverage:
+          provider === 'x'
+            ? { profile: true, posts: true }
+            : { profile: true, contributions: true },
+        metrics: {
+          accountAgeDays: 400,
+          ...(provider === 'github' ? { allTimeCommits: 20 } : {}),
+          ...(provider === 'gitlab' ? { pushedCommitCount: 30 } : {}),
+        },
       }),
     } as never);
 
@@ -45,6 +54,10 @@ describe('provider evidence ownership', () => {
         status: 'complete',
         dataVersion: 'v1',
         collectedAt: collectedAt.toISOString(),
+        profileCovered: true,
+        activityCovered: provider !== 'x',
+        accountAgeDays: 400,
+        commitCount: provider === 'github' ? 20 : provider === 'gitlab' ? 30 : null,
       },
     });
   });

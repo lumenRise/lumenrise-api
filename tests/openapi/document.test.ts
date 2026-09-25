@@ -55,6 +55,7 @@ const expectedOperations = [
   'GET /v1/stellar/accounts/{address}/activity-scan',
   'POST /v1/stellar/accounts/{address}/activity-scan',
   'GET /v1/stellar/accounts/{address}/activity-score',
+  'GET /v1/stellar/accounts/{address}/soroban-evidence',
 ];
 
 describe('OpenAPI documentation', () => {

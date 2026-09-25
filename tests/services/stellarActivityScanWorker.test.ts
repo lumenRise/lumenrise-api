@@ -109,6 +109,7 @@ describe('Stellar activity scan worker', () => {
         }),
       }),
       expect.any(Date),
+      [],
     );
   });
 

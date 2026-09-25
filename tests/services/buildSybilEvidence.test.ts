@@ -25,7 +25,7 @@ describe('diagnostic Sybil evidence', () => {
   it('reports wallet control without declaring unique-person proof', () => {
     const result = buildSybilEvidence(profile, [], generatedAt);
 
-    expect(result.algorithmVersion).toBe('sybil-evidence-v1');
+    expect(result.algorithmVersion).toBe('sybil-evidence-v2');
     expect(result.generatedAt).toBe(generatedAt.toISOString());
     expect(result.assessment).toBe('not_assessed');
     expect(result.observations).toEqual([
@@ -38,7 +38,11 @@ describe('diagnostic Sybil evidence', () => {
         sourceVersion: null,
       },
     ]);
-    expect(result).not.toHaveProperty('score');
+    expect(result.corroboration).toMatchObject({
+      status: 'insufficient_data',
+      score: null,
+      missingSources: ['github', 'gitlab', 'stellar'],
+    });
     expect(result.limitations).toContain(
       'Wallet proof establishes control at registration, not a unique person.',
     );
