@@ -1,6 +1,5 @@
 import XDataSnapshot from '../../models/XDataSnapshot.js';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
-import GitLabDataSnapshot from '../../models/GitLabDataSnapshot.js';
 import type { SybilProviderEvidence } from '../../types/sybil/evidence.js';
 import type { ExternalAccountDocument } from '../../types/integration/model.js';
 
@@ -11,9 +10,7 @@ const getProviderEvidence = async (
   const snapshot =
     account.provider === 'github'
       ? await GitHubDataSnapshot.findOne(filter).sort({ collectedAt: -1 })
-      : account.provider === 'gitlab'
-        ? await GitLabDataSnapshot.findOne(filter).sort({ collectedAt: -1 })
-        : await XDataSnapshot.findOne(filter).sort({ collectedAt: -1 });
+      : await XDataSnapshot.findOne(filter).sort({ collectedAt: -1 });
 
   return {
     provider: account.provider,
@@ -26,12 +23,7 @@ const getProviderEvidence = async (
           profileCovered: snapshot.coverage.profile,
           activityCovered: 'contributions' in snapshot.coverage && snapshot.coverage.contributions,
           accountAgeDays: snapshot.metrics.accountAgeDays,
-          commitCount:
-            'allTimeCommits' in snapshot.metrics
-              ? snapshot.metrics.allTimeCommits
-              : 'pushedCommitCount' in snapshot.metrics
-                ? snapshot.metrics.pushedCommitCount
-                : null,
+          commitCount: 'allTimeCommits' in snapshot.metrics ? snapshot.metrics.allTimeCommits : null,
         }
       : null,
   };

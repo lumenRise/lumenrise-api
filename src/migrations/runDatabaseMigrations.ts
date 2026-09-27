@@ -6,7 +6,6 @@ import createSessionIndexes from './20260922CreateSessionIndexes.js';
 import createIdentityIndexes from './20260922CreateIdentityIndexes.js';
 import type { MigrationDefinition } from '../types/database/migration.js';
 import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes.js';
-import createGitLabDataIndexes from './20260923CreateGitLabDataIndexes.js';
 import createReputationIndexes from './20260922CreateReputationIndexes.js';
 import createDeveloperApiIndexes from './20260925CreateDeveloperApiIndexes.js';
 import createSorobanEvidenceIndexes from './20260926CreateSorobanEvidenceIndexes.js';
@@ -24,7 +23,6 @@ const migrations: readonly MigrationDefinition[] = [
   createReputationIndexes,
   createSessionIndexes,
   createGitHubDataIndexes,
-  createGitLabDataIndexes,
   createXDataIndexes,
   createProviderCredentialIndexes,
   createIntegrationSyncJobIndexes,

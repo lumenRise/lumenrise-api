@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({ createOAuthState: vi.fn() }));
 
 vi.mock('../../src/env.js', () => ({
   default: {
+    LOG_LEVEL: 'silent',
     X_CLIENT_ID: 'x-client-id',
     X_CLIENT_SECRET: 'x-client-secret',
     X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',

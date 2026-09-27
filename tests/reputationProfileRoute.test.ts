@@ -103,13 +103,13 @@ describe('reputation profile route', () => {
   });
 
   it('does not expose scores sourced from disconnected providers', async () => {
-    vi.mocked(ExternalAccount.find).mockResolvedValue([{ provider: 'github' }] as never);
+    vi.mocked(ExternalAccount.find).mockResolvedValue([] as never);
     vi.mocked(ReputationSnapshot.findOne).mockImplementation(
       (filter) =>
         ({
           sort: vi.fn().mockResolvedValue({
             category: filter.category,
-            sources: [{ provider: filter.category === 'developer' ? 'gitlab' : 'x' }],
+            sources: [{ provider: filter.category === 'developer' ? 'github' : 'x' }],
           }),
         }) as never,
     );

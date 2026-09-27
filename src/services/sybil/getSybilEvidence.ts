@@ -11,7 +11,7 @@ const getSybilEvidence = async (
 ): Promise<SybilEvidenceResult | null> => {
   const [profile, accounts] = await Promise.all([
     getReputationProfile(identityId),
-    ExternalAccount.find({ identity: identityId, status: 'connected' }),
+    ExternalAccount.find({ identity: identityId, status: 'connected', provider: { $in: ['github', 'x'] } }),
   ]);
 
   if (!profile) {

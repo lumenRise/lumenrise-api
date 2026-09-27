@@ -2,7 +2,6 @@ import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import type { IntegrationSyncJobDocument } from '../../types/integration/sync.js';
 import { enqueueXSync } from '../../utils/services/integration/syncQueue/enqueueXSync.js';
 import { enqueueGitHubSync } from '../../utils/services/integration/syncQueue/enqueueGitHubSync.js';
-import { enqueueGitLabSync } from '../../utils/services/integration/syncQueue/enqueueGitLabSync.js';
 import { calculateXSyncSchedule } from '../../utils/services/integration/syncQueue/calculateXSyncSchedule.js';
 import { failIntegrationSyncJob } from '../../utils/services/integration/syncQueue/failIntegrationSyncJob.js';
 import { calculateSyncRetryDelay } from '../../utils/services/integration/syncQueue/calculateSyncRetryDelay.js';
@@ -13,7 +12,6 @@ import {
 } from '../../constants/services/integration/syncQueue.js';
 import { completeIntegrationSyncJob } from '../../utils/services/integration/syncQueue/completeIntegrationSyncJob.js';
 import { calculateGitHubSyncSchedule } from '../../utils/services/integration/syncQueue/calculateGitHubSyncSchedule.js';
-import { calculateGitLabSyncSchedule } from '../../utils/services/integration/syncQueue/calculateGitLabSyncSchedule.js';
 
 const deferIntegrationSyncJob = async (
   job: IntegrationSyncJobDocument,
@@ -37,14 +35,12 @@ const deferIntegrationSyncJob = async (
 
 export {
   calculateGitHubSyncSchedule,
-  calculateGitLabSyncSchedule,
   calculateXSyncSchedule,
   calculateSyncRetryDelay,
   claimIntegrationSyncJob,
   completeIntegrationSyncJob,
   deferIntegrationSyncJob,
   enqueueGitHubSync,
-  enqueueGitLabSync,
   enqueueXSync,
   failIntegrationSyncJob,
 };

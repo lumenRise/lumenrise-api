@@ -31,7 +31,7 @@ describe('developer reputation scoring', () => {
           observedAt,
         },
         {
-          provider: 'gitlab',
+          provider: 'github',
           key: 'commits',
           rawValue: 100,
           baseWeight: 0.75,

@@ -23,13 +23,13 @@ describe('Sybil evidence route', () => {
   it('returns diagnostic observations for the authenticated identity', async () => {
     const evidence = {
       identityId: identityId.toString(),
-      algorithmVersion: 'sybil-evidence-v2',
+      algorithmVersion: 'sybil-evidence-v3',
       assessment: 'not_assessed',
       corroboration: {
-        algorithmVersion: 'activity-corroboration-v1',
+        algorithmVersion: 'activity-corroboration-v2',
         status: 'insufficient_data',
         score: null,
-        missingSources: ['github', 'gitlab', 'stellar'],
+        missingSources: ['github', 'stellar'],
         signals: [],
       },
       generatedAt: new Date().toISOString(),

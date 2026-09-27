@@ -12,7 +12,7 @@ describe('OAuthState model', () => {
   it('accepts a short-lived registration state without an identity', async () => {
     const state = new OAuthState({
       identity: null,
-      provider: 'gitlab',
+      provider: 'github',
       purpose: 'register',
       stateHash: STATE_HASH,
       codeChallenge: CODE_CHALLENGE,

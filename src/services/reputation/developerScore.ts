@@ -2,11 +2,9 @@ import type { Types } from 'mongoose';
 
 import ExternalAccount from '../../models/ExternalAccount.js';
 import ReputationSnapshot from '../../models/ReputationSnapshot.js';
-import GitLabDataSnapshot from '../../models/GitLabDataSnapshot.js';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
 import type { ReputationSnapshotDocument } from '../../types/reputation/model.js';
 import { createGitHubSignals } from '../../utils/services/reputation/developerScore/createGitHubSignals.js';
-import { createGitLabSignals } from '../../utils/services/reputation/developerScore/createGitLabSignals.js';
 import type {
   DeveloperReputationSourceInput,
   DeveloperSignalInput,
@@ -14,7 +12,7 @@ import type {
 import { calculateDeveloperScore } from '../../utils/services/reputation/developerScore/calculateDeveloperScore.js';
 import { normalizeDiminishingReturns } from '../../utils/services/reputation/developerScore/normalizeDiminishingReturns.js';
 
-const DEVELOPER_ALGORITHM_VERSION = 'developer-v1';
+const DEVELOPER_ALGORITHM_VERSION = 'developer-v2';
 
 const calculateAndStoreDeveloperReputation = async (
   identityId: Types.ObjectId,
@@ -22,21 +20,14 @@ const calculateAndStoreDeveloperReputation = async (
 ): Promise<ReputationSnapshotDocument> => {
   const accounts = await ExternalAccount.find({
     identity: identityId,
-    provider: { $in: ['github', 'gitlab'] },
+    provider: 'github',
     status: 'connected',
   });
 
   const githubAccount = accounts.find((account) => account.provider === 'github');
-  const gitlabAccount = accounts.find((account) => account.provider === 'gitlab');
-
-  const [githubSnapshot, gitlabSnapshot] = await Promise.all([
-    githubAccount
-      ? GitHubDataSnapshot.findOne({ externalAccount: githubAccount._id }).sort({ collectedAt: -1 })
-      : null,
-    gitlabAccount
-      ? GitLabDataSnapshot.findOne({ externalAccount: gitlabAccount._id }).sort({ collectedAt: -1 })
-      : null,
-  ]);
+  const githubSnapshot = githubAccount
+    ? await GitHubDataSnapshot.findOne({ externalAccount: githubAccount._id }).sort({ collectedAt: -1 })
+    : null;
 
   const inputs: DeveloperSignalInput[] = [];
   const sources: DeveloperReputationSourceInput[] = [];
@@ -49,17 +40,6 @@ const calculateAndStoreDeveloperReputation = async (
       dataVersion: githubSnapshot.dataVersion,
       collectedAt: githubSnapshot.collectedAt,
       status: githubSnapshot.status,
-    });
-  }
-
-  if (gitlabSnapshot) {
-    inputs.push(...createGitLabSignals(gitlabSnapshot));
-    sources.push({
-      provider: 'gitlab',
-      snapshot: gitlabSnapshot._id,
-      dataVersion: gitlabSnapshot.dataVersion,
-      collectedAt: gitlabSnapshot.collectedAt,
-      status: gitlabSnapshot.status,
     });
   }
 
@@ -105,6 +85,5 @@ export {
   calculateAndStoreDeveloperReputation,
   calculateDeveloperScore,
   createGitHubSignals,
-  createGitLabSignals,
   normalizeDiminishingReturns,
 };

@@ -37,27 +37,14 @@ const providers: SybilProviderEvidence[] = [
       commitCount: 150,
     },
   },
-  {
-    provider: 'gitlab',
-    snapshot: {
-      id: '507f1f77bcf86cd799439012',
-      status: 'complete',
-      dataVersion: 'gitlab-v1',
-      collectedAt: '2026-09-25T12:00:00.000Z',
-      profileCovered: true,
-      activityCovered: true,
-      accountAgeDays: 365,
-      commitCount: 60,
-    },
-  },
 ];
 
 describe('cross-source activity corroboration', () => {
-  it('scores only fresh complete GitHub, GitLab and owner-linked Stellar activity with source provenance', () => {
+  it('scores fresh complete GitHub and owner-linked Stellar activity with source provenance', () => {
     const result = calculateActivityCorroboration(profile, providers, now);
 
     expect(result).toMatchObject({
-      algorithmVersion: 'activity-corroboration-v1',
+      algorithmVersion: 'activity-corroboration-v2',
       status: 'available',
       missingSources: [],
     });
@@ -66,8 +53,6 @@ describe('cross-source activity corroboration', () => {
     expect(result.signals).toEqual([
       expect.objectContaining({ source: 'github', key: 'account_age_days', rawValue: 730 }),
       expect.objectContaining({ source: 'github', key: 'commits', rawValue: 150 }),
-      expect.objectContaining({ source: 'gitlab', key: 'account_age_days', rawValue: 365 }),
-      expect.objectContaining({ source: 'gitlab', key: 'commits', rawValue: 60 }),
       expect.objectContaining({ source: 'stellar', key: 'active_days', sourceId: scanId }),
       expect.objectContaining({ source: 'stellar', key: 'initiated_operations', sourceId: scanId }),
     ]);
@@ -78,20 +63,13 @@ describe('cross-source activity corroboration', () => {
       { ...profile, stellar: { ...profile.stellar!, score: null } },
       [
         { ...providers[0], snapshot: { ...providers[0].snapshot!, status: 'partial' } },
-        {
-          ...providers[1],
-          snapshot: {
-            ...providers[1].snapshot!,
-            collectedAt: '2026-01-01T00:00:00.000Z',
-          },
-        },
       ],
       now,
     );
     expect(result).toMatchObject({
       status: 'insufficient_data',
       score: null,
-      missingSources: ['github', 'gitlab', 'stellar'],
+      missingSources: ['github', 'stellar'],
       signals: [],
     });
   });
@@ -110,7 +88,6 @@ describe('cross-source activity corroboration', () => {
           ...providers[0],
           snapshot: { ...providers[0].snapshot!, collectedAt: '2026-09-27T00:00:00.000Z' },
         },
-        providers[1],
       ],
       now,
     );
@@ -120,7 +97,7 @@ describe('cross-source activity corroboration', () => {
     });
   });
 
-  it('returns zero only when all three fresh sources really report zero activity and age', () => {
+  it('returns zero only when both fresh sources report zero activity and age', () => {
     const result = calculateActivityCorroboration(
       {
         ...profile,

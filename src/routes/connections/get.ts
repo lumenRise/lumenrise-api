@@ -3,7 +3,6 @@ import type { RequestHandler } from 'express';
 import XDataSnapshot from '../../models/XDataSnapshot.js';
 import type { ApiResponse } from '../../types/response.js';
 import ExternalAccount from '../../models/ExternalAccount.js';
-import GitLabDataSnapshot from '../../models/GitLabDataSnapshot.js';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
@@ -13,6 +12,7 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
   const accounts = await ExternalAccount.find({
     identity: req.auth?.identityId,
     status: 'connected',
+    provider: { $in: ['github', 'x'] },
   }).sort({ connectedAt: 1 });
 
   const connections = await Promise.all(
@@ -24,13 +24,6 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
             })
           : null;
 
-      const gitlabData =
-        account.provider === 'gitlab'
-          ? await GitLabDataSnapshot.findOne({ externalAccount: account._id }).sort({
-              collectedAt: -1,
-            })
-          : null;
-
       const xData =
         account.provider === 'x'
           ? await XDataSnapshot.findOne({ externalAccount: account._id }).sort({
@@ -38,10 +31,10 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
             })
           : null;
 
-      const providerData = githubData ?? gitlabData ?? xData;
+      const providerData = githubData ?? xData;
 
       const syncJob =
-        account.provider === 'github' || account.provider === 'gitlab' || account.provider === 'x'
+        account.provider === 'github' || account.provider === 'x'
           ? await IntegrationSyncJob.findOne({ externalAccount: account._id }).sort({
               createdAt: -1,
             })

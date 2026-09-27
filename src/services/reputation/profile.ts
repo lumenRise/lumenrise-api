@@ -16,7 +16,7 @@ const getReputationProfile = async (
   const [identity, wallet, accounts, developerSnapshot, socialSnapshot] = await Promise.all([
     Identity.findById(identityId),
     StellarAccount.findOne({ identity: identityId, isPrimary: true, disconnectedAt: null }),
-    ExternalAccount.find({ identity: identityId, status: 'connected' }),
+    ExternalAccount.find({ identity: identityId, status: 'connected', provider: { $in: ['github', 'x'] } }),
     ReputationSnapshot.findOne({ identity: identityId, category: 'developer' }).sort({
       calculatedAt: -1,
     }),
@@ -31,8 +31,7 @@ const getReputationProfile = async (
 
   const connectedProviders = new Set(accounts.map((account) => account.provider));
 
-  const hasDeveloperConnection =
-    connectedProviders.has('github') || connectedProviders.has('gitlab');
+  const hasDeveloperConnection = connectedProviders.has('github');
   const developerCurrent =
     hasDeveloperConnection &&
     developerSnapshot?.sources.every((source) => connectedProviders.has(source.provider));

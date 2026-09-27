@@ -7,6 +7,7 @@ const claimIntegrationSyncJob = async (
 ): Promise<IntegrationSyncJobDocument | null> =>
   IntegrationSyncJob.findOneAndUpdate(
     {
+      provider: 'x',
       active: true,
       $or: [
         { status: 'queued', scheduledAt: { $lte: now } },

@@ -9,10 +9,6 @@ const validConfiguration: RuntimeConfiguration = {
   GITHUB_CLIENT_ID: 'github-client-id',
   GITHUB_CLIENT_SECRET: 'github-client-secret',
   GITHUB_CALLBACK_URL: 'http://localhost:5000/v1/oauth/github/callback',
-  GITLAB_BASE_URL: 'https://gitlab.com',
-  GITLAB_CLIENT_ID: 'gitlab-client-id',
-  GITLAB_CLIENT_SECRET: 'gitlab-client-secret',
-  GITLAB_CALLBACK_URL: 'http://localhost:5000/v1/oauth/gitlab/callback',
   X_CLIENT_ID: 'x-client-id',
   X_CLIENT_SECRET: 'x-client-secret',
   X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',
@@ -32,12 +28,6 @@ describe('runtime configuration validation', () => {
   it('rejects incomplete GitHub credentials', () => {
     expect(() =>
       validateRuntimeConfiguration({ ...validConfiguration, GITHUB_CLIENT_SECRET: '' }),
-    ).toThrow('must be configured together');
-  });
-
-  it('rejects incomplete GitLab credentials', () => {
-    expect(() =>
-      validateRuntimeConfiguration({ ...validConfiguration, GITLAB_CLIENT_SECRET: '' }),
     ).toThrow('must be configured together');
   });
 

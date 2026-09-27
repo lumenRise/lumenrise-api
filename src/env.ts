@@ -26,6 +26,10 @@ const schema = defineConfig({
     default: 'lumenrise',
     description: 'MongoDB database name.',
   },
+  RABBITMQ_URL: {
+    default: 'amqp://127.0.0.1:5672',
+    description: 'RabbitMQ address for background job dispatch.',
+  },
   CLIENT_ORIGIN: {
     default: 'http://localhost:5173',
     description: 'Browser client origin allowed to send credentialed requests.',
@@ -61,22 +65,6 @@ const schema = defineConfig({
   GITHUB_CALLBACK_URL: {
     default: 'http://localhost:5000/v1/oauth/github/callback',
     description: 'GitHub OAuth callback URL registered for the application.',
-  },
-  GITLAB_BASE_URL: {
-    default: 'https://gitlab.com',
-    description: 'Base URL of the GitLab instance used for OAuth and API requests.',
-  },
-  GITLAB_CLIENT_ID: {
-    default: '',
-    description: 'GitLab OAuth application ID.',
-  },
-  GITLAB_CLIENT_SECRET: {
-    default: '',
-    description: 'GitLab OAuth application secret.',
-  },
-  GITLAB_CALLBACK_URL: {
-    default: 'http://localhost:5000/v1/oauth/gitlab/callback',
-    description: 'GitLab OAuth callback URL registered for the application.',
   },
   X_CLIENT_ID: {
     default: '',

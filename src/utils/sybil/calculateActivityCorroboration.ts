@@ -14,7 +14,7 @@ const calculateActivityCorroboration = (
 ): SybilCorroborationResult => {
   const signals: SybilCorroborationResult['signals'] = [];
   const missingSources: SybilCorroborationResult['missingSources'] = [];
-  const sources = ['github', 'gitlab', 'stellar'] as const;
+  const sources = ['github', 'stellar'] as const;
   const valid = (value: number | null): value is number =>
     value !== null && Number.isFinite(value) && value >= 0;
   const fresh = (timestamp: string): boolean => {
@@ -88,7 +88,7 @@ const calculateActivityCorroboration = (
   }
 
   return {
-    algorithmVersion: 'activity-corroboration-v1',
+    algorithmVersion: 'activity-corroboration-v2',
     status: missingSources.length ? 'insufficient_data' : 'available',
     score: missingSources.length
       ? null

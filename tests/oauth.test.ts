@@ -14,14 +14,6 @@ describe('OAuth flow', () => {
     );
   });
 
-  it('rejects a GitLab callback that is not bound to the initiating browser', async () => {
-    const response = await request(app).get('/v1/oauth/gitlab/callback?code=code&state=state');
-
-    expect(response.status).toBe(302);
-    expect(response.headers.location).toBe(
-      'http://localhost:5173/onboarding?provider=gitlab&status=error',
-    );
-  });
 
   it('rejects an X callback that is not bound to the initiating browser', async () => {
     const response = await request(app).get('/v1/oauth/x/callback?code=code&state=state');
