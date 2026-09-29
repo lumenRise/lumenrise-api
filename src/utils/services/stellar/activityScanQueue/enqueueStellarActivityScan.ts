@@ -1,9 +1,10 @@
 import type { Types } from 'mongoose';
 
 import env from '../../../../env.js';
+import { wakeStellarScan } from './wakeStellarScan.js';
 import StellarActivityScan from '../../../../models/StellarActivityScan.js';
 import type { StellarActivityScanEnqueueResult } from '../../../../types/stellar/scan.js';
-import { createEmptyStellarActivityAggregate } from '../../../../services/stellar/mergeActivityPage.js';
+import { createEmptyStellarActivityAggregate } from '../mergeActivityPage/createEmptyStellarActivityAggregate.js';
 
 const enqueueStellarActivityScan = async (
   identity: Types.ObjectId,
@@ -13,6 +14,9 @@ const enqueueStellarActivityScan = async (
   const existing = await StellarActivityScan.findOne({ identity, active: true });
 
   if (existing) {
+    if (existing.status === 'queued') {
+      await wakeStellarScan(existing._id.toString());
+    }
     return {
       scan: existing,
       conflict: existing.address !== address || existing.sourceUrl !== sourceUrl,
@@ -33,6 +37,7 @@ const enqueueStellarActivityScan = async (
       scheduledAt: new Date(),
     });
 
+    await wakeStellarScan(scan._id.toString());
     return { scan, conflict: false };
   } catch (error) {
     if (typeof error !== 'object' || error === null || Reflect.get(error, 'code') !== 11_000) {
@@ -45,6 +50,9 @@ const enqueueStellarActivityScan = async (
       throw error;
     }
 
+    if (scan.status === 'queued') {
+      await wakeStellarScan(scan._id.toString());
+    }
     return { scan, conflict: scan.address !== address || scan.sourceUrl !== sourceUrl };
   }
 };

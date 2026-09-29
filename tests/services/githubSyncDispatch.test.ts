@@ -1,13 +1,13 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { enqueueXSync } from '../../src/utils/services/integration/syncQueue/enqueueXSync.js';
 import { enqueueGitHubSync } from '../../src/utils/services/integration/syncQueue/enqueueGitHubSync.js';
-import { claimIntegrationSyncJob } from '../../src/utils/services/integration/syncQueue/claimIntegrationSyncJob.js';
 
 const mocks = vi.hoisted(() => ({
   enqueue: vi.fn(),
   publish: vi.fn(),
-  claim: vi.fn(),
+  publishReputationJob: vi.fn(),
   warn: vi.fn(),
 }));
 
@@ -17,8 +17,8 @@ vi.mock('../../src/utils/services/integration/syncQueue/enqueueIntegrationSync.j
 vi.mock('../../src/services/integration/publishGitHubSyncJob.js', () => ({
   publishGitHubSyncJob: mocks.publish,
 }));
-vi.mock('../../src/models/IntegrationSyncJob.js', () => ({
-  default: { findOneAndUpdate: mocks.claim },
+vi.mock('../../src/services/integration/publishReputationJob.js', () => ({
+  publishReputationJob: mocks.publishReputationJob,
 }));
 vi.mock('../../src/logger.js', () => ({ default: { warn: mocks.warn } }));
 
@@ -42,19 +42,22 @@ describe('GitHub sync dispatch', () => {
     mocks.enqueue.mockResolvedValue(job);
     mocks.publish.mockRejectedValue(new Error('broker unavailable'));
 
-    await expect(enqueueGitHubSync({ provider: 'github', lastSyncedAt: null } as never))
-      .resolves.toBe(job);
+    await expect(
+      enqueueGitHubSync({ provider: 'github', lastSyncedAt: null } as never),
+    ).resolves.toBe(job);
     expect(mocks.warn).toHaveBeenCalledOnce();
   });
 
-  it('limits the API worker to X jobs', async () => {
-    mocks.claim.mockResolvedValue(null);
+  it('publishes an X wakeup after persisting the job', async () => {
+    const account = { _id: new Types.ObjectId(), provider: 'x', lastSyncedAt: null };
+    const job = { _id: new Types.ObjectId() };
+    mocks.enqueue.mockResolvedValue(job);
+    mocks.publishReputationJob.mockResolvedValue(undefined);
 
-    await claimIntegrationSyncJob();
-
-    expect(mocks.claim.mock.calls[0]?.[0]).toMatchObject({
-      provider: 'x',
-      active: true,
-    });
+    await expect(enqueueXSync(account as never)).resolves.toBe(job);
+    expect(mocks.publishReputationJob).toHaveBeenCalledWith(
+      'lumenrise.reputation.x-sync.v1',
+      job._id.toString(),
+    );
   });
 });
