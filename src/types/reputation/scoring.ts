@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-type DeveloperReputationProvider = 'github' | 'gitlab';
+type DeveloperReputationProvider = 'github';
 type DeveloperReputationStatus = 'complete' | 'partial';
 
 interface DeveloperSignalInput {

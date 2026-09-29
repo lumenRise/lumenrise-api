@@ -3,11 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import XDataSnapshot from '../../src/models/XDataSnapshot.js';
 import GitHubDataSnapshot from '../../src/models/GitHubDataSnapshot.js';
-import GitLabDataSnapshot from '../../src/models/GitLabDataSnapshot.js';
 import getProviderEvidence from '../../src/utils/sybil/getProviderEvidence.js';
 
 vi.mock('../../src/models/GitHubDataSnapshot.js', () => ({ default: { findOne: vi.fn() } }));
-vi.mock('../../src/models/GitLabDataSnapshot.js', () => ({ default: { findOne: vi.fn() } }));
 vi.mock('../../src/models/XDataSnapshot.js', () => ({ default: { findOne: vi.fn() } }));
 
 describe('provider evidence ownership', () => {
@@ -17,7 +15,6 @@ describe('provider evidence ownership', () => {
 
   it.each([
     ['github', GitHubDataSnapshot],
-    ['gitlab', GitLabDataSnapshot],
     ['x', XDataSnapshot],
   ] as const)('uses only snapshots for the current %s connection', async (provider, model) => {
     const identity = new Types.ObjectId();
@@ -39,7 +36,6 @@ describe('provider evidence ownership', () => {
         metrics: {
           accountAgeDays: 400,
           ...(provider === 'github' ? { allTimeCommits: 20 } : {}),
-          ...(provider === 'gitlab' ? { pushedCommitCount: 30 } : {}),
         },
       }),
     } as never);
@@ -57,7 +53,7 @@ describe('provider evidence ownership', () => {
         profileCovered: true,
         activityCovered: provider !== 'x',
         accountAgeDays: 400,
-        commitCount: provider === 'github' ? 20 : provider === 'gitlab' ? 30 : null,
+        commitCount: provider === 'github' ? 20 : null,
       },
     });
   });

@@ -27,7 +27,7 @@ const connectionPaths = {
           in: 'path',
           name: 'provider',
           required: true,
-          schema: { type: 'string', enum: ['github', 'gitlab', 'x'] },
+          schema: { type: 'string', enum: ['github', 'x'] },
         },
       ],
       responses: {
@@ -39,7 +39,6 @@ const connectionPaths = {
     },
   },
   ...syncProviderPaths('github', 'GitHub'),
-  ...syncProviderPaths('gitlab', 'GitLab'),
   ...syncProviderPaths('x', 'X'),
 };
 

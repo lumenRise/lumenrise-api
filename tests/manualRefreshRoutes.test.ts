@@ -40,7 +40,7 @@ describe('manual refresh routes', () => {
     });
   });
 
-  it.each(['github', 'gitlab', 'x'])(
+  it.each(['github', 'x'])(
     'limits repeat %s synchronization requests',
     async (provider) => {
       const response = await request(app).post(`/v1/connections/${provider}/sync`);

@@ -26,6 +26,10 @@ const schema = defineConfig({
     default: 'lumenrise',
     description: 'MongoDB database name.',
   },
+  RABBITMQ_URL: {
+    default: 'amqp://127.0.0.1:5672',
+    description: 'RabbitMQ address for background job dispatch.',
+  },
   CLIENT_ORIGIN: {
     default: 'http://localhost:5173',
     description: 'Browser client origin allowed to send credentialed requests.',
@@ -45,11 +49,6 @@ const schema = defineConfig({
     default: 'testnet',
     description: 'Stellar network bound to wallet authentication messages.',
   },
-  SYNC_WORKER_POLL_INTERVAL_MS: {
-    type: 'number',
-    default: 2_000,
-    description: 'Delay between background synchronization queue polls.',
-  },
   GITHUB_CLIENT_ID: {
     default: '',
     description: 'GitHub OAuth application client ID.',
@@ -61,22 +60,6 @@ const schema = defineConfig({
   GITHUB_CALLBACK_URL: {
     default: 'http://localhost:5000/v1/oauth/github/callback',
     description: 'GitHub OAuth callback URL registered for the application.',
-  },
-  GITLAB_BASE_URL: {
-    default: 'https://gitlab.com',
-    description: 'Base URL of the GitLab instance used for OAuth and API requests.',
-  },
-  GITLAB_CLIENT_ID: {
-    default: '',
-    description: 'GitLab OAuth application ID.',
-  },
-  GITLAB_CLIENT_SECRET: {
-    default: '',
-    description: 'GitLab OAuth application secret.',
-  },
-  GITLAB_CALLBACK_URL: {
-    default: 'http://localhost:5000/v1/oauth/gitlab/callback',
-    description: 'GitLab OAuth callback URL registered for the application.',
   },
   X_CLIENT_ID: {
     default: '',
@@ -90,18 +73,9 @@ const schema = defineConfig({
     default: 'http://localhost:5000/v1/oauth/x/callback',
     description: 'X OAuth callback URL registered for the application.',
   },
-  X_AUTO_SYNC_INTERVAL_HOURS: {
-    type: 'number',
-    default: 0,
-    description: 'Hours between automatic X scans; 0 disables metered automatic API usage.',
-  },
   STELLAR_HORIZON_URL: {
     default: 'https://horizon-testnet.stellar.org',
     description: 'Horizon base URL used for read-only Stellar account lookups.',
-  },
-  STELLAR_RPC_URL: {
-    default: 'https://soroban-testnet.stellar.org',
-    description: 'Read-only Stellar RPC endpoint for recent Soroban transaction evidence.',
   },
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',

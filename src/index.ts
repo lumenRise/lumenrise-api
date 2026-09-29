@@ -4,11 +4,7 @@ import log from './logger.js';
 import { connectDatabase } from './db.js';
 import serverState from './utils/index/state.js';
 import { handleShutdown } from './utils/index/handleShutdown.js';
-import { startXScheduler } from './services/integration/xScheduler.js';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations.js';
-import { startIntegrationSyncWorker } from './services/integration/syncWorker.js';
-import { startSorobanEvidenceWorker } from './services/stellar/sorobanEvidenceWorker.js';
-import { startStellarActivityScanWorker } from './services/stellar/activityScanWorker.js';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration.js';
 
 const bootstrap = async (): Promise<void> => {
@@ -16,11 +12,6 @@ const bootstrap = async (): Promise<void> => {
 
   await connectDatabase();
   await runDatabaseMigrations();
-
-  startIntegrationSyncWorker();
-  startStellarActivityScanWorker();
-  startSorobanEvidenceWorker();
-  startXScheduler();
 
   serverState.server = app.listen(env.PORT, () => {
     log.info({ port: env.PORT }, 'Lumenrise API started');

@@ -1,3 +1,3 @@
-const SYBIL_EVIDENCE_VERSION = 'sybil-evidence-v2';
+const SYBIL_EVIDENCE_VERSION = 'sybil-evidence-v3';
 
 export { SYBIL_EVIDENCE_VERSION };

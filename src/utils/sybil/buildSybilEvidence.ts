@@ -28,7 +28,7 @@ const buildSybilEvidence = (
     },
   ];
 
-  for (const provider of ['github', 'gitlab', 'x'] as const) {
+  for (const provider of ['github', 'x'] as const) {
     const account = providers.find((item) => item.provider === provider);
 
     if (!account) {

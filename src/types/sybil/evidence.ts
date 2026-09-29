@@ -28,12 +28,12 @@ interface SybilProviderEvidence {
 }
 
 interface SybilCorroborationResult {
-  algorithmVersion: 'activity-corroboration-v1';
+  algorithmVersion: 'activity-corroboration-v2';
   status: 'available' | 'insufficient_data';
   score: number | null;
-  missingSources: Array<'github' | 'gitlab' | 'stellar'>;
+  missingSources: Array<'github' | 'stellar'>;
   signals: Array<{
-    source: 'github' | 'gitlab' | 'stellar';
+    source: 'github' | 'stellar';
     key: string;
     rawValue: number;
     normalizedValue: number;

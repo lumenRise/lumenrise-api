@@ -107,21 +107,21 @@ const openApiComponents = {
       ],
       properties: {
         identityId: objectId,
-        algorithmVersion: { type: 'string', const: 'sybil-evidence-v2' },
+        algorithmVersion: { type: 'string', const: 'sybil-evidence-v3' },
         generatedAt: dateTime,
         assessment: { type: 'string', const: 'not_assessed' },
         corroboration: {
           type: 'object',
           description:
-            'Activity corroboration across GitHub, GitLab and the registered primary Stellar wallet. Not a Sybil risk score or policy input.',
+            'Activity corroboration across GitHub and the registered primary Stellar wallet. Not a Sybil risk score or policy input.',
           required: ['algorithmVersion', 'status', 'score', 'missingSources', 'signals'],
           properties: {
-            algorithmVersion: { type: 'string', const: 'activity-corroboration-v1' },
+            algorithmVersion: { type: 'string', const: 'activity-corroboration-v2' },
             status: { type: 'string', enum: ['available', 'insufficient_data'] },
             score: { oneOf: [{ type: 'number', minimum: 0, maximum: 100 }, { type: 'null' }] },
             missingSources: {
               type: 'array',
-              items: { type: 'string', enum: ['github', 'gitlab', 'stellar'] },
+              items: { type: 'string', enum: ['github', 'stellar'] },
             },
             signals: {
               type: 'array',
@@ -129,7 +129,7 @@ const openApiComponents = {
                 type: 'object',
                 required: ['source', 'key', 'rawValue', 'normalizedValue', 'sourceId'],
                 properties: {
-                  source: { type: 'string', enum: ['github', 'gitlab', 'stellar'] },
+                  source: { type: 'string', enum: ['github', 'stellar'] },
                   key: { type: 'string' },
                   rawValue: { type: 'number', minimum: 0 },
                   normalizedValue: { type: 'number', minimum: 0, maximum: 100 },
@@ -152,7 +152,7 @@ const openApiComponents = {
               'sourceVersion',
             ],
             properties: {
-              source: { type: 'string', enum: ['stellar', 'github', 'gitlab', 'x'] },
+              source: { type: 'string', enum: ['stellar', 'github', 'x'] },
               ownership: {
                 type: 'string',
                 enum: ['wallet_registration', 'oauth_connection', 'not_connected'],
@@ -319,7 +319,7 @@ const openApiComponents = {
       ],
       properties: {
         id: objectId,
-        provider: { type: 'string', enum: ['github', 'gitlab', 'x'] },
+        provider: { type: 'string', enum: ['github', 'x'] },
         status: { type: 'string', enum: ['queued', 'running', 'completed', 'failed', 'cancelled'] },
         attempts: { type: 'integer', minimum: 0 },
         maxAttempts: { type: 'integer', minimum: 1 },
@@ -344,7 +344,7 @@ const openApiComponents = {
         'sync',
       ],
       properties: {
-        provider: { type: 'string', enum: ['github', 'gitlab', 'x'] },
+        provider: { type: 'string', enum: ['github', 'x'] },
         username: { type: 'string' },
         displayName: nullableString,
         profileUrl: nullableString,
@@ -390,7 +390,7 @@ const openApiComponents = {
         'observedAt',
       ],
       properties: {
-        provider: { type: 'string', enum: ['github', 'gitlab', 'x'] },
+        provider: { type: 'string', enum: ['github', 'x'] },
         key: { type: 'string' },
         rawValue: { type: 'number' },
         normalization: { type: 'string', const: 'diminishing_returns' },
@@ -425,7 +425,7 @@ const openApiComponents = {
             type: 'object',
             required: ['provider', 'snapshotId', 'dataVersion', 'collectedAt'],
             properties: {
-              provider: { type: 'string', enum: ['github', 'gitlab', 'x'] },
+              provider: { type: 'string', enum: ['github', 'x'] },
               snapshotId: objectId,
               dataVersion: { type: 'string' },
               collectedAt: dateTime,
@@ -505,40 +505,6 @@ const openApiComponents = {
         collectedAt: dateTime,
       },
     },
-    GitLabSnapshot: {
-      type: 'object',
-      required: [
-        'provider',
-        'status',
-        'dataVersion',
-        'username',
-        'coverage',
-        'metrics',
-        'activityFrom',
-        'activityTo',
-        'collectedAt',
-      ],
-      properties: {
-        provider: { type: 'string', const: 'gitlab' },
-        status: { type: 'string', enum: ['complete', 'partial'] },
-        dataVersion: { type: 'string' },
-        username: { type: 'string' },
-        coverage: {
-          type: 'object',
-          required: ['profile', 'projects', 'contributions', 'associations'],
-          properties: {
-            profile: { type: 'boolean' },
-            projects: { type: 'boolean' },
-            contributions: { type: 'boolean' },
-            associations: { type: 'boolean' },
-          },
-        },
-        metrics: numberMetrics,
-        activityFrom: nullableDateTime,
-        activityTo: dateTime,
-        collectedAt: dateTime,
-      },
-    },
     XSnapshot: {
       type: 'object',
       required: [
@@ -594,66 +560,6 @@ const openApiComponents = {
               primaryLanguage: nullableString,
               repositoryCreatedAt: dateTime,
               lastPushedAt: nullableDateTime,
-            },
-          },
-        },
-        nextCursor: { oneOf: [objectId, { type: 'null' }] },
-      },
-    },
-    GitLabProjects: {
-      type: 'object',
-      required: ['items', 'nextCursor'],
-      properties: {
-        items: {
-          type: 'array',
-          items: {
-            type: 'object',
-            required: ['projectId', 'nameWithNamespace'],
-            properties: {
-              projectId: { type: 'string' },
-              nameWithNamespace: { type: 'string' },
-              pathWithNamespace: { type: 'string' },
-              namespaceKind: { type: 'string' },
-              visibility: { type: 'string', enum: ['private', 'internal', 'public'] },
-              isOwned: { type: 'boolean' },
-              isContributed: { type: 'boolean' },
-              isFork: { type: 'boolean' },
-              isArchived: { type: 'boolean' },
-              starCount: { type: 'integer' },
-              forkCount: { type: 'integer' },
-              openIssueCount: { type: 'integer' },
-              topics: { type: 'array', items: { type: 'string' } },
-              webUrl: { type: 'string', format: 'uri' },
-              description: nullableString,
-              projectCreatedAt: dateTime,
-              lastActivityAt: dateTime,
-            },
-          },
-        },
-        nextCursor: { oneOf: [objectId, { type: 'null' }] },
-      },
-    },
-    GitLabEvents: {
-      type: 'object',
-      required: ['items', 'nextCursor'],
-      properties: {
-        items: {
-          type: 'array',
-          items: {
-            type: 'object',
-            required: ['eventId', 'projectId'],
-            properties: {
-              eventId: { type: 'string' },
-              projectId: nullableString,
-              actionName: { type: 'string' },
-              targetId: nullableString,
-              targetIid: nullableString,
-              targetType: nullableString,
-              targetTitle: nullableString,
-              commitCount: { oneOf: [{ type: 'integer' }, { type: 'null' }] },
-              refType: nullableString,
-              ref: nullableString,
-              eventCreatedAt: dateTime,
             },
           },
         },

@@ -1,6 +1,6 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
-type ExternalAccountProvider = 'github' | 'gitlab' | 'x';
+type ExternalAccountProvider = 'github' | 'x';
 type ExternalAccountStatus = 'connected' | 'disconnected';
 type OAuthPurpose = 'register' | 'connect';
 

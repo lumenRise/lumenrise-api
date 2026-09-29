@@ -86,7 +86,7 @@ describe('wallet authentication routes', () => {
   });
 
   it('does not permit secondary providers to register an identity', async () => {
-    for (const provider of ['github', 'gitlab', 'x']) {
+    for (const provider of ['github', 'x']) {
       const response = await request(app).get(`/v1/oauth/${provider}/start`);
 
       expect(response.status).toBe(410);

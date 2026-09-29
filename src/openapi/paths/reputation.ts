@@ -22,7 +22,7 @@ const reputationPaths = {
       summary: 'Get diagnostic evidence for the authenticated identity',
       operationId: 'getSybilEvidence',
       description:
-        'Read-only, versioned observations plus an activity corroboration score across complete, recent GitHub, GitLab and primary-wallet Horizon data. Missing or stale inputs produce a null score. This is not a Sybil risk score, verdict, unique-person proof or policy input; no cross-identity analysis. Horizon scans cover available history only.',
+        'Read-only, versioned observations plus an activity corroboration score across complete, recent GitHub and primary-wallet Horizon data. Missing or stale inputs produce a null score. This is not a Sybil risk score, verdict, unique-person proof or policy input; no cross-identity analysis. Horizon scans cover available history only.',
       responses: {
         '200': jsonResponse('Sybil evidence retrieved.', {
           $ref: '#/components/schemas/SybilEvidence',
@@ -86,53 +86,11 @@ const reputationPaths = {
       summary: 'Get explainable developer score',
       operationId: 'getDeveloperScore',
       description:
-        'Combines available GitHub and GitLab signals; status indicates complete or partial data.',
+        'Uses available GitHub signals; status indicates complete or partial data.',
       responses: {
         '200': jsonResponse('Developer score retrieved.', {
           $ref: '#/components/schemas/ReputationScore',
         }),
-        '401': { $ref: '#/components/responses/Unauthorized' },
-        '404': { $ref: '#/components/responses/NotFound' },
-      },
-    },
-  },
-  '/v1/reputation/developer/gitlab': {
-    get: {
-      tags: ['Reputation'],
-      summary: 'Get GitLab developer data',
-      operationId: 'getGitLabReputation',
-      responses: {
-        '200': jsonResponse('GitLab data retrieved.', {
-          $ref: '#/components/schemas/GitLabSnapshot',
-        }),
-        '401': { $ref: '#/components/responses/Unauthorized' },
-        '404': { $ref: '#/components/responses/NotFound' },
-      },
-    },
-  },
-  '/v1/reputation/developer/gitlab/projects': {
-    get: {
-      tags: ['Reputation'],
-      summary: 'Page through collected GitLab projects',
-      operationId: 'getGitLabProjects',
-      parameters: paginationParameters,
-      responses: {
-        '200': jsonResponse('Projects retrieved.', { $ref: '#/components/schemas/GitLabProjects' }),
-        '400': { $ref: '#/components/responses/BadRequest' },
-        '401': { $ref: '#/components/responses/Unauthorized' },
-        '404': { $ref: '#/components/responses/NotFound' },
-      },
-    },
-  },
-  '/v1/reputation/developer/gitlab/events': {
-    get: {
-      tags: ['Reputation'],
-      summary: 'Page through collected GitLab events',
-      operationId: 'getGitLabEvents',
-      parameters: paginationParameters,
-      responses: {
-        '200': jsonResponse('Events retrieved.', { $ref: '#/components/schemas/GitLabEvents' }),
-        '400': { $ref: '#/components/responses/BadRequest' },
         '401': { $ref: '#/components/responses/Unauthorized' },
         '404': { $ref: '#/components/responses/NotFound' },
       },

@@ -9,6 +9,7 @@ const getDeveloperScoreRoute: RequestHandler = async (req, res) => {
   const snapshot = await ReputationSnapshot.findOne({
     identity: req.auth?.identityId,
     category: 'developer',
+    sources: { $not: { $elemMatch: { provider: { $ne: 'github' } } } },
   }).sort({ calculatedAt: -1 });
 
   if (!snapshot) {

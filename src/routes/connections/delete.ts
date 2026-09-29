@@ -8,10 +8,8 @@ import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
 import ProviderCredential from '../../models/ProviderCredential.js';
 import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import { revokeGitLabAccessToken } from '../../services/oauth/gitlab.js';
 import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
 import { getProviderCredential } from '../../services/integration/providerCredential.js';
-import { calculateAndStoreDeveloperReputation } from '../../services/reputation/developerScore.js';
 import { isExternalAccountProvider } from '../../utils/routes/connections/delete/isExternalAccountProvider.js';
 
 const deleteConnectionRoute: RequestHandler = async (req, res) => {
@@ -59,7 +57,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     return res.status(404).json(response);
   }
 
-  if (provider === 'github' || provider === 'gitlab' || provider === 'x') {
+  if (provider === 'github' || provider === 'x') {
     try {
       const credential = await getProviderCredential(account._id);
 
@@ -76,10 +74,6 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     try {
       if (provider === 'github') {
         await revokeGitHubAccessToken(providerAccessToken);
-      }
-
-      if (provider === 'gitlab') {
-        await revokeGitLabAccessToken(providerAccessToken);
       }
 
       if (provider === 'x') {
@@ -120,15 +114,8 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     ]);
   }
 
-  if (provider === 'github' || provider === 'gitlab') {
-    try {
-      await calculateAndStoreDeveloperReputation(account.identity);
-    } catch (error) {
-      log.warn(
-        { error, identityId: account.identity, provider },
-        'Developer reputation could not be recalculated after disconnection',
-      );
-    }
+  if (provider === 'github') {
+    await ReputationSnapshot.deleteMany({ identity: account.identity, category: 'developer' });
   }
 
   const response: ApiResponse<EmptyResult> = {

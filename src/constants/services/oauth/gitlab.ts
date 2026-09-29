@@ -1,3 +1,0 @@
-const OAUTH_STATE_TTL_MS = 600_000;
-
-export { OAUTH_STATE_TTL_MS };
