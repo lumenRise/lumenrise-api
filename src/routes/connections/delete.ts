@@ -10,7 +10,6 @@ import ReputationSnapshot from '../../models/ReputationSnapshot.js';
 import type { ApiResponse, EmptyResult } from '../../types/response.js';
 import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
 import { getProviderCredential } from '../../services/integration/providerCredential.js';
-import { calculateAndStoreDeveloperReputation } from '../../services/reputation/developerScore.js';
 import { isExternalAccountProvider } from '../../utils/routes/connections/delete/isExternalAccountProvider.js';
 
 const deleteConnectionRoute: RequestHandler = async (req, res) => {
@@ -116,14 +115,7 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
   }
 
   if (provider === 'github') {
-    try {
-      await calculateAndStoreDeveloperReputation(account.identity);
-    } catch (error) {
-      log.warn(
-        { error, identityId: account.identity, provider },
-        'Developer reputation could not be recalculated after disconnection',
-      );
-    }
+    await ReputationSnapshot.deleteMany({ identity: account.identity, category: 'developer' });
   }
 
   const response: ApiResponse<EmptyResult> = {
