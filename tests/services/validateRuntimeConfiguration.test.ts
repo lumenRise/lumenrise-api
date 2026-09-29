@@ -12,9 +12,7 @@ const validConfiguration: RuntimeConfiguration = {
   X_CLIENT_ID: 'x-client-id',
   X_CLIENT_SECRET: 'x-client-secret',
   X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',
-  X_AUTO_SYNC_INTERVAL_HOURS: 0,
   STELLAR_HORIZON_URL: 'https://horizon-testnet.stellar.org',
-  STELLAR_RPC_URL: 'https://soroban-testnet.stellar.org',
   STELLAR_AUTH_NETWORK: 'testnet',
   AUTH_JWT_SECRET: 'a'.repeat(32),
   CREDENTIAL_ENCRYPTION_KEY: 'a'.repeat(64),
@@ -37,22 +35,10 @@ describe('runtime configuration validation', () => {
     ).toThrow('must be configured together');
   });
 
-  it('rejects a negative automatic X synchronization interval', () => {
-    expect(() =>
-      validateRuntimeConfiguration({ ...validConfiguration, X_AUTO_SYNC_INTERVAL_HOURS: -1 }),
-    ).toThrow('must be a nonnegative number');
-  });
-
   it('rejects an invalid Stellar Horizon URL', () => {
     expect(() =>
       validateRuntimeConfiguration({ ...validConfiguration, STELLAR_HORIZON_URL: 'not-a-url' }),
     ).toThrow('STELLAR_HORIZON_URL must be a valid absolute URL');
-  });
-
-  it('rejects an invalid Stellar RPC URL', () => {
-    expect(() =>
-      validateRuntimeConfiguration({ ...validConfiguration, STELLAR_RPC_URL: 'not-a-url' }),
-    ).toThrow('STELLAR_RPC_URL must be a valid absolute URL');
   });
 
   it('rejects an invalid credential encryption key', () => {

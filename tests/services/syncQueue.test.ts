@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   calculateGitHubSyncSchedule,
   calculateXSyncSchedule,
-  calculateSyncRetryDelay,
 } from '../../src/services/integration/syncQueue.js';
 
 describe('integration synchronization queue', () => {
@@ -27,11 +26,5 @@ describe('integration synchronization queue', () => {
     const lastSyncedAt = new Date('2026-09-22T11:55:00.000Z');
 
     expect(calculateXSyncSchedule(lastSyncedAt, now)).toEqual(new Date('2026-09-22T12:10:00.000Z'));
-  });
-
-  it('backs retries off without exceeding one hour', () => {
-    expect(calculateSyncRetryDelay(1)).toBe(60_000);
-    expect(calculateSyncRetryDelay(3)).toBe(240_000);
-    expect(calculateSyncRetryDelay(20)).toBe(3_600_000);
   });
 });

@@ -7,9 +7,7 @@ interface RuntimeConfiguration {
   X_CLIENT_ID: string;
   X_CLIENT_SECRET: string;
   X_CALLBACK_URL: string;
-  X_AUTO_SYNC_INTERVAL_HOURS: number;
   STELLAR_HORIZON_URL: string;
-  STELLAR_RPC_URL: string;
   STELLAR_AUTH_NETWORK: 'testnet' | 'public';
   AUTH_JWT_SECRET: string;
   CREDENTIAL_ENCRYPTION_KEY: string;

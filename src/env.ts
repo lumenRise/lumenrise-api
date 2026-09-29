@@ -49,11 +49,6 @@ const schema = defineConfig({
     default: 'testnet',
     description: 'Stellar network bound to wallet authentication messages.',
   },
-  SYNC_WORKER_POLL_INTERVAL_MS: {
-    type: 'number',
-    default: 2_000,
-    description: 'Delay between background synchronization queue polls.',
-  },
   GITHUB_CLIENT_ID: {
     default: '',
     description: 'GitHub OAuth application client ID.',
@@ -78,18 +73,9 @@ const schema = defineConfig({
     default: 'http://localhost:5000/v1/oauth/x/callback',
     description: 'X OAuth callback URL registered for the application.',
   },
-  X_AUTO_SYNC_INTERVAL_HOURS: {
-    type: 'number',
-    default: 0,
-    description: 'Hours between automatic X scans; 0 disables metered automatic API usage.',
-  },
   STELLAR_HORIZON_URL: {
     default: 'https://horizon-testnet.stellar.org',
     description: 'Horizon base URL used for read-only Stellar account lookups.',
-  },
-  STELLAR_RPC_URL: {
-    default: 'https://soroban-testnet.stellar.org',
-    description: 'Read-only Stellar RPC endpoint for recent Soroban transaction evidence.',
   },
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',

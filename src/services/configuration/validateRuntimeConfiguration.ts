@@ -20,13 +20,6 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   }
 
   if (
-    !Number.isFinite(configuration.X_AUTO_SYNC_INTERVAL_HOURS) ||
-    configuration.X_AUTO_SYNC_INTERVAL_HOURS < 0
-  ) {
-    throw new Error('X_AUTO_SYNC_INTERVAL_HOURS must be a nonnegative number');
-  }
-
-  if (
     (hasGitHubClientId || hasXClientId) &&
     !/^[a-f\d]{64}$/i.test(configuration.CREDENTIAL_ENCRYPTION_KEY)
   ) {
@@ -37,7 +30,6 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
 
   const clientOrigin = parseUrl(configuration.CLIENT_ORIGIN, 'CLIENT_ORIGIN');
   const stellarHorizonUrl = parseUrl(configuration.STELLAR_HORIZON_URL, 'STELLAR_HORIZON_URL');
-  const stellarRpcUrl = parseUrl(configuration.STELLAR_RPC_URL, 'STELLAR_RPC_URL');
   const githubCallbackUrl = parseUrl(configuration.GITHUB_CALLBACK_URL, 'GITHUB_CALLBACK_URL');
   const xCallbackUrl = parseUrl(configuration.X_CALLBACK_URL, 'X_CALLBACK_URL');
 
@@ -45,7 +37,6 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
     configuration.NODE_ENV === 'production' &&
     (clientOrigin.protocol !== 'https:' ||
       stellarHorizonUrl.protocol !== 'https:' ||
-      stellarRpcUrl.protocol !== 'https:' ||
       githubCallbackUrl.protocol !== 'https:' ||
       xCallbackUrl.protocol !== 'https:')
   ) {
@@ -56,9 +47,6 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
     throw new Error('STELLAR_HORIZON_URL must use HTTP or HTTPS');
   }
 
-  if (!['http:', 'https:'].includes(stellarRpcUrl.protocol)) {
-    throw new Error('STELLAR_RPC_URL must use HTTP or HTTPS');
-  }
 };
 
 export default validateRuntimeConfiguration;
