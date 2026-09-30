@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ManualRefreshCooldown from '../../src/models/ManualRefreshCooldown';
 import reserveManualRefresh from '../../src/services/refresh/reserveManualRefresh';
+
 vi.mock('../../src/models/ManualRefreshCooldown', () => ({
   default: { findOneAndUpdate: vi.fn(), findOne: vi.fn() },
 }));

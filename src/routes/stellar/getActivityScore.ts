@@ -7,6 +7,7 @@ import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { StellarActivityScoreResult } from '../../types/stellar/score';
 import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import { calculateStellarActivityScore } from '../../services/stellar/activityScore';
+
 const getStellarActivityScoreRoute: RequestHandler = async (req, res) => {
   const address = typeof req.params.address === 'string' ? req.params.address.toUpperCase() : '';
 

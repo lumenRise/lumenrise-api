@@ -7,6 +7,7 @@ import stellarPaths from './paths/stellar';
 import developerPaths from './paths/developers';
 import reputationPaths from './paths/reputation';
 import connectionPaths from './paths/connections';
+
 const openApiPaths = {
   ...authPaths,
   ...policyPaths,

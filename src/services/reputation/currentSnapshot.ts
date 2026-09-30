@@ -5,6 +5,7 @@ import ExternalAccount from '../../models/ExternalAccount';
 import GitHubDataSnapshot from '../../models/GitHubDataSnapshot';
 import ReputationSnapshot from '../../models/ReputationSnapshot';
 import type { ReputationSnapshotDocument } from '../../types/reputation/model';
+
 type Category = 'developer' | 'social';
 const SCORE_VALIDITY_MS = 90 * 24 * 60 * 60 * 1_000;
 

@@ -11,6 +11,7 @@ import {
   CHALLENGE_TTL_MS,
   SIGNED_MESSAGE_PREFIX,
 } from '../../constants/services/auth/walletChallenge';
+
 const consumeSignedWalletChallenge = async (
   challengeId: string,
   address: string,

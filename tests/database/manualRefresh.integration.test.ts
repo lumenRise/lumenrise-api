@@ -17,6 +17,7 @@ import ManualRefreshCooldown from '../../src/models/ManualRefreshCooldown';
 import reserveManualRefresh from '../../src/services/refresh/reserveManualRefresh';
 import releaseManualRefresh from '../../src/services/refresh/releaseManualRefresh';
 import { hashWalletMessage } from '../../src/utils/services/auth/walletChallenge/hashWalletMessage';
+
 const databaseName = `lumenrise_integration_${randomUUID().replaceAll('-', '')}`;
 const wallet = Keypair.random();
 let token: string;

@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 
 import type { GitHubRepositoryFactRecord } from '../types/reputation/github';
+
 const githubRepositoryFactSchema = new Schema<GitHubRepositoryFactRecord>(
   {
     snapshot: { type: Schema.Types.ObjectId, ref: 'GitHubDataSnapshot', required: true },

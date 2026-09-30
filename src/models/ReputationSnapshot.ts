@@ -7,6 +7,7 @@ import type {
   ReputationSourceRecord,
   ReputationSnapshotRecord,
 } from '../types/reputation/model';
+
 const reputationSignalSchema = new Schema<ReputationSignalRecord>(
   {
     provider: {

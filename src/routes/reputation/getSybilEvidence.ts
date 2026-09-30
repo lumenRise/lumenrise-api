@@ -4,6 +4,7 @@ import log from '../../logger';
 import getSybilEvidence from '../../services/sybil/getSybilEvidence';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { SybilEvidenceResult } from '../../types/sybil/evidence';
+
 const getSybilEvidenceRoute: RequestHandler = async (req, res) => {
   try {
     const evidence = await getSybilEvidence(req.auth!.identityId);

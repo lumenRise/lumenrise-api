@@ -5,6 +5,7 @@ import ProviderCredential from '../../models/ProviderCredential';
 import type { ExternalAccountProvider } from '../../types/integration/model';
 import type { ProviderCredentialInput } from '../../types/integration/credential';
 import { getProviderCredential } from '../../utils/services/integration/providerCredential/getProviderCredential';
+
 const storeProviderCredential = async (
   externalAccountId: Types.ObjectId,
   provider: ExternalAccountProvider,

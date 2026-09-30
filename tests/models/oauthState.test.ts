@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 import OAuthState from '../../src/models/OAuthState';
+
 const CODE_VERIFIER = 'a'.repeat(43);
 const STATE_HASH = createHash('sha256').update('oauth-state').digest('hex');
 const CODE_CHALLENGE = createHash('sha256').update(CODE_VERIFIER).digest('base64url');

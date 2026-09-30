@@ -9,6 +9,7 @@ import stellarRoutes from './stellar/index';
 import developerRoutes from './developers/index';
 import reputationRoutes from './reputation/index';
 import connectionRoutes from './connections/index';
+
 const router = Router();
 
 router.use('/v1/auth', authRoutes);

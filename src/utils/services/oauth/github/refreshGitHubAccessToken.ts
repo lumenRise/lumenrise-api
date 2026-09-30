@@ -2,6 +2,7 @@ import env from '../../../../env';
 import { requestGitHubToken } from './requestGitHubToken';
 import { assertGitHubConfiguration } from './assertGitHubConfiguration';
 import type { GitHubTokenResponse } from '../../../../types/integration/github';
+
 const refreshGitHubAccessToken = async (refreshToken: string): Promise<GitHubTokenResponse> => {
   assertGitHubConfiguration();
 

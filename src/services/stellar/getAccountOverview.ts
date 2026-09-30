@@ -4,6 +4,7 @@ import type {
   StellarAccountOverviewResult,
   StellarHorizonAccount,
 } from '../../types/stellar/account';
+
 const getStellarAccountOverview = async (
   address: string,
   checkedAt = new Date(),

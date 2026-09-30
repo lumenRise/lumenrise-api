@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { enqueueStellarActivityScan } from '../../src/utils/services/stellar/activityScanQueue/enqueueStellarActivityScan';
+
 const mocks = vi.hoisted(() => ({
   findOne: vi.fn(),
   create: vi.fn(),

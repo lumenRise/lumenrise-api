@@ -1,5 +1,6 @@
 import assertPolicyDefinition from './assertPolicyDefinition';
 import type { PolicyDefinition } from '../../types/policy/model';
+
 const parsePolicyDefinition = (input: unknown): PolicyDefinition | null => {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) {
     return null;

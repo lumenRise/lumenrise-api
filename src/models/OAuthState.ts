@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import type { OAuthStateRecord } from '../types/integration/model';
 import { EXTERNAL_ACCOUNT_PROVIDERS, OAUTH_PURPOSES } from '../constants/integration';
+
 const oauthStateSchema = new Schema<OAuthStateRecord>(
   {
     identity: {

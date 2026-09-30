@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { RuntimeConfiguration } from '../../src/types/configuration';
 import validateRuntimeConfiguration from '../../src/services/configuration/validateRuntimeConfiguration';
+
 const validConfiguration: RuntimeConfiguration = {
   NODE_ENV: 'development',
   CLIENT_ORIGIN: 'http://localhost:5173',

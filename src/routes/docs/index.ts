@@ -3,6 +3,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import getOpenApiRoute from './getOpenApi';
 import openApiDocument from '../../openapi/document';
+
 const docsRoutes = Router();
 
 docsRoutes.get('/openapi.json', getOpenApiRoute);

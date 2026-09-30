@@ -20,6 +20,7 @@ import {
   X_TOKEN_URL,
   X_REVOKE_URL,
 } from '../../constants/services/oauth/x';
+
 const completeXAuthorization = async (
   code: string,
   state: string,

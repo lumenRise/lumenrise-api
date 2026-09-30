@@ -5,6 +5,7 @@ import type {
   IntegrationSyncJobDocument,
   IntegrationSyncJobProvider,
 } from '../../../../types/integration/sync';
+
 const enqueueIntegrationSync = async (
   account: ExternalAccountDocument,
   provider: IntegrationSyncJobProvider,

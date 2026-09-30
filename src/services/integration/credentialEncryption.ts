@@ -7,6 +7,7 @@ import {
   INITIALIZATION_VECTOR_LENGTH,
 } from '../../constants/services/integration/credentialEncryption';
 import { getCredentialEncryptionKey } from '../../utils/services/integration/credentialEncryption/getCredentialEncryptionKey';
+
 const decryptSecret = (value: EncryptedSecret, key = getCredentialEncryptionKey()): string => {
   const initializationVector = Buffer.from(value.initializationVector, 'base64');
   const authenticationTag = Buffer.from(value.authenticationTag, 'base64');

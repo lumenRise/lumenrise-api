@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 
 import type { ManualRefreshCooldownRecord } from '../types/refresh/cooldown';
+
 const manualRefreshCooldownSchema = new Schema<ManualRefreshCooldownRecord>(
   {
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },

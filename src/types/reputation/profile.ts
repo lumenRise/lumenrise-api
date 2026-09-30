@@ -1,5 +1,6 @@
 import type { ReputationSnapshotResult } from './model';
 import type { StellarReputationResult } from './stellar';
+
 interface ReputationProfileResult {
   identity: {
     id: string;

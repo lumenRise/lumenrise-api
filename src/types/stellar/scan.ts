@@ -1,6 +1,7 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
 import type { StellarActivityPageSummary } from './activity';
+
 type StellarActivityScanStatus = 'queued' | 'running' | 'completed' | 'failed';
 type StellarActivityAggregate = Omit<StellarActivityPageSummary, 'scope'> & {
   scope: 'scanned_pages';

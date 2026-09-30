@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import Identity from '../../src/models/Identity';
+
 describe('Identity model', () => {
   it('applies safe defaults to a new identity', async () => {
     const identity = new Identity();

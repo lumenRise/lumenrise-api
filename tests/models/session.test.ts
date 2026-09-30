@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 import Session from '../../src/models/Session';
+
 const TOKEN_HASH = createHash('sha256').update('session-token').digest('hex');
 
 describe('Session model', () => {

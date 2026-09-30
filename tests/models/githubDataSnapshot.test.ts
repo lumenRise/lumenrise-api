@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
 import GitHubDataSnapshot from '../../src/models/GitHubDataSnapshot';
+
 describe('GitHubDataSnapshot model', () => {
   it('stores uncapped raw GitHub values', async () => {
     const snapshot = new GitHubDataSnapshot({

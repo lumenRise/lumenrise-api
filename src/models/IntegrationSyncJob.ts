@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import { INTEGRATION_SYNC_JOB_STATUSES } from '../constants/integration';
 import type { IntegrationSyncJobRecord } from '../types/integration/sync';
+
 const integrationSyncJobSchema = new Schema<IntegrationSyncJobRecord>(
   {
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },

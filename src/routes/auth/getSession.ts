@@ -3,6 +3,7 @@ import type { RequestHandler } from 'express';
 import Session from '../../models/Session';
 import type { ApiResponse } from '../../types/response';
 import type { SessionResult } from '../../types/auth/model';
+
 const getSessionRoute: RequestHandler = async (req, res) => {
   const session = await Session.findById(req.auth?.sessionId).select('expiresAt');
 

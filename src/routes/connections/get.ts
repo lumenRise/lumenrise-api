@@ -7,6 +7,7 @@ import GitHubDataSnapshot from '../../models/GitHubDataSnapshot';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob';
 import createIntegrationSyncJobResult from '../../services/integration/syncJobResult';
 import type { ConnectionResult, ConnectionsResult } from '../../types/integration/response';
+
 const getConnectionsRoute: RequestHandler = async (req, res) => {
   const accounts = await ExternalAccount.find({
     identity: req.auth?.identityId,

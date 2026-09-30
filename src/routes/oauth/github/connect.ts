@@ -4,6 +4,7 @@ import type { ApiResponse } from '../../../types/response';
 import { setOAuthStateCookie } from '../../../services/oauth/stateCookie';
 import { createGitHubAuthorization } from '../../../services/oauth/github';
 import type { GitHubOAuthStartResult } from '../../../types/integration/github';
+
 const connectGitHubOAuthRoute: RequestHandler = async (req, res) => {
   if (!req.auth) {
     return res.status(401).json({

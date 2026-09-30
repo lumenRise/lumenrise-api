@@ -6,6 +6,7 @@ import app from '../src/app';
 import Identity from '../src/models/Identity';
 import DeveloperApiKey from '../src/models/DeveloperApiKey';
 import reserveApiUsage from '../src/services/developer/reserveApiUsage';
+
 vi.mock('../src/models/Identity', () => ({ default: { exists: vi.fn() } }));
 vi.mock('../src/models/DeveloperApiKey', () => ({ default: { findOne: vi.fn() } }));
 vi.mock('../src/services/developer/reserveApiUsage', () => ({ default: vi.fn() }));

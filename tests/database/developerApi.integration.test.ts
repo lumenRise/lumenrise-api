@@ -14,6 +14,7 @@ import createApiKey from '../../src/services/developer/createApiKey';
 import WalletAuthChallenge from '../../src/models/WalletAuthChallenge';
 import reserveApiUsage from '../../src/services/developer/reserveApiUsage';
 import { hashWalletMessage } from '../../src/utils/services/auth/walletChallenge/hashWalletMessage';
+
 const databaseName = `lumenrise_developer_test_${randomUUID().replaceAll('-', '')}`;
 const wallet = Keypair.random();
 let bearer: string;

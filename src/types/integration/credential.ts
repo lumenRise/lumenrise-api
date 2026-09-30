@@ -1,6 +1,7 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
 import type { ExternalAccountProvider } from './model';
+
 interface EncryptedSecret {
   ciphertext: string;
   initializationVector: string;

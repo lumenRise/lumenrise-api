@@ -1,6 +1,7 @@
 import type { Types } from 'mongoose';
 
 import ManualRefreshCooldown from '../../models/ManualRefreshCooldown';
+
 const releaseManualRefresh = async (
   identity: Types.ObjectId,
   target: string,

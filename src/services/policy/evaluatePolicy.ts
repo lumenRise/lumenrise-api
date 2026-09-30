@@ -4,6 +4,7 @@ import evaluatePolicyRule from '../../utils/policy/evaluatePolicyRule';
 import resolvePolicyDecision from '../../utils/policy/resolvePolicyDecision';
 import type { ReputationProfileResult } from '../../types/reputation/profile';
 import assertPolicyDefinition from '../../utils/policy/assertPolicyDefinition';
+
 const evaluatePolicy = (
   policy: PolicyDefinition,
   profile: ReputationProfileResult,

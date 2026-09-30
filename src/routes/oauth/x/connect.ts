@@ -4,6 +4,7 @@ import type { ApiResponse } from '../../../types/response';
 import { createXAuthorization } from '../../../services/oauth/x';
 import type { XOAuthStartResult } from '../../../types/integration/x';
 import { setOAuthStateCookie } from '../../../services/oauth/stateCookie';
+
 const connectXOAuthRoute: RequestHandler = async (req, res) => {
   if (!req.auth) {
     return res.status(401).json({

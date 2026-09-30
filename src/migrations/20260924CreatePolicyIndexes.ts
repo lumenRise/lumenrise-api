@@ -1,5 +1,6 @@
 import Policy from '../models/Policy';
 import type { MigrationDefinition } from '../types/database/migration';
+
 const createPolicyIndexes: MigrationDefinition = {
   name: '20260924-create-policy-indexes',
   up: async () => {

@@ -1,5 +1,6 @@
 import env from '../../../../../env';
 import type { GitHubOAuthResultStatus } from '../../../../../types/integration/github';
+
 const createClientRedirect = (
   status: GitHubOAuthResultStatus,
   username?: string,

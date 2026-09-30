@@ -6,6 +6,7 @@ import type {
   SybilProviderEvidence,
   SybilEvidenceObservation,
 } from '../../types/sybil/evidence';
+
 const buildSybilEvidence = (
   profile: ReputationProfileResult,
   providers: SybilProviderEvidence[],

@@ -1,5 +1,6 @@
 import address from './address';
 import type { StellarOperationResult } from '../../../src/types/stellar/operations';
+
 const createOperation = (
   pagingToken: string,
   transactionHash: string,

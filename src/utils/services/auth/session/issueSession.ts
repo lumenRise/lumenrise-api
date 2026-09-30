@@ -6,6 +6,7 @@ import Session from '../../../../models/Session';
 import { hashSessionToken } from './hashSessionToken';
 import type { IssuedSession } from '../../../../types/auth/model';
 import { MILLISECONDS_PER_DAY } from '../../../../constants/services/auth/session';
+
 const issueSession = async (identityId: Types.ObjectId): Promise<IssuedSession> => {
   const token = randomBytes(32).toString('base64url');
   const now = new Date();

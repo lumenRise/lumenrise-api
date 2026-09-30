@@ -2,6 +2,7 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
 import app from '../src/app';
+
 describe('health routes', () => {
   it('returns the API health state', async () => {
     const response = await request(app).get('/v1/health');

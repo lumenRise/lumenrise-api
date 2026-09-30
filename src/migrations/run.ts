@@ -1,6 +1,7 @@
 import log from '../logger';
 import { connectDatabase, disconnectDatabase } from '../db';
 import runDatabaseMigrations from './runDatabaseMigrations';
+
 const runMigrations = async (): Promise<void> => {
   await connectDatabase();
 

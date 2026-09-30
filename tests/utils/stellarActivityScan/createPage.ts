@@ -4,6 +4,7 @@ import type {
   StellarOperationResult,
   StellarOperationsResult,
 } from '../../../src/types/stellar/operations';
+
 const createPage = (
   items: StellarOperationResult[],
   nextCursor: string | null,

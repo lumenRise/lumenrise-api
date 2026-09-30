@@ -6,6 +6,7 @@ import StellarAccount from '../../../../models/StellarAccount';
 import { issueWalletSession } from '../../../../services/auth/walletToken';
 import type { WalletAuthServiceResult } from '../../../../types/auth/wallet';
 import { consumeSignedWalletChallenge } from '../../../../services/auth/walletChallenge';
+
 const registerWalletIdentity = async (
   address: string,
   name: string,

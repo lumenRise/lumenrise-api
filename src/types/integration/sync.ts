@@ -2,6 +2,7 @@ import type { HydratedDocument, Types } from 'mongoose';
 
 import type { XDataSnapshotDocument } from '../reputation/x';
 import type { GitHubDataSnapshotDocument } from '../reputation/github';
+
 type IntegrationSyncJobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
 type IntegrationSyncJobProvider = 'github' | 'x';
 

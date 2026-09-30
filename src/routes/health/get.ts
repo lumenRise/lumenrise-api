@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express';
 
 import type { HealthResult } from '../../types/health';
 import type { ApiResponse } from '../../types/response';
+
 const getHealthRoute: RequestHandler = (_req, res) => {
   const response: ApiResponse<HealthResult> = {
     status: 'success',

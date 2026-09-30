@@ -6,6 +6,7 @@ import serverState from './utils/index/state';
 import { handleShutdown } from './utils/index/handleShutdown';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration';
+
 const bootstrap = async (): Promise<void> => {
   validateRuntimeConfiguration(env);
 

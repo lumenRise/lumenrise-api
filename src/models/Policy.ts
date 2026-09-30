@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import type { PolicyRecord, PolicyRule } from '../types/policy/model';
 import { POLICY_DIMENSIONS, POLICY_MATCHES, POLICY_MAX_AGE_SECONDS } from '../constants/policy';
+
 const policyRuleSchema = new Schema<PolicyRule>(
   {
     dimension: { type: String, enum: POLICY_DIMENSIONS, required: true, immutable: true },

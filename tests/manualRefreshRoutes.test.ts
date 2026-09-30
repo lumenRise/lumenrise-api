@@ -8,6 +8,7 @@ import { enqueueGitHubSync } from '../src/services/integration/syncQueue';
 import reserveManualRefresh from '../src/services/refresh/reserveManualRefresh';
 import releaseManualRefresh from '../src/services/refresh/releaseManualRefresh';
 import { enqueueStellarActivityScan } from '../src/services/stellar/activityScanQueue';
+
 const identityId = new Types.ObjectId();
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 

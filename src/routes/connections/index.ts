@@ -7,6 +7,7 @@ import deleteConnectionRoute from './delete';
 import postGitHubSyncRoute from './postGitHubSync';
 import getGitHubSyncJobRoute from './getGitHubSyncJob';
 import requireSession from '../../middleware/requireSession';
+
 const connectionRoutes = Router();
 
 connectionRoutes.get('/', requireSession, getConnectionsRoute);

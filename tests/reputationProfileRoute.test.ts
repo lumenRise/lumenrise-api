@@ -9,6 +9,7 @@ import ExternalAccount from '../src/models/ExternalAccount';
 import ReputationSnapshot from '../src/models/ReputationSnapshot';
 import StellarActivityScan from '../src/models/StellarActivityScan';
 import getCurrentReputationSnapshot from '../src/services/reputation/currentSnapshot';
+
 const identityId = new Types.ObjectId();
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 const collectedAt = new Date('2026-09-24T10:00:00Z');

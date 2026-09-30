@@ -4,6 +4,7 @@ import SwaggerParser from '@apidevtools/swagger-parser';
 
 import app from '../../src/app';
 import openApiDocument from '../../src/openapi/document';
+
 const expectedOperations = [
   'GET /v1/health',
   'GET /v1/openapi.json',

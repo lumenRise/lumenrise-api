@@ -9,6 +9,7 @@ import {
   clearOAuthStateCookie,
   matchesOAuthStateCookie,
 } from '../../../services/oauth/stateCookie';
+
 const callbackGitHubOAuthRoute: RequestHandler = async (req, res) => {
   const code = typeof req.query.code === 'string' ? req.query.code : null;
   const state = typeof req.query.state === 'string' ? req.query.state : null;

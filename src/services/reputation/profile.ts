@@ -8,6 +8,7 @@ import StellarActivityScan from '../../models/StellarActivityScan';
 import type { ReputationProfileResult } from '../../types/reputation/profile';
 import toStellarReputationResult from '../../utils/reputation/toStellarReputationResult';
 import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult';
+
 const getReputationProfile = async (
   identityId: Types.ObjectId,
 ): Promise<ReputationProfileResult | null> => {

@@ -4,6 +4,7 @@ import {
   POLICY_MATCHES,
   POLICY_MAX_AGE_SECONDS,
 } from '../../constants/policy';
+
 const assertPolicyDefinition = (policy: PolicyDefinition): void => {
   if (
     !/^[a-z][a-z0-9-]{2,63}$/.test(policy.key) ||

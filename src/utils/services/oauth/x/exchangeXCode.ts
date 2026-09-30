@@ -1,6 +1,7 @@
 import env from '../../../../env';
 import { requestXToken } from './requestXToken';
 import type { XTokenResponse } from '../../../../types/integration/x';
+
 const exchangeXCode = async (code: string, codeVerifier: string): Promise<XTokenResponse> => {
   const body = new URLSearchParams({
     code,

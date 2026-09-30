@@ -4,6 +4,7 @@ import { enqueueIntegrationSync } from './enqueueIntegrationSync';
 import type { ExternalAccountDocument } from '../../../../types/integration/model';
 import type { IntegrationSyncJobDocument } from '../../../../types/integration/sync';
 import { publishReputationJob } from '../../../../services/integration/publishReputationJob';
+
 const X_SYNC_QUEUE = 'lumenrise.reputation.x-sync.v1';
 
 const enqueueXSync = async (

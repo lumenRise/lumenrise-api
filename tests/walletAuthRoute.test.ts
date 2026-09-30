@@ -7,6 +7,7 @@ import {
   loginWalletIdentity,
   registerWalletIdentity,
 } from '../src/services/auth/walletIdentity';
+
 vi.mock('../src/services/auth/walletChallenge', () => ({ createWalletChallenge: vi.fn() }));
 vi.mock('../src/services/auth/walletIdentity', () => ({
   loginWalletIdentity: vi.fn(),

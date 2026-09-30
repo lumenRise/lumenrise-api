@@ -8,6 +8,7 @@ import {
   createWalletChallenge,
   hashWalletMessage,
 } from '../../src/services/auth/walletChallenge';
+
 describe('wallet message challenge', () => {
   afterEach(() => {
     vi.restoreAllMocks();

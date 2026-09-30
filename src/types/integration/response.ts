@@ -1,5 +1,6 @@
 import type { ExternalAccountProvider } from './model';
 import type { IntegrationSyncJobResult } from './sync';
+
 interface ConnectionDataState {
   status: 'complete' | 'partial';
   dataVersion: string;

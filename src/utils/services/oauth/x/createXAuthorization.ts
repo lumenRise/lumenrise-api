@@ -7,6 +7,7 @@ import { assertXConfiguration } from './assertXConfiguration';
 import { X_AUTHORIZE_URL } from '../../../../constants/services/oauth/x';
 import { OAUTH_STATE_TTL_MS } from '../../../../constants/services/oauth/x';
 import type { XAuthorizationFlow, XOAuthPurpose } from '../../../../types/integration/x';
+
 const createXAuthorization = async (
   purpose: XOAuthPurpose,
   identityId: Types.ObjectId | null,

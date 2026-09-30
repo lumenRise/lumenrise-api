@@ -9,6 +9,7 @@ import getDeveloperReputationRoute from './getDeveloper';
 import getDeveloperScoreRoute from './getDeveloperScore';
 import requireSession from '../../middleware/requireSession';
 import getDeveloperRepositoriesRoute from './getDeveloperRepositories';
+
 const reputationRoutes = Router();
 
 reputationRoutes.get('/profile', requireSession, getProfileRoute);

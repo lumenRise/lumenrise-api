@@ -4,6 +4,7 @@ import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { ReputationSnapshotResult } from '../../types/reputation/model';
 import getCurrentReputationSnapshot from '../../services/reputation/currentSnapshot';
 import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult';
+
 const getSocialScoreRoute: RequestHandler = async (req, res) => {
   const snapshot = await getCurrentReputationSnapshot(req.auth!.identityId, 'social');
 

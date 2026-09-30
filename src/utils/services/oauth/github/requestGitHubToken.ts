@@ -1,5 +1,6 @@
 import { GITHUB_TOKEN_URL } from '../../../../constants/services/oauth/github';
 import type { GitHubTokenResponse } from '../../../../types/integration/github';
+
 const requestGitHubToken = async (body: URLSearchParams): Promise<GitHubTokenResponse> => {
   const response = await fetch(GITHUB_TOKEN_URL, {
     method: 'POST',

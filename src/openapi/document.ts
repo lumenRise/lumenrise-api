@@ -1,5 +1,6 @@
 import openApiPaths from './paths';
 import openApiComponents from './components';
+
 const openApiDocument = {
   openapi: '3.1.0',
   info: {

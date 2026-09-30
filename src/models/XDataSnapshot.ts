@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 
 import type { XDataSnapshotRecord } from '../types/reputation/x';
+
 const coverageSchema = new Schema(
   {
     profile: { type: Boolean, required: true },

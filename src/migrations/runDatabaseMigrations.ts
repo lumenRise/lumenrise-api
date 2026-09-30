@@ -16,6 +16,7 @@ import createStellarPaymentFactIndexes from './20260925CreateStellarPaymentFactI
 import createStellarActivityScanIndexes from './20260924CreateStellarActivityScanIndexes';
 import createWalletAuthChallengeIndexes from './20260924CreateWalletAuthChallengeIndexes';
 import createManualRefreshCooldownIndexes from './20260925CreateManualRefreshCooldownIndexes';
+
 const migrations: readonly MigrationDefinition[] = [
   createIdentityIndexes,
   createExternalAccountIndexes,

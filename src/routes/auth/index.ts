@@ -4,6 +4,7 @@ import getSessionRoute from './getSession';
 import deleteSessionRoute from './deleteSession';
 import requireSession from '../../middleware/requireSession';
 import { postWalletAuthRoute, postWalletChallengeRoute } from './wallet';
+
 const authRoutes = Router();
 
 authRoutes.post('/wallet/challenge', postWalletChallengeRoute);

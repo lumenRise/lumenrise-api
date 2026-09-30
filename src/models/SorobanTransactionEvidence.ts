@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import isValidStellarGAddress from '../utils/stellar/isValidStellarGAddress';
 import type { SorobanTransactionEvidenceRecord } from '../types/stellar/soroban';
+
 const eventSchema = new Schema(
   {
     operationIndex: { type: Number, required: true, min: 0 },

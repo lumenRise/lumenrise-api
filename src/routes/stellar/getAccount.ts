@@ -5,6 +5,7 @@ import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { StellarAccountOverviewResult } from '../../types/stellar/account';
 import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import getStellarAccountOverview from '../../services/stellar/getAccountOverview';
+
 const getStellarAccountRoute: RequestHandler = async (req, res) => {
   const address = typeof req.params.address === 'string' ? req.params.address.toUpperCase() : '';
 

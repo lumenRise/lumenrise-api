@@ -6,6 +6,7 @@ import type { PolicyResult } from '../../types/policy/api';
 import toPolicyResult from '../../utils/policy/toPolicyResult';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import parsePolicyDefinition from '../../utils/policy/parsePolicyDefinition';
+
 const postPolicyRoute: RequestHandler = async (req, res) => {
   const definition = parsePolicyDefinition(req.body);
 

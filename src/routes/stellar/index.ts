@@ -6,6 +6,7 @@ import requireSession from '../../middleware/requireSession';
 import getStellarActivityScoreRoute from './getActivityScore';
 import getStellarAccountOperationsRoute from './getAccountOperations';
 import { getStellarActivityScanRoute, postStellarActivityScanRoute } from './activityScan';
+
 const stellarRoutes = Router();
 
 stellarRoutes.get('/accounts/:address', requireSession, getStellarAccountRoute);

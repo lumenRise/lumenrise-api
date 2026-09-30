@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 
 import { signPart } from './signPart';
 import type { WalletAuthTokenPayload } from '../../../../types/auth/wallet';
+
 const verifyWalletToken = (token: string): WalletAuthTokenPayload | null => {
   const parts = token.split('.');
 

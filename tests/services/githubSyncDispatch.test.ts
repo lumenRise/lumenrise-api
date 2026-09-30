@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { enqueueXSync } from '../../src/utils/services/integration/syncQueue/enqueueXSync';
 import { enqueueGitHubSync } from '../../src/utils/services/integration/syncQueue/enqueueGitHubSync';
+
 const mocks = vi.hoisted(() => ({
   enqueue: vi.fn(),
   publish: vi.fn(),

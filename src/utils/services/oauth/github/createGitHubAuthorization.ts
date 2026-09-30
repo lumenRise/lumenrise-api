@@ -10,6 +10,7 @@ import type {
   GitHubAuthorizationFlow,
   GitHubOAuthPurpose,
 } from '../../../../types/integration/github';
+
 const createGitHubAuthorization = async (
   purpose: GitHubOAuthPurpose,
   identityId: Types.ObjectId | null,

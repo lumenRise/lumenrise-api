@@ -7,6 +7,7 @@ import type {
   StellarOperationResult,
   StellarOperationsResult,
 } from '../../types/stellar/operations';
+
 const STELLAR_OPERATIONS_PAGE_LIMIT = 200;
 
 const operationCommonFields = new Set([

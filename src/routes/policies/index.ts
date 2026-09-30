@@ -5,6 +5,7 @@ import postPolicyRoute from './post';
 import getPolicyByKeyRoute from './getByKey';
 import evaluatePolicyRoute from './evaluate';
 import requireSession from '../../middleware/requireSession';
+
 const policyRoutes = Router();
 
 policyRoutes.get('/', requireSession, getPoliciesRoute);

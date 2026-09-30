@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import app from '../src/app';
 import getSybilEvidence from '../src/services/sybil/getSybilEvidence';
+
 const identityId = new Types.ObjectId();
 
 vi.mock('../src/middleware/requireSession', () => ({

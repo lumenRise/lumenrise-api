@@ -8,6 +8,7 @@ import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type { WalletAuthPurpose, WalletAuthResult } from '../../types/auth/wallet';
 import { loginWalletIdentity, registerWalletIdentity } from '../../services/auth/walletIdentity';
 import { postWalletChallengeRoute } from '../../utils/routes/auth/wallet/postWalletChallengeRoute';
+
 const postWalletAuthRoute =
   (purpose: WalletAuthPurpose): RequestHandler =>
   async (req, res) => {

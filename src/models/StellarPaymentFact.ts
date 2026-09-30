@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import type { StellarPaymentFactRecord } from '../types/sybil/network';
 import isValidStellarGAddress from '../utils/stellar/isValidStellarGAddress';
+
 const stellarPaymentFactSchema = new Schema<StellarPaymentFactRecord>(
   {
     scan: {

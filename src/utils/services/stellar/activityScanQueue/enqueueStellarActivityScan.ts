@@ -5,6 +5,7 @@ import { wakeStellarScan } from './wakeStellarScan';
 import StellarActivityScan from '../../../../models/StellarActivityScan';
 import type { StellarActivityScanEnqueueResult } from '../../../../types/stellar/scan';
 import { createEmptyStellarActivityAggregate } from '../mergeActivityPage/createEmptyStellarActivityAggregate';
+
 const enqueueStellarActivityScan = async (
   identity: Types.ObjectId,
   address: string,

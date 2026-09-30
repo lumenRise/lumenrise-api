@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import XDataSnapshot from '../../src/models/XDataSnapshot';
 import GitHubDataSnapshot from '../../src/models/GitHubDataSnapshot';
 import getProviderEvidence from '../../src/utils/sybil/getProviderEvidence';
+
 vi.mock('../../src/models/GitHubDataSnapshot', () => ({ default: { findOne: vi.fn() } }));
 vi.mock('../../src/models/XDataSnapshot', () => ({ default: { findOne: vi.fn() } }));
 

@@ -1,6 +1,7 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
 import type { XUser } from '../integration/x';
+
 type XDataStatus = 'complete' | 'partial';
 type XReferencedPostType = 'replied_to' | 'quoted' | 'retweeted';
 

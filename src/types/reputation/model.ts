@@ -1,6 +1,7 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
 import type { ExternalAccountProvider } from '../integration/model';
+
 type ReputationCategory = 'social' | 'developer';
 type ReputationSnapshotStatus = 'complete' | 'partial' | 'failed';
 type ReputationNormalization = 'diminishing_returns';

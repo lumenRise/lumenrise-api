@@ -6,6 +6,7 @@ import { issueSession } from '../../utils/services/auth/session/issueSession';
 import { setSessionCookie } from '../../utils/services/auth/session/setSessionCookie';
 import { hashSessionToken } from '../../utils/services/auth/session/hashSessionToken';
 import { getSessionCookieOptions } from '../../utils/services/auth/session/getSessionCookieOptions';
+
 const clearSessionCookie = (res: Response): void => {
   res.clearCookie(SESSION_COOKIE_NAME, getSessionCookieOptions());
 };

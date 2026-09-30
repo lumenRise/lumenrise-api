@@ -1,6 +1,7 @@
 import type { PolicyDimension } from '../../types/policy/model';
 import type { PolicyEvidence } from '../../types/policy/evaluation';
 import type { ReputationProfileResult } from '../../types/reputation/profile';
+
 const getPolicyEvidence = (
   dimension: PolicyDimension,
   profile: ReputationProfileResult,

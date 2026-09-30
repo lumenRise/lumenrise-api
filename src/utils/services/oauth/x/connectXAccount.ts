@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import Identity from '../../../../models/Identity';
 import ExternalAccount from '../../../../models/ExternalAccount';
 import type { ConnectedXAccount, XOAuthPurpose, XUser } from '../../../../types/integration/x';
+
 const connectXAccount = async (
   user: XUser,
   purpose: XOAuthPurpose,

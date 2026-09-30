@@ -11,6 +11,7 @@ import type { ApiResponse, EmptyResult } from '../../types/response';
 import { revokeGitHubAccessToken } from '../../services/oauth/github';
 import { getProviderCredential } from '../../services/integration/providerCredential';
 import { isExternalAccountProvider } from '../../utils/routes/connections/delete/isExternalAccountProvider';
+
 const deleteConnectionRoute: RequestHandler = async (req, res) => {
   const providerParam = req.params.provider;
   const provider = typeof providerParam === 'string' ? providerParam : null;

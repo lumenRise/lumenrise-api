@@ -1,5 +1,6 @@
 import type { PolicyResult } from '../../types/policy/api';
 import type { PolicyDocument } from '../../types/policy/model';
+
 const toPolicyResult = (policy: PolicyDocument): PolicyResult => ({
   id: policy._id.toString(),
   key: policy.key,

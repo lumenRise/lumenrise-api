@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 
 import type { DatabaseMigrationRecord } from '../types/database/migration';
+
 const databaseMigrationSchema = new Schema<DatabaseMigrationRecord>(
   {
     name: {

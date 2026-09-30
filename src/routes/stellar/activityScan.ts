@@ -9,6 +9,7 @@ import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import { getAddress } from '../../utils/routes/stellar/activityScan/getAddress';
 import { toStellarActivityScanResult } from '../../services/stellar/activityScanQueue';
 import { postStellarActivityScanRoute } from '../../utils/routes/stellar/activityScan/postStellarActivityScanRoute';
+
 const getStellarActivityScanRoute: RequestHandler = async (req, res) => {
   const address = getAddress(req.params.address);
 

@@ -5,6 +5,7 @@ import Policy from '../../models/Policy';
 import type { PolicyResult } from '../../types/policy/api';
 import toPolicyResult from '../../utils/policy/toPolicyResult';
 import type { ApiResponse, EmptyResult } from '../../types/response';
+
 const getPolicyByKeyRoute: RequestHandler = async (req, res) => {
   const key = req.params.key;
 

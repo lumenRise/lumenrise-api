@@ -2,6 +2,7 @@ import getPolicyEvidence from './getPolicyEvidence';
 import type { PolicyRule } from '../../types/policy/model';
 import type { PolicyRuleEvaluation } from '../../types/policy/evaluation';
 import type { ReputationProfileResult } from '../../types/reputation/profile';
+
 const evaluatePolicyRule = (
   rule: PolicyRule,
   profile: ReputationProfileResult,

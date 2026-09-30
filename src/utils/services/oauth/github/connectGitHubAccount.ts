@@ -7,6 +7,7 @@ import type {
   GitHubOAuthPurpose,
   GitHubUser,
 } from '../../../../types/integration/github';
+
 const connectGitHubAccount = async (
   user: GitHubUser,
   purpose: GitHubOAuthPurpose,

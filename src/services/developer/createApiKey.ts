@@ -6,6 +6,7 @@ import DeveloperApiKey from '../../models/DeveloperApiKey';
 import toApiKeyResult from '../../utils/developer/toApiKeyResult';
 import type { DeveloperApiKeyCreatedResult } from '../../types/developer/api';
 import { API_KEY_MAX_ACTIVE, API_KEY_TTL_MS } from '../../constants/developer';
+
 const createApiKey = async (
   identity: Types.ObjectId,
   label: string,

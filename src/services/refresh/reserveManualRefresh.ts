@@ -3,6 +3,7 @@ import type { Types } from 'mongoose';
 import { MANUAL_REFRESH_INTERVAL_MS } from '../../constants/refresh';
 import ManualRefreshCooldown from '../../models/ManualRefreshCooldown';
 import type { ManualRefreshReservation } from '../../types/refresh/cooldown';
+
 const reserveManualRefresh = async (
   identity: Types.ObjectId,
   target: string,

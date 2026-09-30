@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import IntegrationSyncJob from '../../src/models/IntegrationSyncJob';
 import createIntegrationSyncJobResult from '../../src/services/integration/syncJobResult';
+
 describe('integration synchronization job result', () => {
   it('serializes a synchronization job for API responses', () => {
     const job = new IntegrationSyncJob({

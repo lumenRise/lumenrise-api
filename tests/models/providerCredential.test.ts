@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
 import ProviderCredential from '../../src/models/ProviderCredential';
+
 describe('ProviderCredential model', () => {
   it('accepts encrypted provider tokens', async () => {
     const encryptedSecret = {

@@ -3,6 +3,7 @@ import type { RequestHandler } from 'express';
 
 import log from '../../logger';
 import DeveloperApiKey from '../../models/DeveloperApiKey';
+
 const deleteDeveloperApiKeyRoute: RequestHandler = async (req, res) => {
   const id = req.params.id;
 

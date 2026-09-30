@@ -2,6 +2,7 @@ import type { Types } from 'mongoose';
 
 import DeveloperApiUsage from '../../models/DeveloperApiUsage';
 import { API_KEY_WINDOW_MS, API_KEY_WINDOW_LIMIT } from '../../constants/developer';
+
 const reserveApiUsage = async (identity: Types.ObjectId, now = new Date()): Promise<boolean> => {
   const windowStart = new Date(Math.floor(now.getTime() / API_KEY_WINDOW_MS) * API_KEY_WINDOW_MS);
 

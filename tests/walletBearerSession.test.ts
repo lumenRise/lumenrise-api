@@ -6,6 +6,7 @@ import app from '../src/app';
 import Session from '../src/models/Session';
 import Identity from '../src/models/Identity';
 import { issueWalletSession } from '../src/services/auth/walletToken';
+
 describe('wallet bearer authentication', () => {
   afterEach(() => {
     vi.restoreAllMocks();

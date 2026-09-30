@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import type { WalletAuthChallengeRecord } from '../types/auth/wallet';
 import isValidStellarGAddress from '../utils/stellar/isValidStellarGAddress';
+
 const walletAuthChallengeSchema = new Schema<WalletAuthChallengeRecord>(
   {
     address: {

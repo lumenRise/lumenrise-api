@@ -8,6 +8,7 @@ import type { IssuedWalletSession } from '../../types/auth/wallet';
 import { developmentSecret } from '../../constants/services/auth/walletToken';
 import { verifyWalletToken } from '../../utils/services/auth/walletToken/verifyWalletToken';
 import { createWalletToken } from '../../utils/services/auth/walletToken/createWalletToken';
+
 const issueWalletSession = async (
   identityId: Types.ObjectId,
   databaseSession?: ClientSession,

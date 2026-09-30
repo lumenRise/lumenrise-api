@@ -2,6 +2,7 @@ import env from '../../../../env';
 import { assertGitHubConfiguration } from './assertGitHubConfiguration';
 import { GITHUB_API_VERSION } from '../../../../constants/services/oauth/github';
 import { GITHUB_APPLICATIONS_API_URL } from '../../../../constants/services/oauth/github';
+
 const revokeGitHubAccessToken = async (accessToken: string): Promise<void> => {
   assertGitHubConfiguration();
 

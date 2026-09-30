@@ -10,6 +10,7 @@ import type {
   WalletAuthChallengeResult,
   WalletAuthPurpose,
 } from '../../../../types/auth/wallet';
+
 const createWalletChallenge = async (
   address: string,
   purpose: WalletAuthPurpose,

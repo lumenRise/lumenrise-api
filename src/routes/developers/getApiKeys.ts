@@ -5,6 +5,7 @@ import DeveloperApiKey from '../../models/DeveloperApiKey';
 import toApiKeyResult from '../../utils/developer/toApiKeyResult';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { DeveloperApiKeyListResult } from '../../types/developer/api';
+
 const getDeveloperApiKeysRoute: RequestHandler = async (req, res) => {
   try {
     const keys = await DeveloperApiKey.find({ identity: req.auth!.identityId })

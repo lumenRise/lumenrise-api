@@ -1,5 +1,6 @@
 import env from '../../../../../env';
 import type { XOAuthResultStatus } from '../../../../../types/integration/x';
+
 const createClientRedirect = (
   status: XOAuthResultStatus,
   username?: string,

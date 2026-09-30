@@ -6,6 +6,7 @@ import deleteApiKey from './deleteApiKey';
 import getOwnProfile from './getOwnProfile';
 import requireSession from '../../middleware/requireSession';
 import requireDeveloperApiKey from '../../middleware/requireDeveloperApiKey';
+
 const developerRoutes = Router();
 
 developerRoutes.get('/keys', requireSession, getApiKeys);

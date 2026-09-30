@@ -2,6 +2,7 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
 import app from '../src/app';
+
 describe('reputation', () => {
   it('requires a session to retrieve the reputation profile', async () => {
     const response = await request(app).get('/v1/reputation/profile');

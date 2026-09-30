@@ -7,6 +7,7 @@ import ExternalAccount from '../../src/models/ExternalAccount';
 import GitHubDataSnapshot from '../../src/models/GitHubDataSnapshot';
 import ReputationSnapshot from '../../src/models/ReputationSnapshot';
 import getCurrentReputationSnapshot from '../../src/services/reputation/currentSnapshot';
+
 const databaseName = `lumenrise_current_score_${randomUUID().replaceAll('-', '')}`;
 
 describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('current connection score', () => {

@@ -6,6 +6,7 @@ import GitHubDataSnapshot from '../../models/GitHubDataSnapshot';
 import GitHubRepositoryFact from '../../models/GitHubRepositoryFact';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { GitHubRepositoriesResult } from '../../types/reputation/github';
+
 const DEFAULT_PAGE_SIZE = 50;
 const MAXIMUM_PAGE_SIZE = 100;
 

@@ -1,5 +1,6 @@
 import type { StellarActivityScoreResult } from '../stellar/score';
 import type { StellarActivityScanResult, StellarActivityScanStatus } from '../stellar/scan';
+
 type VerifiedStellarActivityScanResult = Omit<StellarActivityScanResult, 'ownershipVerified'> & {
   ownershipVerified: true;
 };

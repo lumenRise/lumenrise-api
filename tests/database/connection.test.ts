@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import env from '../../src/env';
 import { connectDatabase, disconnectDatabase } from '../../src/db';
+
 describe('database connection', () => {
   afterEach(() => {
     vi.restoreAllMocks();

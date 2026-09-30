@@ -5,6 +5,7 @@ import ExternalAccount from '../../models/ExternalAccount';
 import type { SybilEvidenceResult } from '../../types/sybil/evidence';
 import buildSybilEvidence from '../../utils/sybil/buildSybilEvidence';
 import getProviderEvidence from '../../utils/sybil/getProviderEvidence';
+
 const getSybilEvidence = async (
   identityId: Types.ObjectId,
 ): Promise<SybilEvidenceResult | null> => {

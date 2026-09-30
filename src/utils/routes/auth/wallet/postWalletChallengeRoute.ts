@@ -9,6 +9,7 @@ import type {
   WalletAuthChallengeResult,
   WalletAuthPurpose,
 } from '../../../../types/auth/wallet';
+
 const postWalletChallengeRoute: RequestHandler = async (req, res) => {
   const address = parseAddress(req.body?.address);
   const purpose = req.body?.purpose;

@@ -5,6 +5,7 @@ import type {
   StellarActivityScoreSignal,
 } from '../../types/stellar/score';
 import { normalizeActivitySignal } from '../../utils/services/stellar/activityScore/normalizeActivitySignal';
+
 const STELLAR_ACTIVITY_ALGORITHM_VERSION = 'stellar-activity-v1';
 
 const calculateStellarActivityScore = (

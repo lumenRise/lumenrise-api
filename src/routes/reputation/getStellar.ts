@@ -7,6 +7,7 @@ import StellarActivityScan from '../../models/StellarActivityScan';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { StellarReputationResult } from '../../types/reputation/stellar';
 import toStellarReputationResult from '../../utils/reputation/toStellarReputationResult';
+
 const getStellarReputationRoute: RequestHandler = async (req, res) => {
   try {
     const account = await StellarAccount.findOne({

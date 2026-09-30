@@ -4,6 +4,7 @@ import log from '../../logger';
 import getReputationProfile from '../../services/reputation/profile';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { ReputationProfileResult } from '../../types/reputation/profile';
+
 const getOwnDeveloperProfileRoute: RequestHandler = async (req, res) => {
   try {
     const profile = await getReputationProfile(req.developerIdentityId!);

@@ -1,5 +1,6 @@
 import jsonResponse from '../../utils/openapi/jsonResponse';
 import syncProviderPaths from '../../utils/openapi/syncProviderPaths';
+
 const connectionPaths = {
   '/v1/connections': {
     get: {

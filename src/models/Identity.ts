@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import { IDENTITY_STATUSES } from '../constants/identity';
 import type { IdentityRecord } from '../types/identity/model';
+
 const identitySchema = new Schema<IdentityRecord>(
   {
     name: { type: String, default: null, trim: true, maxlength: 80 },

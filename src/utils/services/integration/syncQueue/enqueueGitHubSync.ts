@@ -4,6 +4,7 @@ import { calculateGitHubSyncSchedule } from './calculateGitHubSyncSchedule';
 import type { ExternalAccountDocument } from '../../../../types/integration/model';
 import type { IntegrationSyncJobDocument } from '../../../../types/integration/sync';
 import { publishGitHubSyncJob } from '../../../../services/integration/publishGitHubSyncJob';
+
 const enqueueGitHubSync = async (
   account: ExternalAccountDocument,
   now = new Date(),

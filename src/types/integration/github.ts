@@ -1,6 +1,7 @@
 import type { Types } from 'mongoose';
 
 import type { ExternalAccountDocument } from './model';
+
 interface GitHubOAuthStartResult {
   authorizationUrl: string;
 }

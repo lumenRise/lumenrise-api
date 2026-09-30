@@ -5,6 +5,7 @@ import Policy from '../../models/Policy';
 import type { PolicyListResult } from '../../types/policy/api';
 import toPolicyResult from '../../utils/policy/toPolicyResult';
 import type { ApiResponse, EmptyResult } from '../../types/response';
+
 const getPoliciesRoute: RequestHandler = async (req, res) => {
   try {
     const policies = await Policy.find({ ownerIdentity: req.auth!.identityId })

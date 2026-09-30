@@ -3,6 +3,7 @@ import { Router } from 'express';
 import connectGitHubOAuthRoute from './connect';
 import callbackGitHubOAuthRoute from './callback';
 import requireSession from '../../../middleware/requireSession';
+
 const githubOAuthRoutes = Router();
 
 githubOAuthRoutes.get('/callback', callbackGitHubOAuthRoute);

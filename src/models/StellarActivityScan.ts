@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import type { StellarActivityScanRecord } from '../types/stellar/scan';
 import { createEmptyStellarActivityAggregate } from '../utils/services/stellar/mergeActivityPage/createEmptyStellarActivityAggregate';
+
 const stellarActivityScanSchema = new Schema<StellarActivityScanRecord>(
   {
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },

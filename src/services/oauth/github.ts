@@ -21,6 +21,7 @@ import {
   GITHUB_TOKEN_URL,
   GITHUB_APPLICATIONS_API_URL,
 } from '../../constants/services/oauth/github';
+
 const completeGitHubAuthorization = async (
   code: string,
   state: string,

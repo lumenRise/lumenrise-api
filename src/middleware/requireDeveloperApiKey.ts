@@ -6,6 +6,7 @@ import hashApiKey from '../utils/developer/hashApiKey';
 import DeveloperApiKey from '../models/DeveloperApiKey';
 import { API_KEY_WINDOW_MS } from '../constants/developer';
 import reserveApiUsage from '../services/developer/reserveApiUsage';
+
 const requireDeveloperApiKey: RequestHandler = async (req, res, next) => {
   const apiKey = req.get('x-api-key');
 

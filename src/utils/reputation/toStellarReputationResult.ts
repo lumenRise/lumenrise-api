@@ -2,6 +2,7 @@ import type { StellarActivityScanDocument } from '../../types/stellar/scan';
 import type { StellarReputationResult } from '../../types/reputation/stellar';
 import { calculateStellarActivityScore } from '../../services/stellar/activityScore';
 import { toStellarActivityScanResult } from '../../services/stellar/activityScanQueue';
+
 const toStellarReputationResult = (
   address: string,
   scan: StellarActivityScanDocument | null,

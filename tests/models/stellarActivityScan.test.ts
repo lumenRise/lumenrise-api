@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
 import StellarActivityScan from '../../src/models/StellarActivityScan';
+
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 
 describe('StellarActivityScan model', () => {

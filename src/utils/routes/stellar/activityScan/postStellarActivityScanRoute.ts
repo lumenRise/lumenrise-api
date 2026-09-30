@@ -12,6 +12,7 @@ import {
   enqueueStellarActivityScan,
   toStellarActivityScanResult,
 } from '../../../../services/stellar/activityScanQueue';
+
 const postStellarActivityScanRoute: RequestHandler = async (req, res) => {
   const address = getAddress(req.params.address);
 

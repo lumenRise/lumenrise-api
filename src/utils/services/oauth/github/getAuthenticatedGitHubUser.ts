@@ -1,6 +1,7 @@
 import type { GitHubUser } from '../../../../types/integration/github';
 import { GITHUB_API_VERSION } from '../../../../constants/services/oauth/github';
 import { GITHUB_USER_API_URL } from '../../../../constants/services/oauth/github';
+
 const getAuthenticatedGitHubUser = async (accessToken: string): Promise<GitHubUser> => {
   const response = await fetch(GITHUB_USER_API_URL, {
     headers: {

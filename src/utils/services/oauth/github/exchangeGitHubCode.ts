@@ -1,6 +1,7 @@
 import env from '../../../../env';
 import { requestGitHubToken } from './requestGitHubToken';
 import type { GitHubTokenResponse } from '../../../../types/integration/github';
+
 const exchangeGitHubCode = async (
   code: string,
   codeVerifier: string,
