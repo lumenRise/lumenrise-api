@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import log from '../../logger.js';
+import log from '../../logger';
 
 const disconnectDatabase = async (): Promise<void> => {
   await mongoose.disconnect();

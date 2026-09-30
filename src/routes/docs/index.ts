@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import swaggerUi from 'swagger-ui-express';
 
-import getOpenApiRoute from './getOpenApi.js';
-import openApiDocument from '../../openapi/document.js';
+import getOpenApiRoute from './getOpenApi';
+import openApiDocument from '../../openapi/document';
 
 const docsRoutes = Router();
 

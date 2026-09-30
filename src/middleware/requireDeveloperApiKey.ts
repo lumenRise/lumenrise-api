@@ -1,11 +1,11 @@
 import type { RequestHandler } from 'express';
 
-import log from '../logger.js';
-import Identity from '../models/Identity.js';
-import hashApiKey from '../utils/developer/hashApiKey.js';
-import DeveloperApiKey from '../models/DeveloperApiKey.js';
-import { API_KEY_WINDOW_MS } from '../constants/developer.js';
-import reserveApiUsage from '../services/developer/reserveApiUsage.js';
+import log from '../logger';
+import Identity from '../models/Identity';
+import hashApiKey from '../utils/developer/hashApiKey';
+import DeveloperApiKey from '../models/DeveloperApiKey';
+import { API_KEY_WINDOW_MS } from '../constants/developer';
+import reserveApiUsage from '../services/developer/reserveApiUsage';
 
 const requireDeveloperApiKey: RequestHandler = async (req, res, next) => {
   const apiKey = req.get('x-api-key');

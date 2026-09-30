@@ -1,11 +1,11 @@
 import { Router } from 'express';
 
-import getApiKeys from './getApiKeys.js';
-import postApiKey from './postApiKey.js';
-import deleteApiKey from './deleteApiKey.js';
-import getOwnProfile from './getOwnProfile.js';
-import requireSession from '../../middleware/requireSession.js';
-import requireDeveloperApiKey from '../../middleware/requireDeveloperApiKey.js';
+import getApiKeys from './getApiKeys';
+import postApiKey from './postApiKey';
+import deleteApiKey from './deleteApiKey';
+import getOwnProfile from './getOwnProfile';
+import requireSession from '../../middleware/requireSession';
+import requireDeveloperApiKey from '../../middleware/requireDeveloperApiKey';
 
 const developerRoutes = Router();
 

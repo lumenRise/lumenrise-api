@@ -2,14 +2,14 @@ import request from 'supertest';
 import { Types } from 'mongoose';
 import { describe, expect, it, vi } from 'vitest';
 
-import app from '../src/app.js';
-import Identity from '../src/models/Identity.js';
-import DeveloperApiKey from '../src/models/DeveloperApiKey.js';
-import reserveApiUsage from '../src/services/developer/reserveApiUsage.js';
+import app from '../src/app';
+import Identity from '../src/models/Identity';
+import DeveloperApiKey from '../src/models/DeveloperApiKey';
+import reserveApiUsage from '../src/services/developer/reserveApiUsage';
 
-vi.mock('../src/models/Identity.js', () => ({ default: { exists: vi.fn() } }));
-vi.mock('../src/models/DeveloperApiKey.js', () => ({ default: { findOne: vi.fn() } }));
-vi.mock('../src/services/developer/reserveApiUsage.js', () => ({ default: vi.fn() }));
+vi.mock('../src/models/Identity', () => ({ default: { exists: vi.fn() } }));
+vi.mock('../src/models/DeveloperApiKey', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../src/services/developer/reserveApiUsage', () => ({ default: vi.fn() }));
 
 describe('developer API quota response', () => {
   it('returns 429 with Retry-After without reading a profile', async () => {

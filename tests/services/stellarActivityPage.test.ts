@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { StellarOperationResult } from '../../src/types/stellar/operations.js';
-import summarizeStellarActivityPage from '../../src/services/stellar/summarizeActivityPage.js';
+import type { StellarOperationResult } from '../../src/types/stellar/operations';
+import summarizeStellarActivityPage from '../../src/services/stellar/summarizeActivityPage';
 
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 const otherAddress = 'GAYOLLLUIZE4DZMBB2ZBKGBUBZLIOYU6XFLW37GBP2VZD3ABNXCW4BVA';

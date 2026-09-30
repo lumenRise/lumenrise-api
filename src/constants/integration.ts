@@ -2,7 +2,7 @@ import type {
   ExternalAccountProvider,
   ExternalAccountStatus,
   OAuthPurpose,
-} from '../types/integration/model.js';
+} from '../types/integration/model';
 
 const OAUTH_PURPOSES = ['register', 'connect'] as const satisfies readonly OAuthPurpose[];
 

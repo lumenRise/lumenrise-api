@@ -1,4 +1,4 @@
-import env from '../../../../env.js';
+import env from '../../../../env';
 
 const getCredentialEncryptionKey = (): Buffer => {
   if (!/^[a-f\d]{64}$/i.test(env.CREDENTIAL_ENCRYPTION_KEY)) {

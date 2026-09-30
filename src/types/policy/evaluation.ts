@@ -1,4 +1,4 @@
-import type { PolicyDimension } from './model.js';
+import type { PolicyDimension } from './model';
 
 type PolicyDecision = 'eligible' | 'ineligible' | 'insufficient_data';
 type PolicyRuleOutcome = 'pass' | 'fail' | 'unknown';

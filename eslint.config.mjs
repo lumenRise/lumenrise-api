@@ -9,6 +9,7 @@ const importLayoutRule = {
       externalFirst: 'Library imports must appear before local imports.',
       groupSpacing: 'Separate library imports from local imports with one blank line.',
       lengthOrder: 'Sort imports from the shortest statement to the longest statement.',
+      afterImports: 'Separate the final import from the next statement with one blank line.',
     },
   },
   create(context) {
@@ -51,6 +52,17 @@ const importLayoutRule = {
 
           if (currentLength < previousLength) {
             context.report({ node: currentImport, messageId: 'lengthOrder' });
+          }
+        }
+
+        const lastImport = imports.at(-1);
+        const nextStatement = node.body.find((statement) => lastImport && statement.range[0] >= lastImport.range[1]);
+
+        if (lastImport && nextStatement) {
+          const gap = sourceCode.text.slice(lastImport.range[1], nextStatement.range[0]);
+
+          if (/^\s+$/.test(gap) && nextStatement.loc.start.line - lastImport.loc.end.line !== 2) {
+            context.report({ node: nextStatement, messageId: 'afterImports' });
           }
         }
       },

@@ -1,10 +1,10 @@
-import { round } from '../../utils/services/stellar/activityScore/round.js';
-import type { StellarActivityScanDocument } from '../../types/stellar/scan.js';
+import { round } from '../../utils/services/stellar/activityScore/round';
+import type { StellarActivityScanDocument } from '../../types/stellar/scan';
 import type {
   StellarActivityScoreResult,
   StellarActivityScoreSignal,
-} from '../../types/stellar/score.js';
-import { normalizeActivitySignal } from '../../utils/services/stellar/activityScore/normalizeActivitySignal.js';
+} from '../../types/stellar/score';
+import { normalizeActivitySignal } from '../../utils/services/stellar/activityScore/normalizeActivitySignal';
 
 const STELLAR_ACTIVITY_ALGORITHM_VERSION = 'stellar-activity-v1';
 

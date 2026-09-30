@@ -1,6 +1,6 @@
-import Identity from '../models/Identity.js';
-import StellarAccount from '../models/StellarAccount.js';
-import type { MigrationDefinition } from '../types/database/migration.js';
+import Identity from '../models/Identity';
+import StellarAccount from '../models/StellarAccount';
+import type { MigrationDefinition } from '../types/database/migration';
 
 const createIdentityIndexes: MigrationDefinition = {
   name: '20260922-create-identity-indexes',

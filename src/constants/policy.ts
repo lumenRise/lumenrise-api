@@ -1,4 +1,4 @@
-import type { PolicyDimension, PolicyMatch } from '../types/policy/model.js';
+import type { PolicyDimension, PolicyMatch } from '../types/policy/model';
 
 const POLICY_DIMENSIONS = [
   'developer',

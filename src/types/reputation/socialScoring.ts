@@ -1,4 +1,4 @@
-import type { ReputationSignalRecord } from './model.js';
+import type { ReputationSignalRecord } from './model';
 
 interface SocialSignalInput {
   key: string;

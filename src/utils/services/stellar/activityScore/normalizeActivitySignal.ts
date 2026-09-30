@@ -1,4 +1,4 @@
-import { round } from './round.js';
+import { round } from './round';
 
 const normalizeActivitySignal = (rawValue: number, scale: number): number => {
   if (!Number.isFinite(rawValue) || rawValue < 0 || !Number.isFinite(scale) || scale <= 0) {

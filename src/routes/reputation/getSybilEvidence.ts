@@ -1,9 +1,9 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import getSybilEvidence from '../../services/sybil/getSybilEvidence.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { SybilEvidenceResult } from '../../types/sybil/evidence.js';
+import log from '../../logger';
+import getSybilEvidence from '../../services/sybil/getSybilEvidence';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { SybilEvidenceResult } from '../../types/sybil/evidence';
 
 const getSybilEvidenceRoute: RequestHandler = async (req, res) => {
   try {

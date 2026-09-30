@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
-import app from '../src/app.js';
-import { matchesOAuthStateCookie } from '../src/services/oauth/stateCookie.js';
+import app from '../src/app';
+import { matchesOAuthStateCookie } from '../src/services/oauth/stateCookie';
 
 describe('OAuth flow', () => {
   it('rejects a callback that is not bound to the initiating browser', async () => {

@@ -1,11 +1,11 @@
 import { Types } from 'mongoose';
 
-import Identity from '../../../../models/Identity.js';
-import { withDatabaseTransaction } from '../../../../db.js';
-import StellarAccount from '../../../../models/StellarAccount.js';
-import { issueWalletSession } from '../../../../services/auth/walletToken.js';
-import type { WalletAuthServiceResult } from '../../../../types/auth/wallet.js';
-import { consumeSignedWalletChallenge } from '../../../../services/auth/walletChallenge.js';
+import Identity from '../../../../models/Identity';
+import { withDatabaseTransaction } from '../../../../db';
+import StellarAccount from '../../../../models/StellarAccount';
+import { issueWalletSession } from '../../../../services/auth/walletToken';
+import type { WalletAuthServiceResult } from '../../../../types/auth/wallet';
+import { consumeSignedWalletChallenge } from '../../../../services/auth/walletChallenge';
 
 const registerWalletIdentity = async (
   address: string,

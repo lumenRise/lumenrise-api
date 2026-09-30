@@ -1,6 +1,6 @@
-import log from '../../logger.js';
-import { closeServer } from './closeServer.js';
-import { disconnectDatabase } from '../../db.js';
+import log from '../../logger';
+import { closeServer } from './closeServer';
+import { disconnectDatabase } from '../../db';
 
 const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
   log.info({ signal }, 'Shutdown started');

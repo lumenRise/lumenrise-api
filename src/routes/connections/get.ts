@@ -1,12 +1,12 @@
 import type { RequestHandler } from 'express';
 
-import XDataSnapshot from '../../models/XDataSnapshot.js';
-import type { ApiResponse } from '../../types/response.js';
-import ExternalAccount from '../../models/ExternalAccount.js';
-import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
-import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
-import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
-import type { ConnectionResult, ConnectionsResult } from '../../types/integration/response.js';
+import XDataSnapshot from '../../models/XDataSnapshot';
+import type { ApiResponse } from '../../types/response';
+import ExternalAccount from '../../models/ExternalAccount';
+import GitHubDataSnapshot from '../../models/GitHubDataSnapshot';
+import IntegrationSyncJob from '../../models/IntegrationSyncJob';
+import createIntegrationSyncJobResult from '../../services/integration/syncJobResult';
+import type { ConnectionResult, ConnectionsResult } from '../../types/integration/response';
 
 const getConnectionsRoute: RequestHandler = async (req, res) => {
   const accounts = await ExternalAccount.find({

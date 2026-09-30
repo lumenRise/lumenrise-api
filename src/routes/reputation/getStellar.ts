@@ -1,12 +1,12 @@
 import type { RequestHandler } from 'express';
 
-import env from '../../env.js';
-import log from '../../logger.js';
-import StellarAccount from '../../models/StellarAccount.js';
-import StellarActivityScan from '../../models/StellarActivityScan.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { StellarReputationResult } from '../../types/reputation/stellar.js';
-import toStellarReputationResult from '../../utils/reputation/toStellarReputationResult.js';
+import env from '../../env';
+import log from '../../logger';
+import StellarAccount from '../../models/StellarAccount';
+import StellarActivityScan from '../../models/StellarActivityScan';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { StellarReputationResult } from '../../types/reputation/stellar';
+import toStellarReputationResult from '../../utils/reputation/toStellarReputationResult';
 
 const getStellarReputationRoute: RequestHandler = async (req, res) => {
   try {

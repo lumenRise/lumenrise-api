@@ -1,4 +1,4 @@
-import jsonResponse from '../../utils/openapi/jsonResponse.js';
+import jsonResponse from '../../utils/openapi/jsonResponse';
 
 const policyPaths = {
   '/v1/policies': {

@@ -1,7 +1,7 @@
-import getPolicyEvidence from './getPolicyEvidence.js';
-import type { PolicyRule } from '../../types/policy/model.js';
-import type { PolicyRuleEvaluation } from '../../types/policy/evaluation.js';
-import type { ReputationProfileResult } from '../../types/reputation/profile.js';
+import getPolicyEvidence from './getPolicyEvidence';
+import type { PolicyRule } from '../../types/policy/model';
+import type { PolicyRuleEvaluation } from '../../types/policy/evaluation';
+import type { ReputationProfileResult } from '../../types/reputation/profile';
 
 const evaluatePolicyRule = (
   rule: PolicyRule,

@@ -1,8 +1,8 @@
 import { timingSafeEqual } from 'node:crypto';
 
-import { OAUTH_STATE_COOKIE_TTL_MS } from '../../constants/services/oauth/stateCookie.js';
-import { setOAuthStateCookie } from '../../utils/services/oauth/stateCookie/setOAuthStateCookie.js';
-import { clearOAuthStateCookie } from '../../utils/services/oauth/stateCookie/clearOAuthStateCookie.js';
+import { OAUTH_STATE_COOKIE_TTL_MS } from '../../constants/services/oauth/stateCookie';
+import { setOAuthStateCookie } from '../../utils/services/oauth/stateCookie/setOAuthStateCookie';
+import { clearOAuthStateCookie } from '../../utils/services/oauth/stateCookie/clearOAuthStateCookie';
 
 const matchesOAuthStateCookie = (cookieState: unknown, queryState: string): boolean => {
   if (typeof cookieState !== 'string') {

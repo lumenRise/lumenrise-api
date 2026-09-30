@@ -1,9 +1,9 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import createApiKey from '../../services/developer/createApiKey.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { DeveloperApiKeyCreatedResult } from '../../types/developer/api.js';
+import log from '../../logger';
+import createApiKey from '../../services/developer/createApiKey';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { DeveloperApiKeyCreatedResult } from '../../types/developer/api';
 
 const postDeveloperApiKeyRoute: RequestHandler = async (req, res) => {
   const label = req.body?.label;

@@ -1,5 +1,5 @@
-import ProviderCredential from '../models/ProviderCredential.js';
-import type { MigrationDefinition } from '../types/database/migration.js';
+import ProviderCredential from '../models/ProviderCredential';
+import type { MigrationDefinition } from '../types/database/migration';
 
 const createProviderCredentialIndexes: MigrationDefinition = {
   name: '20260922-create-provider-credential-indexes',

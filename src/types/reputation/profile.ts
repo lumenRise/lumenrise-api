@@ -1,5 +1,5 @@
-import type { ReputationSnapshotResult } from './model.js';
-import type { StellarReputationResult } from './stellar.js';
+import type { ReputationSnapshotResult } from './model';
+import type { StellarReputationResult } from './stellar';
 
 interface ReputationProfileResult {
   identity: {

@@ -1,4 +1,4 @@
-import type { DeveloperApiKeyDocument, DeveloperApiKeyResult } from '../../types/developer/api.js';
+import type { DeveloperApiKeyDocument, DeveloperApiKeyResult } from '../../types/developer/api';
 
 const toApiKeyResult = (key: DeveloperApiKeyDocument): DeveloperApiKeyResult => ({
   id: key._id.toString(),

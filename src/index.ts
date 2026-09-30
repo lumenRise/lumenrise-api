@@ -1,11 +1,11 @@
-import app from './app.js';
-import env from './env.js';
-import log from './logger.js';
-import { connectDatabase } from './db.js';
-import serverState from './utils/index/state.js';
-import { handleShutdown } from './utils/index/handleShutdown.js';
-import runDatabaseMigrations from './migrations/runDatabaseMigrations.js';
-import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration.js';
+import app from './app';
+import env from './env';
+import log from './logger';
+import { connectDatabase } from './db';
+import serverState from './utils/index/state';
+import { handleShutdown } from './utils/index/handleShutdown';
+import runDatabaseMigrations from './migrations/runDatabaseMigrations';
+import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration';
 
 const bootstrap = async (): Promise<void> => {
   validateRuntimeConfiguration(env);

@@ -1,6 +1,6 @@
-import type { PolicyDimension } from '../../types/policy/model.js';
-import type { PolicyEvidence } from '../../types/policy/evaluation.js';
-import type { ReputationProfileResult } from '../../types/reputation/profile.js';
+import type { PolicyDimension } from '../../types/policy/model';
+import type { PolicyEvidence } from '../../types/policy/evaluation';
+import type { ReputationProfileResult } from '../../types/reputation/profile';
 
 const getPolicyEvidence = (
   dimension: PolicyDimension,

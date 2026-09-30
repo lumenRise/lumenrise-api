@@ -1,7 +1,7 @@
-import XRateLimitError from '../../../../services/integration/xRateLimit.js';
-import type { XUser, XUserResponse } from '../../../../types/integration/x.js';
-import { X_AUTHENTICATED_USER_URL } from '../../../../constants/services/oauth/x.js';
-import XApiResponseError from '../../../../services/integration/xApiResponseError.js';
+import XRateLimitError from '../../../../services/integration/xRateLimit';
+import type { XUser, XUserResponse } from '../../../../types/integration/x';
+import { X_AUTHENTICATED_USER_URL } from '../../../../constants/services/oauth/x';
+import XApiResponseError from '../../../../services/integration/xApiResponseError';
 
 const getAuthenticatedXUser = async (accessToken: string): Promise<XUser> => {
   const response = await fetch(X_AUTHENTICATED_USER_URL, {

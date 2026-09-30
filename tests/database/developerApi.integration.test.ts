@@ -4,16 +4,16 @@ import { randomUUID } from 'node:crypto';
 import { Keypair } from '@stellar/stellar-sdk';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import app from '../../src/app.js';
-import Session from '../../src/models/Session.js';
-import Identity from '../../src/models/Identity.js';
-import StellarAccount from '../../src/models/StellarAccount.js';
-import DeveloperApiKey from '../../src/models/DeveloperApiKey.js';
-import DeveloperApiUsage from '../../src/models/DeveloperApiUsage.js';
-import createApiKey from '../../src/services/developer/createApiKey.js';
-import WalletAuthChallenge from '../../src/models/WalletAuthChallenge.js';
-import reserveApiUsage from '../../src/services/developer/reserveApiUsage.js';
-import { hashWalletMessage } from '../../src/utils/services/auth/walletChallenge/hashWalletMessage.js';
+import app from '../../src/app';
+import Session from '../../src/models/Session';
+import Identity from '../../src/models/Identity';
+import StellarAccount from '../../src/models/StellarAccount';
+import DeveloperApiKey from '../../src/models/DeveloperApiKey';
+import DeveloperApiUsage from '../../src/models/DeveloperApiUsage';
+import createApiKey from '../../src/services/developer/createApiKey';
+import WalletAuthChallenge from '../../src/models/WalletAuthChallenge';
+import reserveApiUsage from '../../src/services/developer/reserveApiUsage';
+import { hashWalletMessage } from '../../src/utils/services/auth/walletChallenge/hashWalletMessage';
 
 const databaseName = `lumenrise_developer_test_${randomUUID().replaceAll('-', '')}`;
 const wallet = Keypair.random();

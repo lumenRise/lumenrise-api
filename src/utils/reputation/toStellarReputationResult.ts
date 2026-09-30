@@ -1,7 +1,7 @@
-import type { StellarActivityScanDocument } from '../../types/stellar/scan.js';
-import type { StellarReputationResult } from '../../types/reputation/stellar.js';
-import { calculateStellarActivityScore } from '../../services/stellar/activityScore.js';
-import { toStellarActivityScanResult } from '../../services/stellar/activityScanQueue.js';
+import type { StellarActivityScanDocument } from '../../types/stellar/scan';
+import type { StellarReputationResult } from '../../types/reputation/stellar';
+import { calculateStellarActivityScore } from '../../services/stellar/activityScore';
+import { toStellarActivityScanResult } from '../../services/stellar/activityScanQueue';
 
 const toStellarReputationResult = (
   address: string,

@@ -1,5 +1,5 @@
-import type { PolicyMatch } from '../../types/policy/model.js';
-import type { PolicyDecision, PolicyRuleEvaluation } from '../../types/policy/evaluation.js';
+import type { PolicyMatch } from '../../types/policy/model';
+import type { PolicyDecision, PolicyRuleEvaluation } from '../../types/policy/evaluation';
 
 const resolvePolicyDecision = (
   match: PolicyMatch,

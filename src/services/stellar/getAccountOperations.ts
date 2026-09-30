@@ -1,12 +1,12 @@
-import env from '../../env.js';
-import summarizeStellarActivityPage from './summarizeActivityPage.js';
-import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
+import env from '../../env';
+import summarizeStellarActivityPage from './summarizeActivityPage';
+import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type {
   StellarHorizonOperationsPage,
   StellarOperationOrder,
   StellarOperationResult,
   StellarOperationsResult,
-} from '../../types/stellar/operations.js';
+} from '../../types/stellar/operations';
 
 const STELLAR_OPERATIONS_PAGE_LIMIT = 200;
 

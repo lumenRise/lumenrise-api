@@ -4,10 +4,10 @@ import express from 'express';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
-import env from './env.js';
-import router from './routes/index.js';
-import notFound from './middleware/notFound.js';
-import errorHandler from './middleware/errorHandler.js';
+import env from './env';
+import router from './routes/index';
+import notFound from './middleware/notFound';
+import errorHandler from './middleware/errorHandler';
 
 const app = express();
 

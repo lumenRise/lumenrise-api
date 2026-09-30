@@ -1,4 +1,4 @@
-import jsonResponse from '../../utils/openapi/jsonResponse.js';
+import jsonResponse from '../../utils/openapi/jsonResponse';
 
 const paginationParameters = [
   {
@@ -39,7 +39,7 @@ const reputationPaths = {
       summary: 'Get the current identity reputation profile',
       operationId: 'getReputationProfile',
       description:
-        'Combines existing developer, social and verified primary Stellar wallet evidence without calculating an overall score. Unavailable or disconnected sections are null; each available score retains its own algorithm version and source timestamps.',
+        'Combines existing developer, social and verified primary Stellar wallet evidence without calculating an overall score. Unavailable, disconnected, previous-connection or older-than-90-day scores are null. Each available score retains its own algorithm version and source timestamps.',
       responses: {
         '200': jsonResponse('Reputation profile retrieved.', {
           $ref: '#/components/schemas/ReputationProfile',
@@ -69,6 +69,7 @@ const reputationPaths = {
       tags: ['Reputation'],
       summary: 'Page through collected GitHub repositories',
       operationId: 'getGitHubRepositories',
+      description: 'Historical GitHub snapshots and their repository pages are retained for 90 days.',
       parameters: paginationParameters,
       responses: {
         '200': jsonResponse('Repositories retrieved.', {
@@ -86,7 +87,7 @@ const reputationPaths = {
       summary: 'Get explainable developer score',
       operationId: 'getDeveloperScore',
       description:
-        'Uses available GitHub signals; status indicates complete or partial data.',
+        'Uses available GitHub signals from the current connected account. Status indicates complete or partial data. Scores older than 90 days, or from a disconnected or previous account, are unavailable.',
       responses: {
         '200': jsonResponse('Developer score retrieved.', {
           $ref: '#/components/schemas/ReputationScore',
@@ -113,6 +114,7 @@ const reputationPaths = {
       tags: ['Reputation'],
       summary: 'Get explainable X social score',
       operationId: 'getSocialScore',
+      description: 'Returns a complete or partial score only from the current connected X account. Scores older than 90 days, or from a disconnected or previous account, are unavailable.',
       responses: {
         '200': jsonResponse('Social score retrieved.', {
           $ref: '#/components/schemas/ReputationScore',
@@ -128,7 +130,7 @@ const reputationPaths = {
       summary: 'Get reputation for the verified primary Stellar wallet',
       operationId: 'getVerifiedStellarReputation',
       description:
-        'Returns the primary registered wallet, latest scan status and score only when the scan is complete. A score is not eligibility proof.',
+        'Returns the primary verified wallet, latest scan status and score only when the scan is complete. The score uses the scan aggregate and does not wait for separate Soroban evidence lookup. A scan alone proves neither wallet ownership nor Sybil behavior; the score is not eligibility proof.',
       responses: {
         '200': jsonResponse('Stellar reputation retrieved.', {
           $ref: '#/components/schemas/StellarReputation',

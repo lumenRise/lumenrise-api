@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 
-import type { StellarActivityScanRecord } from '../types/stellar/scan.js';
-import { createEmptyStellarActivityAggregate } from '../utils/services/stellar/mergeActivityPage/createEmptyStellarActivityAggregate.js';
+import type { StellarActivityScanRecord } from '../types/stellar/scan';
+import { createEmptyStellarActivityAggregate } from '../utils/services/stellar/mergeActivityPage/createEmptyStellarActivityAggregate';
 
 const stellarActivityScanSchema = new Schema<StellarActivityScanRecord>(
   {

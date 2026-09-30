@@ -1,10 +1,10 @@
-import IntegrationSyncJob from '../../../../models/IntegrationSyncJob.js';
-import type { ExternalAccountDocument } from '../../../../types/integration/model.js';
-import { MAX_SYNC_JOB_ATTEMPTS } from '../../../../constants/services/integration/syncQueue.js';
+import IntegrationSyncJob from '../../../../models/IntegrationSyncJob';
+import type { ExternalAccountDocument } from '../../../../types/integration/model';
+import { MAX_SYNC_JOB_ATTEMPTS } from '../../../../constants/services/integration/syncQueue';
 import type {
   IntegrationSyncJobDocument,
   IntegrationSyncJobProvider,
-} from '../../../../types/integration/sync.js';
+} from '../../../../types/integration/sync';
 
 const enqueueIntegrationSync = async (
   account: ExternalAccountDocument,

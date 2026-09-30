@@ -1,5 +1,5 @@
-import { signPart } from './signPart.js';
-import type { WalletAuthTokenPayload } from '../../../../types/auth/wallet.js';
+import { signPart } from './signPart';
+import type { WalletAuthTokenPayload } from '../../../../types/auth/wallet';
 
 const createWalletToken = (payload: WalletAuthTokenPayload): string => {
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');

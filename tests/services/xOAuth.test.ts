@@ -6,11 +6,11 @@ import {
   getAuthenticatedXUser,
   refreshXAccessToken,
   revokeXAccessToken,
-} from '../../src/services/oauth/x.js';
+} from '../../src/services/oauth/x';
 
 const mocks = vi.hoisted(() => ({ createOAuthState: vi.fn() }));
 
-vi.mock('../../src/env.js', () => ({
+vi.mock('../../src/env', () => ({
   default: {
     LOG_LEVEL: 'silent',
     X_CLIENT_ID: 'x-client-id',
@@ -18,7 +18,7 @@ vi.mock('../../src/env.js', () => ({
     X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',
   },
 }));
-vi.mock('../../src/models/OAuthState.js', () => ({
+vi.mock('../../src/models/OAuthState', () => ({
   default: { create: mocks.createOAuthState },
 }));
 

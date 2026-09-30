@@ -1,5 +1,5 @@
-import XDataSnapshot from '../models/XDataSnapshot.js';
-import type { MigrationDefinition } from '../types/database/migration.js';
+import XDataSnapshot from '../models/XDataSnapshot';
+import type { MigrationDefinition } from '../types/database/migration';
 
 const createXDataIndexes: MigrationDefinition = {
   name: '20260923-create-x-data-indexes',

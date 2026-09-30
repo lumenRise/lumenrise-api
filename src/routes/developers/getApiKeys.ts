@@ -1,10 +1,10 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import DeveloperApiKey from '../../models/DeveloperApiKey.js';
-import toApiKeyResult from '../../utils/developer/toApiKeyResult.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { DeveloperApiKeyListResult } from '../../types/developer/api.js';
+import log from '../../logger';
+import DeveloperApiKey from '../../models/DeveloperApiKey';
+import toApiKeyResult from '../../utils/developer/toApiKeyResult';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { DeveloperApiKeyListResult } from '../../types/developer/api';
 
 const getDeveloperApiKeysRoute: RequestHandler = async (req, res) => {
   try {

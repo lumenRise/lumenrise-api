@@ -1,15 +1,15 @@
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 
-import app from '../src/app.js';
-import { createWalletChallenge } from '../src/services/auth/walletChallenge.js';
+import app from '../src/app';
+import { createWalletChallenge } from '../src/services/auth/walletChallenge';
 import {
   loginWalletIdentity,
   registerWalletIdentity,
-} from '../src/services/auth/walletIdentity.js';
+} from '../src/services/auth/walletIdentity';
 
-vi.mock('../src/services/auth/walletChallenge.js', () => ({ createWalletChallenge: vi.fn() }));
-vi.mock('../src/services/auth/walletIdentity.js', () => ({
+vi.mock('../src/services/auth/walletChallenge', () => ({ createWalletChallenge: vi.fn() }));
+vi.mock('../src/services/auth/walletIdentity', () => ({
   loginWalletIdentity: vi.fn(),
   registerWalletIdentity: vi.fn(),
 }));

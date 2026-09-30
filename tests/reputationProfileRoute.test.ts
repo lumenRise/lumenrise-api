@@ -2,28 +2,30 @@ import request from 'supertest';
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import app from '../src/app.js';
-import Identity from '../src/models/Identity.js';
-import StellarAccount from '../src/models/StellarAccount.js';
-import ExternalAccount from '../src/models/ExternalAccount.js';
-import ReputationSnapshot from '../src/models/ReputationSnapshot.js';
-import StellarActivityScan from '../src/models/StellarActivityScan.js';
+import app from '../src/app';
+import Identity from '../src/models/Identity';
+import StellarAccount from '../src/models/StellarAccount';
+import ExternalAccount from '../src/models/ExternalAccount';
+import ReputationSnapshot from '../src/models/ReputationSnapshot';
+import StellarActivityScan from '../src/models/StellarActivityScan';
+import getCurrentReputationSnapshot from '../src/services/reputation/currentSnapshot';
 
 const identityId = new Types.ObjectId();
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 const collectedAt = new Date('2026-09-24T10:00:00Z');
 
-vi.mock('../src/middleware/requireSession.js', () => ({
+vi.mock('../src/middleware/requireSession', () => ({
   default: (req: object, _res: unknown, next: () => void) => {
     Object.assign(req, { auth: { identityId } });
     next();
   },
 }));
-vi.mock('../src/models/Identity.js', () => ({ default: { findById: vi.fn() } }));
-vi.mock('../src/models/StellarAccount.js', () => ({ default: { findOne: vi.fn() } }));
-vi.mock('../src/models/ExternalAccount.js', () => ({ default: { find: vi.fn() } }));
-vi.mock('../src/models/ReputationSnapshot.js', () => ({ default: { findOne: vi.fn() } }));
-vi.mock('../src/models/StellarActivityScan.js', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../src/models/Identity', () => ({ default: { findById: vi.fn() } }));
+vi.mock('../src/models/StellarAccount', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../src/models/ExternalAccount', () => ({ default: { find: vi.fn() } }));
+vi.mock('../src/models/ReputationSnapshot', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../src/models/StellarActivityScan', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../src/services/reputation/currentSnapshot', () => ({ default: vi.fn() }));
 
 describe('reputation profile route', () => {
   beforeEach(() => {
@@ -37,6 +39,7 @@ describe('reputation profile route', () => {
     vi.mocked(StellarActivityScan.findOne).mockReturnValue({
       sort: vi.fn().mockResolvedValue(null),
     } as never);
+    vi.mocked(getCurrentReputationSnapshot).mockResolvedValue(null);
   });
 
   it('returns the primary wallet and null for unavailable scores', async () => {
@@ -58,30 +61,24 @@ describe('reputation profile route', () => {
   });
 
   it('keeps each connected score with its own version and evidence', async () => {
-    vi.mocked(ExternalAccount.find).mockResolvedValue([
-      { provider: 'github' },
-      { provider: 'x' },
-    ] as never);
-    vi.mocked(ReputationSnapshot.findOne).mockImplementation(
-      (filter) =>
-        ({
-          sort: vi.fn().mockResolvedValue({
-            category: filter.category,
+    vi.mocked(getCurrentReputationSnapshot).mockImplementation(
+      async (_identity, category) =>
+          ({
+            category,
             status: 'complete',
-            algorithmVersion: `${filter.category}-v1`,
-            score: filter.category === 'developer' ? 72 : 61,
+            algorithmVersion: `${category}-v1`,
+            score: category === 'developer' ? 72 : 61,
             signals: [],
             sources: [
               {
-                provider: filter.category === 'developer' ? 'github' : 'x',
+                provider: category === 'developer' ? 'github' : 'x',
                 snapshot: new Types.ObjectId(),
                 dataVersion: 'v1',
                 collectedAt,
               },
             ],
             calculatedAt: collectedAt,
-          }),
-        }) as never,
+          }) as never,
     );
 
     const response = await request(app).get('/v1/reputation/profile');
@@ -104,15 +101,7 @@ describe('reputation profile route', () => {
 
   it('does not expose scores sourced from disconnected providers', async () => {
     vi.mocked(ExternalAccount.find).mockResolvedValue([] as never);
-    vi.mocked(ReputationSnapshot.findOne).mockImplementation(
-      (filter) =>
-        ({
-          sort: vi.fn().mockResolvedValue({
-            category: filter.category,
-            sources: [{ provider: filter.category === 'developer' ? 'github' : 'x' }],
-          }),
-        }) as never,
-    );
+    vi.mocked(getCurrentReputationSnapshot).mockResolvedValue(null);
 
     const response = await request(app).get('/v1/reputation/profile');
 

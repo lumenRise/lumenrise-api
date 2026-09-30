@@ -1,14 +1,14 @@
 import { Router } from 'express';
 
-import getProfileRoute from './getProfile.js';
-import getXSocialRoute from './getXSocial.js';
-import getSocialScoreRoute from './getSocialScore.js';
-import getStellarReputationRoute from './getStellar.js';
-import getSybilEvidenceRoute from './getSybilEvidence.js';
-import getDeveloperReputationRoute from './getDeveloper.js';
-import getDeveloperScoreRoute from './getDeveloperScore.js';
-import requireSession from '../../middleware/requireSession.js';
-import getDeveloperRepositoriesRoute from './getDeveloperRepositories.js';
+import getProfileRoute from './getProfile';
+import getXSocialRoute from './getXSocial';
+import getSocialScoreRoute from './getSocialScore';
+import getStellarReputationRoute from './getStellar';
+import getSybilEvidenceRoute from './getSybilEvidence';
+import getDeveloperReputationRoute from './getDeveloper';
+import getDeveloperScoreRoute from './getDeveloperScore';
+import requireSession from '../../middleware/requireSession';
+import getDeveloperRepositoriesRoute from './getDeveloperRepositories';
 
 const reputationRoutes = Router();
 

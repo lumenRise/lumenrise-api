@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
-import ExternalAccount from '../../src/models/ExternalAccount.js';
+import ExternalAccount from '../../src/models/ExternalAccount';
 
 describe('ExternalAccount model', () => {
   it('stores a provider identity without OAuth credentials', async () => {

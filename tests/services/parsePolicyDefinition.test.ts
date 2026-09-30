@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import parsePolicyDefinition from '../../src/utils/policy/parsePolicyDefinition.js';
+import parsePolicyDefinition from '../../src/utils/policy/parsePolicyDefinition';
 
 describe('policy request parsing', () => {
   it('accepts a valid versioned policy and strips untrusted extra fields', () => {

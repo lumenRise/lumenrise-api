@@ -2,10 +2,10 @@ import request from 'supertest';
 import { Types } from 'mongoose';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import app from '../src/app.js';
-import Session from '../src/models/Session.js';
-import Identity from '../src/models/Identity.js';
-import { issueWalletSession } from '../src/services/auth/walletToken.js';
+import app from '../src/app';
+import Session from '../src/models/Session';
+import Identity from '../src/models/Identity';
+import { issueWalletSession } from '../src/services/auth/walletToken';
 
 describe('wallet bearer authentication', () => {
   afterEach(() => {

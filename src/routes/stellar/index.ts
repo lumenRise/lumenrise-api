@@ -1,11 +1,11 @@
 import { Router } from 'express';
 
-import getStellarAccountRoute from './getAccount.js';
-import getSorobanEvidenceRoute from './getSorobanEvidence.js';
-import requireSession from '../../middleware/requireSession.js';
-import getStellarActivityScoreRoute from './getActivityScore.js';
-import getStellarAccountOperationsRoute from './getAccountOperations.js';
-import { getStellarActivityScanRoute, postStellarActivityScanRoute } from './activityScan.js';
+import getStellarAccountRoute from './getAccount';
+import getSorobanEvidenceRoute from './getSorobanEvidence';
+import requireSession from '../../middleware/requireSession';
+import getStellarActivityScoreRoute from './getActivityScore';
+import getStellarAccountOperationsRoute from './getAccountOperations';
+import { getStellarActivityScanRoute, postStellarActivityScanRoute } from './activityScan';
 
 const stellarRoutes = Router();
 

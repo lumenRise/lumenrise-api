@@ -1,44 +1,27 @@
 import type { Types } from 'mongoose';
 
-import env from '../../env.js';
-import Identity from '../../models/Identity.js';
-import StellarAccount from '../../models/StellarAccount.js';
-import ExternalAccount from '../../models/ExternalAccount.js';
-import ReputationSnapshot from '../../models/ReputationSnapshot.js';
-import StellarActivityScan from '../../models/StellarActivityScan.js';
-import type { ReputationProfileResult } from '../../types/reputation/profile.js';
-import toStellarReputationResult from '../../utils/reputation/toStellarReputationResult.js';
-import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult.js';
+import env from '../../env';
+import Identity from '../../models/Identity';
+import StellarAccount from '../../models/StellarAccount';
+import getCurrentReputationSnapshot from './currentSnapshot';
+import StellarActivityScan from '../../models/StellarActivityScan';
+import type { ReputationProfileResult } from '../../types/reputation/profile';
+import toStellarReputationResult from '../../utils/reputation/toStellarReputationResult';
+import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult';
 
 const getReputationProfile = async (
   identityId: Types.ObjectId,
 ): Promise<ReputationProfileResult | null> => {
-  const [identity, wallet, accounts, developerSnapshot, socialSnapshot] = await Promise.all([
+  const [identity, wallet, developerSnapshot, socialSnapshot] = await Promise.all([
     Identity.findById(identityId),
     StellarAccount.findOne({ identity: identityId, isPrimary: true, disconnectedAt: null }),
-    ExternalAccount.find({ identity: identityId, status: 'connected', provider: { $in: ['github', 'x'] } }),
-    ReputationSnapshot.findOne({ identity: identityId, category: 'developer' }).sort({
-      calculatedAt: -1,
-    }),
-    ReputationSnapshot.findOne({ identity: identityId, category: 'social' }).sort({
-      calculatedAt: -1,
-    }),
+    getCurrentReputationSnapshot(identityId, 'developer'),
+    getCurrentReputationSnapshot(identityId, 'social'),
   ]);
 
   if (!identity) {
     return null;
   }
-
-  const connectedProviders = new Set(accounts.map((account) => account.provider));
-
-  const hasDeveloperConnection = connectedProviders.has('github');
-  const developerCurrent =
-    hasDeveloperConnection &&
-    developerSnapshot?.sources.every((source) => connectedProviders.has(source.provider));
-
-  const socialCurrent =
-    connectedProviders.has('x') &&
-    socialSnapshot?.sources.every((source) => connectedProviders.has(source.provider));
 
   const scan = wallet
     ? await StellarActivityScan.findOne({
@@ -54,9 +37,8 @@ const getReputationProfile = async (
       name: identity.name,
       primaryWalletAddress: wallet?.address ?? null,
     },
-    developer:
-      developerSnapshot && developerCurrent ? toReputationSnapshotResult(developerSnapshot) : null,
-    social: socialSnapshot && socialCurrent ? toReputationSnapshotResult(socialSnapshot) : null,
+    developer: developerSnapshot ? toReputationSnapshotResult(developerSnapshot) : null,
+    social: socialSnapshot ? toReputationSnapshotResult(socialSnapshot) : null,
     stellar: wallet ? toStellarReputationResult(wallet.address, scan) : null,
   };
 };

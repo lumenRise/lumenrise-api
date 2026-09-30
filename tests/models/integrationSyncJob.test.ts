@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
-import IntegrationSyncJob from '../../src/models/IntegrationSyncJob.js';
+import IntegrationSyncJob from '../../src/models/IntegrationSyncJob';
 
 describe('IntegrationSyncJob model', () => {
   it('accepts a queued GitHub synchronization job', async () => {

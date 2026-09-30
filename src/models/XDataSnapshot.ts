@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import type { XDataSnapshotRecord } from '../types/reputation/x.js';
+import type { XDataSnapshotRecord } from '../types/reputation/x';
 
 const coverageSchema = new Schema(
   {

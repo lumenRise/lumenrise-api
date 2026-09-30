@@ -1,14 +1,14 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../../../logger.js';
-import { parseAddress } from './parseAddress.js';
-import type { ApiResponse, EmptyResult } from '../../../../types/response.js';
-import isValidStellarGAddress from '../../../stellar/isValidStellarGAddress.js';
-import { createWalletChallenge } from '../../../../services/auth/walletChallenge.js';
+import log from '../../../../logger';
+import { parseAddress } from './parseAddress';
+import type { ApiResponse, EmptyResult } from '../../../../types/response';
+import isValidStellarGAddress from '../../../stellar/isValidStellarGAddress';
+import { createWalletChallenge } from '../../../../services/auth/walletChallenge';
 import type {
   WalletAuthChallengeResult,
   WalletAuthPurpose,
-} from '../../../../types/auth/wallet.js';
+} from '../../../../types/auth/wallet';
 
 const postWalletChallengeRoute: RequestHandler = async (req, res) => {
   const address = parseAddress(req.body?.address);

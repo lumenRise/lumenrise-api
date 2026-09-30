@@ -1,4 +1,4 @@
-import type { StellarActivityAggregate } from '../../../../types/stellar/scan.js';
+import type { StellarActivityAggregate } from '../../../../types/stellar/scan';
 
 const createEmptyStellarActivityAggregate = (): StellarActivityAggregate => ({
   scope: 'scanned_pages',

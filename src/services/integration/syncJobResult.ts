@@ -1,7 +1,7 @@
 import type {
   IntegrationSyncJobDocument,
   IntegrationSyncJobResult,
-} from '../../types/integration/sync.js';
+} from '../../types/integration/sync';
 
 const createIntegrationSyncJobResult = (
   job: IntegrationSyncJobDocument,

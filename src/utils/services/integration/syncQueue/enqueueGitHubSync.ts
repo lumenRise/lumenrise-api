@@ -1,9 +1,9 @@
-import log from '../../../../logger.js';
-import { enqueueIntegrationSync } from './enqueueIntegrationSync.js';
-import { calculateGitHubSyncSchedule } from './calculateGitHubSyncSchedule.js';
-import type { ExternalAccountDocument } from '../../../../types/integration/model.js';
-import type { IntegrationSyncJobDocument } from '../../../../types/integration/sync.js';
-import { publishGitHubSyncJob } from '../../../../services/integration/publishGitHubSyncJob.js';
+import log from '../../../../logger';
+import { enqueueIntegrationSync } from './enqueueIntegrationSync';
+import { calculateGitHubSyncSchedule } from './calculateGitHubSyncSchedule';
+import type { ExternalAccountDocument } from '../../../../types/integration/model';
+import type { IntegrationSyncJobDocument } from '../../../../types/integration/sync';
+import { publishGitHubSyncJob } from '../../../../services/integration/publishGitHubSyncJob';
 
 const enqueueGitHubSync = async (
   account: ExternalAccountDocument,

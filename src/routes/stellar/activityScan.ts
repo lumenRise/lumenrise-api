@@ -1,14 +1,14 @@
 import type { RequestHandler } from 'express';
 
-import env from '../../env.js';
-import log from '../../logger.js';
-import StellarActivityScan from '../../models/StellarActivityScan.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { StellarActivityScanResult } from '../../types/stellar/scan.js';
-import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
-import { getAddress } from '../../utils/routes/stellar/activityScan/getAddress.js';
-import { toStellarActivityScanResult } from '../../services/stellar/activityScanQueue.js';
-import { postStellarActivityScanRoute } from '../../utils/routes/stellar/activityScan/postStellarActivityScanRoute.js';
+import env from '../../env';
+import log from '../../logger';
+import StellarActivityScan from '../../models/StellarActivityScan';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { StellarActivityScanResult } from '../../types/stellar/scan';
+import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
+import { getAddress } from '../../utils/routes/stellar/activityScan/getAddress';
+import { toStellarActivityScanResult } from '../../services/stellar/activityScanQueue';
+import { postStellarActivityScanRoute } from '../../utils/routes/stellar/activityScan/postStellarActivityScanRoute';
 
 const getStellarActivityScanRoute: RequestHandler = async (req, res) => {
   const address = getAddress(req.params.address);

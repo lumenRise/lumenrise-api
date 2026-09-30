@@ -1,9 +1,9 @@
-import type { PolicyDefinition } from '../../types/policy/model.js';
-import type { PolicyEvaluation } from '../../types/policy/evaluation.js';
-import evaluatePolicyRule from '../../utils/policy/evaluatePolicyRule.js';
-import resolvePolicyDecision from '../../utils/policy/resolvePolicyDecision.js';
-import type { ReputationProfileResult } from '../../types/reputation/profile.js';
-import assertPolicyDefinition from '../../utils/policy/assertPolicyDefinition.js';
+import type { PolicyDefinition } from '../../types/policy/model';
+import type { PolicyEvaluation } from '../../types/policy/evaluation';
+import evaluatePolicyRule from '../../utils/policy/evaluatePolicyRule';
+import resolvePolicyDecision from '../../utils/policy/resolvePolicyDecision';
+import type { ReputationProfileResult } from '../../types/reputation/profile';
+import assertPolicyDefinition from '../../utils/policy/assertPolicyDefinition';
 
 const evaluatePolicy = (
   policy: PolicyDefinition,

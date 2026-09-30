@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
-import OAuthState from '../../src/models/OAuthState.js';
+import OAuthState from '../../src/models/OAuthState';
 
 const CODE_VERIFIER = 'a'.repeat(43);
 const STATE_HASH = createHash('sha256').update('oauth-state').digest('hex');

@@ -1,11 +1,11 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
-import type { StellarActivityScanDocument } from '../../src/types/stellar/scan.js';
+import type { StellarActivityScanDocument } from '../../src/types/stellar/scan';
 import {
   calculateStellarActivityScore,
   normalizeActivitySignal,
-} from '../../src/services/stellar/activityScore.js';
+} from '../../src/services/stellar/activityScore';
 
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 const createScan = (status: 'completed' | 'running' = 'completed'): StellarActivityScanDocument =>

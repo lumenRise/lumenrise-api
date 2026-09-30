@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
-import getSessionRoute from './getSession.js';
-import deleteSessionRoute from './deleteSession.js';
-import requireSession from '../../middleware/requireSession.js';
-import { postWalletAuthRoute, postWalletChallengeRoute } from './wallet.js';
+import getSessionRoute from './getSession';
+import deleteSessionRoute from './deleteSession';
+import requireSession from '../../middleware/requireSession';
+import { postWalletAuthRoute, postWalletChallengeRoute } from './wallet';
 
 const authRoutes = Router();
 

@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import type { GitHubRepositoryFactRecord } from '../types/reputation/github.js';
+import type { GitHubRepositoryFactRecord } from '../types/reputation/github';
 
 const githubRepositoryFactSchema = new Schema<GitHubRepositoryFactRecord>(
   {

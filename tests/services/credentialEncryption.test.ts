@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   decryptSecret,
   encryptSecret,
-} from '../../src/services/integration/credentialEncryption.js';
+} from '../../src/services/integration/credentialEncryption';
 
 const encryptionKey = Buffer.from('a'.repeat(64), 'hex');
 

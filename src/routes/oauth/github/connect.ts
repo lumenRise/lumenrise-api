@@ -1,9 +1,9 @@
 import type { RequestHandler } from 'express';
 
-import type { ApiResponse } from '../../../types/response.js';
-import { setOAuthStateCookie } from '../../../services/oauth/stateCookie.js';
-import { createGitHubAuthorization } from '../../../services/oauth/github.js';
-import type { GitHubOAuthStartResult } from '../../../types/integration/github.js';
+import type { ApiResponse } from '../../../types/response';
+import { setOAuthStateCookie } from '../../../services/oauth/stateCookie';
+import { createGitHubAuthorization } from '../../../services/oauth/github';
+import type { GitHubOAuthStartResult } from '../../../types/integration/github';
 
 const connectGitHubOAuthRoute: RequestHandler = async (req, res) => {
   if (!req.auth) {

@@ -1,6 +1,6 @@
 import type { Response } from 'express';
 
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
+import type { ApiResponse, EmptyResult } from '../../types/response';
 
 const sendManualRefreshLimit = (res: Response, retryAt: Date): Response => {
   const retryAfter = Math.max(1, Math.ceil((retryAt.getTime() - Date.now()) / 1_000));

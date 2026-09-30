@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import connectXOAuthRoute from './connect.js';
-import callbackXOAuthRoute from './callback.js';
-import requireSession from '../../../middleware/requireSession.js';
+import connectXOAuthRoute from './connect';
+import callbackXOAuthRoute from './callback';
+import requireSession from '../../../middleware/requireSession';
 
 const xOAuthRoutes = Router();
 

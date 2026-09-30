@@ -1,9 +1,9 @@
-import address from './address.js';
-import summarizeStellarActivityPage from '../../../src/services/stellar/summarizeActivityPage.js';
+import address from './address';
+import summarizeStellarActivityPage from '../../../src/services/stellar/summarizeActivityPage';
 import type {
   StellarOperationResult,
   StellarOperationsResult,
-} from '../../../src/types/stellar/operations.js';
+} from '../../../src/types/stellar/operations';
 
 const createPage = (
   items: StellarOperationResult[],

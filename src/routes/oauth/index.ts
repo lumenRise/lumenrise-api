@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import xOAuthRoutes from './x/index.js';
-import githubOAuthRoutes from './github/index.js';
+import xOAuthRoutes from './x/index';
+import githubOAuthRoutes from './github/index';
 
 const oauthRoutes = Router();
 

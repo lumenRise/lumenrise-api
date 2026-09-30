@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
-import XDataSnapshot from '../../src/models/XDataSnapshot.js';
+import XDataSnapshot from '../../src/models/XDataSnapshot';
 
 describe('XDataSnapshot model', () => {
   it('stores uncapped aggregate X values', async () => {

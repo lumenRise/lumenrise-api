@@ -1,4 +1,4 @@
-import jsonResponse from './jsonResponse.js';
+import jsonResponse from './jsonResponse';
 
 const oauthProviderPaths = (provider: string, displayName: string) => ({
   [`/v1/oauth/${provider}/connect`]: {

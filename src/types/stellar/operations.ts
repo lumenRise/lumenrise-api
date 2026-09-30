@@ -1,4 +1,4 @@
-import type { StellarActivityPageSummary } from './activity.js';
+import type { StellarActivityPageSummary } from './activity';
 
 type StellarOperationOrder = 'asc' | 'desc';
 

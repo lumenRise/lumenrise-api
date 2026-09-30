@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
-import app from '../src/app.js';
+import app from '../src/app';
 
 describe('Stellar account overview route', () => {
   it('requires a session', async () => {

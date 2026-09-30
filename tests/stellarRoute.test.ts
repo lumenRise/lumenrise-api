@@ -1,9 +1,9 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import app from '../src/app.js';
+import app from '../src/app';
 
-vi.mock('../src/middleware/requireSession.js', () => ({
+vi.mock('../src/middleware/requireSession', () => ({
   default: (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
 

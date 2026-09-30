@@ -1,4 +1,4 @@
-import type { PolicyDefinition } from './model.js';
+import type { PolicyDefinition } from './model';
 
 interface PolicyResult extends PolicyDefinition {
   id: string;

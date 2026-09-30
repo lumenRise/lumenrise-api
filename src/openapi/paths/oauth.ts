@@ -1,4 +1,4 @@
-import oauthProviderPaths from '../../utils/openapi/oauthProviderPaths.js';
+import oauthProviderPaths from '../../utils/openapi/oauthProviderPaths';
 
 const oauthPaths = {
   ...oauthProviderPaths('github', 'GitHub'),

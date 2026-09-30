@@ -1,18 +1,18 @@
 import { createHash } from 'node:crypto';
 
-import { issueSession } from '../auth/session.js';
-import OAuthState from '../../models/OAuthState.js';
-import type { IssuedSession } from '../../types/auth/model.js';
-import { enqueueGitHubSync } from '../integration/syncQueue.js';
-import type { CompletedGitHubOAuth } from '../../types/integration/github.js';
-import { storeProviderCredential } from '../integration/providerCredential.js';
-import { exchangeGitHubCode } from '../../utils/services/oauth/github/exchangeGitHubCode.js';
-import { connectGitHubAccount } from '../../utils/services/oauth/github/connectGitHubAccount.js';
-import { revokeGitHubAccessToken } from '../../utils/services/oauth/github/revokeGitHubAccessToken.js';
-import { refreshGitHubAccessToken } from '../../utils/services/oauth/github/refreshGitHubAccessToken.js';
-import { createGitHubAuthorization } from '../../utils/services/oauth/github/createGitHubAuthorization.js';
-import { assertGitHubConfiguration } from '../../utils/services/oauth/github/assertGitHubConfiguration.js';
-import { getAuthenticatedGitHubUser } from '../../utils/services/oauth/github/getAuthenticatedGitHubUser.js';
+import { issueSession } from '../auth/session';
+import OAuthState from '../../models/OAuthState';
+import type { IssuedSession } from '../../types/auth/model';
+import { enqueueGitHubSync } from '../integration/syncQueue';
+import type { CompletedGitHubOAuth } from '../../types/integration/github';
+import { storeProviderCredential } from '../integration/providerCredential';
+import { exchangeGitHubCode } from '../../utils/services/oauth/github/exchangeGitHubCode';
+import { connectGitHubAccount } from '../../utils/services/oauth/github/connectGitHubAccount';
+import { revokeGitHubAccessToken } from '../../utils/services/oauth/github/revokeGitHubAccessToken';
+import { refreshGitHubAccessToken } from '../../utils/services/oauth/github/refreshGitHubAccessToken';
+import { createGitHubAuthorization } from '../../utils/services/oauth/github/createGitHubAuthorization';
+import { assertGitHubConfiguration } from '../../utils/services/oauth/github/assertGitHubConfiguration';
+import { getAuthenticatedGitHubUser } from '../../utils/services/oauth/github/getAuthenticatedGitHubUser';
 import {
   OAUTH_STATE_TTL_MS,
   GITHUB_AUTHORIZE_URL,
@@ -20,7 +20,7 @@ import {
   GITHUB_USER_API_URL,
   GITHUB_TOKEN_URL,
   GITHUB_APPLICATIONS_API_URL,
-} from '../../constants/services/oauth/github.js';
+} from '../../constants/services/oauth/github';
 
 const completeGitHubAuthorization = async (
   code: string,

@@ -1,16 +1,16 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import XDataSnapshot from '../../models/XDataSnapshot.js';
-import ExternalAccount from '../../models/ExternalAccount.js';
-import { revokeXAccessToken } from '../../services/oauth/x.js';
-import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
-import ProviderCredential from '../../models/ProviderCredential.js';
-import ReputationSnapshot from '../../models/ReputationSnapshot.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import { revokeGitHubAccessToken } from '../../services/oauth/github.js';
-import { getProviderCredential } from '../../services/integration/providerCredential.js';
-import { isExternalAccountProvider } from '../../utils/routes/connections/delete/isExternalAccountProvider.js';
+import log from '../../logger';
+import XDataSnapshot from '../../models/XDataSnapshot';
+import ExternalAccount from '../../models/ExternalAccount';
+import { revokeXAccessToken } from '../../services/oauth/x';
+import IntegrationSyncJob from '../../models/IntegrationSyncJob';
+import ProviderCredential from '../../models/ProviderCredential';
+import ReputationSnapshot from '../../models/ReputationSnapshot';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import { revokeGitHubAccessToken } from '../../services/oauth/github';
+import { getProviderCredential } from '../../services/integration/providerCredential';
+import { isExternalAccountProvider } from '../../utils/routes/connections/delete/isExternalAccountProvider';
 
 const deleteConnectionRoute: RequestHandler = async (req, res) => {
   const providerParam = req.params.provider;

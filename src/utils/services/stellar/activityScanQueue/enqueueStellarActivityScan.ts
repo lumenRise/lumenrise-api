@@ -1,10 +1,10 @@
 import type { Types } from 'mongoose';
 
-import env from '../../../../env.js';
-import { wakeStellarScan } from './wakeStellarScan.js';
-import StellarActivityScan from '../../../../models/StellarActivityScan.js';
-import type { StellarActivityScanEnqueueResult } from '../../../../types/stellar/scan.js';
-import { createEmptyStellarActivityAggregate } from '../mergeActivityPage/createEmptyStellarActivityAggregate.js';
+import env from '../../../../env';
+import { wakeStellarScan } from './wakeStellarScan';
+import StellarActivityScan from '../../../../models/StellarActivityScan';
+import type { StellarActivityScanEnqueueResult } from '../../../../types/stellar/scan';
+import { createEmptyStellarActivityAggregate } from '../mergeActivityPage/createEmptyStellarActivityAggregate';
 
 const enqueueStellarActivityScan = async (
   identity: Types.ObjectId,

@@ -1,6 +1,6 @@
-import { enqueueXSync } from '../../utils/services/integration/syncQueue/enqueueXSync.js';
-import { enqueueGitHubSync } from '../../utils/services/integration/syncQueue/enqueueGitHubSync.js';
-import { calculateXSyncSchedule } from '../../utils/services/integration/syncQueue/calculateXSyncSchedule.js';
-import { calculateGitHubSyncSchedule } from '../../utils/services/integration/syncQueue/calculateGitHubSyncSchedule.js';
+import { enqueueXSync } from '../../utils/services/integration/syncQueue/enqueueXSync';
+import { enqueueGitHubSync } from '../../utils/services/integration/syncQueue/enqueueGitHubSync';
+import { calculateXSyncSchedule } from '../../utils/services/integration/syncQueue/calculateXSyncSchedule';
+import { calculateGitHubSyncSchedule } from '../../utils/services/integration/syncQueue/calculateGitHubSyncSchedule';
 
 export { calculateGitHubSyncSchedule, calculateXSyncSchedule, enqueueGitHubSync, enqueueXSync };

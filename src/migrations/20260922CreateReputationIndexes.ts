@@ -1,5 +1,5 @@
-import ReputationSnapshot from '../models/ReputationSnapshot.js';
-import type { MigrationDefinition } from '../types/database/migration.js';
+import ReputationSnapshot from '../models/ReputationSnapshot';
+import type { MigrationDefinition } from '../types/database/migration';
 
 const createReputationIndexes: MigrationDefinition = {
   name: '20260922-create-reputation-indexes',

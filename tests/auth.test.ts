@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
-import app from '../src/app.js';
-import { hashSessionToken } from '../src/services/auth/session.js';
+import app from '../src/app';
+import { hashSessionToken } from '../src/services/auth/session';
 
 describe('authentication', () => {
   it('hashes opaque session tokens deterministically without storing the raw value', () => {

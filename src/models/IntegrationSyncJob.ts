@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 
-import { INTEGRATION_SYNC_JOB_STATUSES } from '../constants/integration.js';
-import type { IntegrationSyncJobRecord } from '../types/integration/sync.js';
+import { INTEGRATION_SYNC_JOB_STATUSES } from '../constants/integration';
+import type { IntegrationSyncJobRecord } from '../types/integration/sync';
 
 const integrationSyncJobSchema = new Schema<IntegrationSyncJobRecord>(
   {

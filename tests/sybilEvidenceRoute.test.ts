@@ -2,18 +2,18 @@ import request from 'supertest';
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import app from '../src/app.js';
-import getSybilEvidence from '../src/services/sybil/getSybilEvidence.js';
+import app from '../src/app';
+import getSybilEvidence from '../src/services/sybil/getSybilEvidence';
 
 const identityId = new Types.ObjectId();
 
-vi.mock('../src/middleware/requireSession.js', () => ({
+vi.mock('../src/middleware/requireSession', () => ({
   default: (req: object, _res: unknown, next: () => void) => {
     Object.assign(req, { auth: { identityId } });
     next();
   },
 }));
-vi.mock('../src/services/sybil/getSybilEvidence.js', () => ({ default: vi.fn() }));
+vi.mock('../src/services/sybil/getSybilEvidence', () => ({ default: vi.fn() }));
 
 describe('Sybil evidence route', () => {
   beforeEach(() => {

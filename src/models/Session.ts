@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import type { SessionRecord } from '../types/auth/model.js';
+import type { SessionRecord } from '../types/auth/model';
 
 const sessionSchema = new Schema<SessionRecord>(
   {

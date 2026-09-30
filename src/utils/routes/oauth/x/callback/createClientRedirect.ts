@@ -1,5 +1,5 @@
-import env from '../../../../../env.js';
-import type { XOAuthResultStatus } from '../../../../../types/integration/x.js';
+import env from '../../../../../env';
+import type { XOAuthResultStatus } from '../../../../../types/integration/x';
 
 const createClientRedirect = (
   status: XOAuthResultStatus,

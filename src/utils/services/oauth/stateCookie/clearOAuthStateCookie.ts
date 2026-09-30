@@ -1,7 +1,7 @@
 import type { Response } from 'express';
 
-import env from '../../../../env.js';
-import { OAUTH_STATE_COOKIE_NAME } from '../../../../constants/auth.js';
+import env from '../../../../env';
+import { OAUTH_STATE_COOKIE_NAME } from '../../../../constants/auth';
 
 const clearOAuthStateCookie = (res: Response): void => {
   res.clearCookie(OAUTH_STATE_COOKIE_NAME, {

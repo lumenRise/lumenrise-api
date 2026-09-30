@@ -1,5 +1,5 @@
-import type { StellarOperationResult } from '../../types/stellar/operations.js';
-import type { StellarActivityPageSummary } from '../../types/stellar/activity.js';
+import type { StellarOperationResult } from '../../types/stellar/operations';
+import type { StellarActivityPageSummary } from '../../types/stellar/activity';
 
 const STELLAR_OFFER_OPERATION_TYPES = new Set([
   'manage_sell_offer',

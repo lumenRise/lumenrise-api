@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
-import Policy from '../../src/models/Policy.js';
+import Policy from '../../src/models/Policy';
 
 describe('Policy model', () => {
   it('accepts a versioned combination of score rules', async () => {

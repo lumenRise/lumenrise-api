@@ -1,6 +1,6 @@
-import { assertXConfiguration } from './assertXConfiguration.js';
-import { X_REVOKE_URL } from '../../../../constants/services/oauth/x.js';
-import { createXBasicAuthorization } from './createXBasicAuthorization.js';
+import { assertXConfiguration } from './assertXConfiguration';
+import { X_REVOKE_URL } from '../../../../constants/services/oauth/x';
+import { createXBasicAuthorization } from './createXBasicAuthorization';
 
 const revokeXAccessToken = async (accessToken: string): Promise<void> => {
   assertXConfiguration();
