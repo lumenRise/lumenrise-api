@@ -1,16 +1,15 @@
 import { Types } from 'mongoose';
 import { randomBytes } from 'node:crypto';
 
-import { hashName } from './hashName.js';
-import { hashWalletMessage } from './hashWalletMessage.js';
-import { getNetworkPassphrase } from './getNetworkPassphrase.js';
-import WalletAuthChallenge from '../../../../models/WalletAuthChallenge.js';
-import { CHALLENGE_TTL_MS } from '../../../../constants/services/auth/walletChallenge.js';
+import { hashName } from './hashName';
+import { hashWalletMessage } from './hashWalletMessage';
+import { getNetworkPassphrase } from './getNetworkPassphrase';
+import WalletAuthChallenge from '../../../../models/WalletAuthChallenge';
+import { CHALLENGE_TTL_MS } from '../../../../constants/services/auth/walletChallenge';
 import type {
   WalletAuthChallengeResult,
   WalletAuthPurpose,
-} from '../../../../types/auth/wallet.js';
-
+} from '../../../../types/auth/wallet';
 const createWalletChallenge = async (
   address: string,
   purpose: WalletAuthPurpose,

@@ -1,14 +1,13 @@
 import type { RequestHandler } from 'express';
 
-import ExternalAccount from '../../models/ExternalAccount.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import { enqueueGitHubSync } from '../../services/integration/syncQueue.js';
-import type { IntegrationSyncJobResult } from '../../types/integration/sync.js';
-import reserveManualRefresh from '../../services/refresh/reserveManualRefresh.js';
-import releaseManualRefresh from '../../services/refresh/releaseManualRefresh.js';
-import sendManualRefreshLimit from '../../utils/routes/sendManualRefreshLimit.js';
-import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
-
+import ExternalAccount from '../../models/ExternalAccount';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import { enqueueGitHubSync } from '../../services/integration/syncQueue';
+import type { IntegrationSyncJobResult } from '../../types/integration/sync';
+import reserveManualRefresh from '../../services/refresh/reserveManualRefresh';
+import releaseManualRefresh from '../../services/refresh/releaseManualRefresh';
+import sendManualRefreshLimit from '../../utils/routes/sendManualRefreshLimit';
+import createIntegrationSyncJobResult from '../../services/integration/syncJobResult';
 const postGitHubSyncRoute: RequestHandler = async (req, res) => {
   const account = await ExternalAccount.findOne({
     identity: req.auth?.identityId,

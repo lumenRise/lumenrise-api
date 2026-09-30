@@ -2,16 +2,15 @@ import request from 'supertest';
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import app from '../src/app.js';
-import StellarActivityScan from '../src/models/StellarActivityScan.js';
-
-vi.mock('../src/middleware/requireSession.js', () => ({
+import app from '../src/app';
+import StellarActivityScan from '../src/models/StellarActivityScan';
+vi.mock('../src/middleware/requireSession', () => ({
   default: (req: object, _res: unknown, next: () => void) => {
     Object.assign(req, { auth: { identityId: new Types.ObjectId() } });
     next();
   },
 }));
-vi.mock('../src/models/StellarActivityScan.js', () => ({
+vi.mock('../src/models/StellarActivityScan', () => ({
   default: { findOne: vi.fn() },
 }));
 

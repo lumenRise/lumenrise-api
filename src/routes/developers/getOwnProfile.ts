@@ -1,10 +1,9 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import getReputationProfile from '../../services/reputation/profile.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { ReputationProfileResult } from '../../types/reputation/profile.js';
-
+import log from '../../logger';
+import getReputationProfile from '../../services/reputation/profile';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { ReputationProfileResult } from '../../types/reputation/profile';
 const getOwnDeveloperProfileRoute: RequestHandler = async (req, res) => {
   try {
     const profile = await getReputationProfile(req.developerIdentityId!);

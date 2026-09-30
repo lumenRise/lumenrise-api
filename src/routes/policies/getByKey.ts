@@ -1,11 +1,10 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import Policy from '../../models/Policy.js';
-import type { PolicyResult } from '../../types/policy/api.js';
-import toPolicyResult from '../../utils/policy/toPolicyResult.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-
+import log from '../../logger';
+import Policy from '../../models/Policy';
+import type { PolicyResult } from '../../types/policy/api';
+import toPolicyResult from '../../utils/policy/toPolicyResult';
+import type { ApiResponse, EmptyResult } from '../../types/response';
 const getPolicyByKeyRoute: RequestHandler = async (req, res) => {
   const key = req.params.key;
 

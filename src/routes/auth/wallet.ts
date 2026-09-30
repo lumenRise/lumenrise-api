@@ -1,14 +1,13 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import { setSessionCookie } from '../../services/auth/session.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import { parseAddress } from '../../utils/routes/auth/wallet/parseAddress.js';
-import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
-import type { WalletAuthPurpose, WalletAuthResult } from '../../types/auth/wallet.js';
-import { loginWalletIdentity, registerWalletIdentity } from '../../services/auth/walletIdentity.js';
-import { postWalletChallengeRoute } from '../../utils/routes/auth/wallet/postWalletChallengeRoute.js';
-
+import log from '../../logger';
+import { setSessionCookie } from '../../services/auth/session';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import { parseAddress } from '../../utils/routes/auth/wallet/parseAddress';
+import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
+import type { WalletAuthPurpose, WalletAuthResult } from '../../types/auth/wallet';
+import { loginWalletIdentity, registerWalletIdentity } from '../../services/auth/walletIdentity';
+import { postWalletChallengeRoute } from '../../utils/routes/auth/wallet/postWalletChallengeRoute';
 const postWalletAuthRoute =
   (purpose: WalletAuthPurpose): RequestHandler =>
   async (req, res) => {

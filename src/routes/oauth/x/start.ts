@@ -1,10 +1,9 @@
 import type { RequestHandler } from 'express';
 
-import type { ApiResponse } from '../../../types/response.js';
-import { createXAuthorization } from '../../../services/oauth/x.js';
-import type { XOAuthStartResult } from '../../../types/integration/x.js';
-import { setOAuthStateCookie } from '../../../services/oauth/stateCookie.js';
-
+import type { ApiResponse } from '../../../types/response';
+import { createXAuthorization } from '../../../services/oauth/x';
+import type { XOAuthStartResult } from '../../../types/integration/x';
+import { setOAuthStateCookie } from '../../../services/oauth/stateCookie';
 const startXOAuthRoute: RequestHandler = async (_req, res) => {
   const flow = await createXAuthorization('register', null);
 

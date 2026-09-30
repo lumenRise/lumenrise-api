@@ -1,10 +1,9 @@
 import type { RequestHandler } from 'express';
 
-import XDataSnapshot from '../../models/XDataSnapshot.js';
-import ExternalAccount from '../../models/ExternalAccount.js';
-import type { XDataSnapshotResult } from '../../types/reputation/x.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-
+import XDataSnapshot from '../../models/XDataSnapshot';
+import ExternalAccount from '../../models/ExternalAccount';
+import type { XDataSnapshotResult } from '../../types/reputation/x';
+import type { ApiResponse, EmptyResult } from '../../types/response';
 const getXSocialRoute: RequestHandler = async (req, res) => {
   const account = await ExternalAccount.findOne({
     identity: req.auth?.identityId,

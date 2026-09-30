@@ -1,4 +1,4 @@
-import env from '../../../../env.js';
+import env from '../../../../env';
 
 const assertGitHubConfiguration = (): void => {
   if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) {

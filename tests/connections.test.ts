@@ -1,8 +1,7 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
-import app from '../src/app.js';
-
+import app from '../src/app';
 describe('connections', () => {
   it('requires a Lumenrise session to list connections', async () => {
     const response = await request(app).get('/v1/connections');

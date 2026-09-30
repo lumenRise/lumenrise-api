@@ -1,10 +1,9 @@
-import env from '../../env.js';
-import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
+import env from '../../env';
+import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type {
   StellarAccountOverviewResult,
   StellarHorizonAccount,
-} from '../../types/stellar/account.js';
-
+} from '../../types/stellar/account';
 const getStellarAccountOverview = async (
   address: string,
   checkedAt = new Date(),

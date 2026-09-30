@@ -1,9 +1,8 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { enqueueXSync } from '../../src/utils/services/integration/syncQueue/enqueueXSync.js';
-import { enqueueGitHubSync } from '../../src/utils/services/integration/syncQueue/enqueueGitHubSync.js';
-
+import { enqueueXSync } from '../../src/utils/services/integration/syncQueue/enqueueXSync';
+import { enqueueGitHubSync } from '../../src/utils/services/integration/syncQueue/enqueueGitHubSync';
 const mocks = vi.hoisted(() => ({
   enqueue: vi.fn(),
   publish: vi.fn(),
@@ -11,16 +10,16 @@ const mocks = vi.hoisted(() => ({
   warn: vi.fn(),
 }));
 
-vi.mock('../../src/utils/services/integration/syncQueue/enqueueIntegrationSync.js', () => ({
+vi.mock('../../src/utils/services/integration/syncQueue/enqueueIntegrationSync', () => ({
   enqueueIntegrationSync: mocks.enqueue,
 }));
-vi.mock('../../src/services/integration/publishGitHubSyncJob.js', () => ({
+vi.mock('../../src/services/integration/publishGitHubSyncJob', () => ({
   publishGitHubSyncJob: mocks.publish,
 }));
-vi.mock('../../src/services/integration/publishReputationJob.js', () => ({
+vi.mock('../../src/services/integration/publishReputationJob', () => ({
   publishReputationJob: mocks.publishReputationJob,
 }));
-vi.mock('../../src/logger.js', () => ({ default: { warn: mocks.warn } }));
+vi.mock('../../src/logger', () => ({ default: { warn: mocks.warn } }));
 
 describe('GitHub sync dispatch', () => {
   beforeEach(() => vi.clearAllMocks());

@@ -1,15 +1,14 @@
 import { Types } from 'mongoose';
 import type { RequestHandler } from 'express';
 
-import env from '../../env.js';
-import log from '../../logger.js';
-import StellarActivityScan from '../../models/StellarActivityScan.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { SorobanEvidenceResult } from '../../types/stellar/soroban.js';
-import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
-import SorobanTransactionEvidence from '../../models/SorobanTransactionEvidence.js';
-import extractSorobanEnvelopeEvidence from '../../services/stellar/extractSorobanEnvelopeEvidence.js';
-
+import env from '../../env';
+import log from '../../logger';
+import StellarActivityScan from '../../models/StellarActivityScan';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { SorobanEvidenceResult } from '../../types/stellar/soroban';
+import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
+import SorobanTransactionEvidence from '../../models/SorobanTransactionEvidence';
+import extractSorobanEnvelopeEvidence from '../../services/stellar/extractSorobanEnvelopeEvidence';
 const getSorobanEvidenceRoute: RequestHandler = async (req, res) => {
   const address = typeof req.params.address === 'string' ? req.params.address.toUpperCase() : '';
   const limit = req.query.limit === undefined ? 50 : Number(req.query.limit);

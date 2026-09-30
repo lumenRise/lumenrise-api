@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import buildSybilEvidence from '../../src/utils/sybil/buildSybilEvidence.js';
-import type { ReputationProfileResult } from '../../src/types/reputation/profile.js';
-
+import buildSybilEvidence from '../../src/utils/sybil/buildSybilEvidence';
+import type { ReputationProfileResult } from '../../src/types/reputation/profile';
 const generatedAt = new Date('2026-09-25T12:00:00.000Z');
 const profile: ReputationProfileResult = {
   identity: {

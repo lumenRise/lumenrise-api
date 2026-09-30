@@ -1,4 +1,4 @@
-import { X_SYNC_MIN_INTERVAL_MS } from '../../../../constants/integration.js';
+import { X_SYNC_MIN_INTERVAL_MS } from '../../../../constants/integration';
 
 const calculateXSyncSchedule = (lastSyncedAt: Date | null, now = new Date()): Date => {
   if (!lastSyncedAt) {

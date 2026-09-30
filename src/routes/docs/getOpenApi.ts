@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
 
-import openApiDocument from '../../openapi/document.js';
-
+import openApiDocument from '../../openapi/document';
 const getOpenApiRoute = (_request: Request, response: Response) => {
   response.setHeader('Cache-Control', 'no-store');
 

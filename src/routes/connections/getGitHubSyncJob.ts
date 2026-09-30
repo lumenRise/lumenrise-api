@@ -1,11 +1,10 @@
 import { Types } from 'mongoose';
 import type { RequestHandler } from 'express';
 
-import IntegrationSyncJob from '../../models/IntegrationSyncJob.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { IntegrationSyncJobResult } from '../../types/integration/sync.js';
-import createIntegrationSyncJobResult from '../../services/integration/syncJobResult.js';
-
+import IntegrationSyncJob from '../../models/IntegrationSyncJob';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { IntegrationSyncJobResult } from '../../types/integration/sync';
+import createIntegrationSyncJobResult from '../../services/integration/syncJobResult';
 const getGitHubSyncJobRoute: RequestHandler = async (req, res) => {
   const jobIdParam = req.params.jobId;
   const jobId = typeof jobIdParam === 'string' ? jobIdParam : null;

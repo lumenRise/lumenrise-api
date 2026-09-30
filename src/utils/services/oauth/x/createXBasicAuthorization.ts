@@ -1,4 +1,4 @@
-import env from '../../../../env.js';
+import env from '../../../../env';
 
 const createXBasicAuthorization = (): string => {
   const clientId = encodeURIComponent(env.X_CLIENT_ID);

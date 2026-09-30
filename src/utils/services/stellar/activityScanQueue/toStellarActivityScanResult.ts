@@ -1,7 +1,7 @@
 import type {
   StellarActivityScanDocument,
   StellarActivityScanResult,
-} from '../../../../types/stellar/scan.js';
+} from '../../../../types/stellar/scan';
 
 const toStellarActivityScanResult = (
   scan: StellarActivityScanDocument,

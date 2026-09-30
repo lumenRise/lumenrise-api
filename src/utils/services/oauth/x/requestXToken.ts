@@ -1,7 +1,6 @@
-import { X_TOKEN_URL } from '../../../../constants/services/oauth/x.js';
-import type { XTokenResponse } from '../../../../types/integration/x.js';
-import { createXBasicAuthorization } from './createXBasicAuthorization.js';
-
+import { X_TOKEN_URL } from '../../../../constants/services/oauth/x';
+import type { XTokenResponse } from '../../../../types/integration/x';
+import { createXBasicAuthorization } from './createXBasicAuthorization';
 const requestXToken = async (body: URLSearchParams): Promise<XTokenResponse> => {
   const response = await fetch(X_TOKEN_URL, {
     method: 'POST',

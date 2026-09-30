@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import getStellarAccountOverview from '../../src/services/stellar/getAccountOverview.js';
-
+import getStellarAccountOverview from '../../src/services/stellar/getAccountOverview';
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 const checkedAt = new Date('2026-09-23T12:00:00.000Z');
 

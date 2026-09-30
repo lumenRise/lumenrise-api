@@ -1,7 +1,7 @@
 import type {
   ReputationSnapshotDocument,
   ReputationSnapshotResult,
-} from '../../types/reputation/model.js';
+} from '../../types/reputation/model';
 
 const toReputationSnapshotResult = (
   snapshot: ReputationSnapshotDocument,

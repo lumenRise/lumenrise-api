@@ -1,12 +1,11 @@
-import { SYBIL_EVIDENCE_VERSION } from '../../constants/sybil.js';
-import calculateActivityCorroboration from './calculateActivityCorroboration.js';
-import type { ReputationProfileResult } from '../../types/reputation/profile.js';
+import { SYBIL_EVIDENCE_VERSION } from '../../constants/sybil';
+import calculateActivityCorroboration from './calculateActivityCorroboration';
+import type { ReputationProfileResult } from '../../types/reputation/profile';
 import type {
   SybilEvidenceResult,
   SybilProviderEvidence,
   SybilEvidenceObservation,
-} from '../../types/sybil/evidence.js';
-
+} from '../../types/sybil/evidence';
 const buildSybilEvidence = (
   profile: ReputationProfileResult,
   providers: SybilProviderEvidence[],

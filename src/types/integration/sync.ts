@@ -1,8 +1,7 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
-import type { XDataSnapshotDocument } from '../reputation/x.js';
-import type { GitHubDataSnapshotDocument } from '../reputation/github.js';
-
+import type { XDataSnapshotDocument } from '../reputation/x';
+import type { GitHubDataSnapshotDocument } from '../reputation/github';
 type IntegrationSyncJobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
 type IntegrationSyncJobProvider = 'github' | 'x';
 
@@ -51,7 +50,11 @@ interface GitHubSyncReauthorizationRequired {
   state: 'reauthorization_required';
 }
 
-type GitHubSyncOutcome = GitHubSyncSuccess | GitHubSyncDeferred | GitHubSyncReauthorizationRequired;
+interface GitHubSyncDisconnected {
+  state: 'disconnected';
+}
+
+type GitHubSyncOutcome = GitHubSyncSuccess | GitHubSyncDeferred | GitHubSyncReauthorizationRequired | GitHubSyncDisconnected;
 
 interface XSyncSuccess {
   state: 'synchronized';

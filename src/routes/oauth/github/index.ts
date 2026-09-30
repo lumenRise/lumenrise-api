@@ -1,9 +1,8 @@
 import { Router } from 'express';
 
-import connectGitHubOAuthRoute from './connect.js';
-import callbackGitHubOAuthRoute from './callback.js';
-import requireSession from '../../../middleware/requireSession.js';
-
+import connectGitHubOAuthRoute from './connect';
+import callbackGitHubOAuthRoute from './callback';
+import requireSession from '../../../middleware/requireSession';
 const githubOAuthRoutes = Router();
 
 githubOAuthRoutes.get('/callback', callbackGitHubOAuthRoute);

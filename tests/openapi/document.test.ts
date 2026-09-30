@@ -2,9 +2,8 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import SwaggerParser from '@apidevtools/swagger-parser';
 
-import app from '../../src/app.js';
-import openApiDocument from '../../src/openapi/document.js';
-
+import app from '../../src/app';
+import openApiDocument from '../../src/openapi/document';
 const expectedOperations = [
   'GET /v1/health',
   'GET /v1/openapi.json',

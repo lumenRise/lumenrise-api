@@ -1,8 +1,7 @@
-import XDataSnapshot from '../../models/XDataSnapshot.js';
-import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
-import type { SybilProviderEvidence } from '../../types/sybil/evidence.js';
-import type { ExternalAccountDocument } from '../../types/integration/model.js';
-
+import XDataSnapshot from '../../models/XDataSnapshot';
+import GitHubDataSnapshot from '../../models/GitHubDataSnapshot';
+import type { SybilProviderEvidence } from '../../types/sybil/evidence';
+import type { ExternalAccountDocument } from '../../types/integration/model';
 const getProviderEvidence = async (
   account: ExternalAccountDocument,
 ): Promise<SybilProviderEvidence> => {

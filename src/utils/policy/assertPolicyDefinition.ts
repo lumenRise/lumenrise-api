@@ -1,10 +1,9 @@
-import type { PolicyDefinition } from '../../types/policy/model.js';
+import type { PolicyDefinition } from '../../types/policy/model';
 import {
   POLICY_DIMENSIONS,
   POLICY_MATCHES,
   POLICY_MAX_AGE_SECONDS,
-} from '../../constants/policy.js';
-
+} from '../../constants/policy';
 const assertPolicyDefinition = (policy: PolicyDefinition): void => {
   if (
     !/^[a-z][a-z0-9-]{2,63}$/.test(policy.key) ||

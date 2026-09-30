@@ -1,7 +1,6 @@
-import { requestXToken } from './requestXToken.js';
-import { assertXConfiguration } from './assertXConfiguration.js';
-import type { XTokenResponse } from '../../../../types/integration/x.js';
-
+import { requestXToken } from './requestXToken';
+import { assertXConfiguration } from './assertXConfiguration';
+import type { XTokenResponse } from '../../../../types/integration/x';
 const refreshXAccessToken = async (refreshToken: string): Promise<XTokenResponse> => {
   assertXConfiguration();
 

@@ -1,8 +1,7 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
-import StellarAccount from '../../src/models/StellarAccount.js';
-
+import StellarAccount from '../../src/models/StellarAccount';
 const STELLAR_ADDRESS = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 
 describe('StellarAccount model', () => {

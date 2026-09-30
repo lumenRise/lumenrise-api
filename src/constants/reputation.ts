@@ -1,4 +1,4 @@
-import type { ReputationCategory, ReputationSnapshotStatus } from '../types/reputation/model.js';
+import type { ReputationCategory, ReputationSnapshotStatus } from '../types/reputation/model';
 
 const REPUTATION_CATEGORIES = [
   'social',

@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { PolicyDefinition } from '../../src/types/policy/model.js';
-import evaluatePolicy from '../../src/services/policy/evaluatePolicy.js';
-import type { ReputationProfileResult } from '../../src/types/reputation/profile.js';
-
+import type { PolicyDefinition } from '../../src/types/policy/model';
+import evaluatePolicy from '../../src/services/policy/evaluatePolicy';
+import type { ReputationProfileResult } from '../../src/types/reputation/profile';
 const evaluatedAt = new Date('2026-09-24T12:00:00.000Z');
 const profile: ReputationProfileResult = {
   identity: { id: '507f1f77bcf86cd799439011', name: 'Mahdi', primaryWalletAddress: null },

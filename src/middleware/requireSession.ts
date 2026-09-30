@@ -1,12 +1,11 @@
 import type { RequestHandler } from 'express';
 
-import Session from '../models/Session.js';
-import Identity from '../models/Identity.js';
-import { SESSION_COOKIE_NAME } from '../constants/auth.js';
-import { hashSessionToken } from '../services/auth/session.js';
-import { verifyWalletToken } from '../services/auth/walletToken.js';
-import type { ApiResponse, EmptyResult } from '../types/response.js';
-
+import Session from '../models/Session';
+import Identity from '../models/Identity';
+import { SESSION_COOKIE_NAME } from '../constants/auth';
+import { hashSessionToken } from '../services/auth/session';
+import { verifyWalletToken } from '../services/auth/walletToken';
+import type { ApiResponse, EmptyResult } from '../types/response';
 const requireSession: RequestHandler = async (req, res, next) => {
   const authorization = req.get('authorization');
   const bearer = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;

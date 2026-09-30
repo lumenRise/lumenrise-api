@@ -1,16 +1,15 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
+import log from '../../logger';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type {
   StellarOperationOrder,
   StellarOperationsResult,
-} from '../../types/stellar/operations.js';
+} from '../../types/stellar/operations';
 import getStellarAccountOperations, {
   STELLAR_OPERATIONS_PAGE_LIMIT,
-} from '../../services/stellar/getAccountOperations.js';
-
+} from '../../services/stellar/getAccountOperations';
 const getStellarAccountOperationsRoute: RequestHandler = async (req, res) => {
   const address = typeof req.params.address === 'string' ? req.params.address.toUpperCase() : '';
   const cursor = req.query.cursor;

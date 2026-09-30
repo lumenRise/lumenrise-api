@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json --noEmit && esbuild src/index.ts src/migrations/run.ts --bundle --packages=external --platform=node --format=esm --target=node24 --outbase=src --outdir=dist",
     "start": "node dist/index.js",
     "migrate": "tsx src/migrations/run.ts",
     "migrate:prod": "node dist/migrations/run.js",
@@ -57,6 +57,7 @@
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.1",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.1",
+    "esbuild": "0.28.2"
   }
 }

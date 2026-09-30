@@ -1,16 +1,11 @@
 import type { RequestHandler } from 'express';
 
-import ReputationSnapshot from '../../models/ReputationSnapshot.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { ReputationSnapshotResult } from '../../types/reputation/model.js';
-import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult.js';
-
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { ReputationSnapshotResult } from '../../types/reputation/model';
+import getCurrentReputationSnapshot from '../../services/reputation/currentSnapshot';
+import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult';
 const getDeveloperScoreRoute: RequestHandler = async (req, res) => {
-  const snapshot = await ReputationSnapshot.findOne({
-    identity: req.auth?.identityId,
-    category: 'developer',
-    sources: { $not: { $elemMatch: { provider: { $ne: 'github' } } } },
-  }).sort({ calculatedAt: -1 });
+  const snapshot = await getCurrentReputationSnapshot(req.auth!.identityId, 'developer');
 
   if (!snapshot) {
     const response: ApiResponse<EmptyResult> = {

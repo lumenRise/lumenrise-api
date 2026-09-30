@@ -1,17 +1,16 @@
 import { Types } from 'mongoose';
 import { Keypair } from '@stellar/stellar-sdk';
 
-import type { WalletAuthPurpose } from '../../types/auth/wallet.js';
-import WalletAuthChallenge from '../../models/WalletAuthChallenge.js';
-import { hashName } from '../../utils/services/auth/walletChallenge/hashName.js';
-import { hashWalletMessage } from '../../utils/services/auth/walletChallenge/hashWalletMessage.js';
-import { getNetworkPassphrase } from '../../utils/services/auth/walletChallenge/getNetworkPassphrase.js';
-import { createWalletChallenge } from '../../utils/services/auth/walletChallenge/createWalletChallenge.js';
+import type { WalletAuthPurpose } from '../../types/auth/wallet';
+import WalletAuthChallenge from '../../models/WalletAuthChallenge';
+import { hashName } from '../../utils/services/auth/walletChallenge/hashName';
+import { hashWalletMessage } from '../../utils/services/auth/walletChallenge/hashWalletMessage';
+import { getNetworkPassphrase } from '../../utils/services/auth/walletChallenge/getNetworkPassphrase';
+import { createWalletChallenge } from '../../utils/services/auth/walletChallenge/createWalletChallenge';
 import {
   CHALLENGE_TTL_MS,
   SIGNED_MESSAGE_PREFIX,
-} from '../../constants/services/auth/walletChallenge.js';
-
+} from '../../constants/services/auth/walletChallenge';
 const consumeSignedWalletChallenge = async (
   challengeId: string,
   address: string,

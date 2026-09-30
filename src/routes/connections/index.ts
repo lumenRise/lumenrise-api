@@ -1,13 +1,12 @@
 import { Router } from 'express';
 
-import getConnectionsRoute from './get.js';
-import postXSyncRoute from './postXSync.js';
-import getXSyncJobRoute from './getXSyncJob.js';
-import deleteConnectionRoute from './delete.js';
-import postGitHubSyncRoute from './postGitHubSync.js';
-import getGitHubSyncJobRoute from './getGitHubSyncJob.js';
-import requireSession from '../../middleware/requireSession.js';
-
+import getConnectionsRoute from './get';
+import postXSyncRoute from './postXSync';
+import getXSyncJobRoute from './getXSyncJob';
+import deleteConnectionRoute from './delete';
+import postGitHubSyncRoute from './postGitHubSync';
+import getGitHubSyncJobRoute from './getGitHubSyncJob';
+import requireSession from '../../middleware/requireSession';
 const connectionRoutes = Router();
 
 connectionRoutes.get('/', requireSession, getConnectionsRoute);

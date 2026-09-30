@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import type { DeveloperApiKeyRecord } from '../types/developer/api.js';
-
+import type { DeveloperApiKeyRecord } from '../types/developer/api';
 const developerApiKeySchema = new Schema<DeveloperApiKeyRecord>(
   {
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },

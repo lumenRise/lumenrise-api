@@ -1,9 +1,8 @@
 import type { RequestHandler } from 'express';
 
-import Session from '../../models/Session.js';
-import { clearSessionCookie } from '../../services/auth/session.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-
+import Session from '../../models/Session';
+import { clearSessionCookie } from '../../services/auth/session';
+import type { ApiResponse, EmptyResult } from '../../types/response';
 const deleteSessionRoute: RequestHandler = async (req, res) => {
   await Session.updateOne({ _id: req.auth?.sessionId }, { $set: { revokedAt: new Date() } });
   clearSessionCookie(res);

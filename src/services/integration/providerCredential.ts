@@ -1,11 +1,10 @@
 import type { Types } from 'mongoose';
 
-import { encryptSecret } from './credentialEncryption.js';
-import ProviderCredential from '../../models/ProviderCredential.js';
-import type { ExternalAccountProvider } from '../../types/integration/model.js';
-import type { ProviderCredentialInput } from '../../types/integration/credential.js';
-import { getProviderCredential } from '../../utils/services/integration/providerCredential/getProviderCredential.js';
-
+import { encryptSecret } from './credentialEncryption';
+import ProviderCredential from '../../models/ProviderCredential';
+import type { ExternalAccountProvider } from '../../types/integration/model';
+import type { ProviderCredentialInput } from '../../types/integration/credential';
+import { getProviderCredential } from '../../utils/services/integration/providerCredential/getProviderCredential';
 const storeProviderCredential = async (
   externalAccountId: Types.ObjectId,
   provider: ExternalAccountProvider,

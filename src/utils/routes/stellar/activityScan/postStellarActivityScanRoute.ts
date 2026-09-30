@@ -1,18 +1,17 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../../../logger.js';
-import { getAddress } from './getAddress.js';
-import sendManualRefreshLimit from '../../sendManualRefreshLimit.js';
-import type { ApiResponse, EmptyResult } from '../../../../types/response.js';
-import isValidStellarGAddress from '../../../stellar/isValidStellarGAddress.js';
-import type { StellarActivityScanResult } from '../../../../types/stellar/scan.js';
-import reserveManualRefresh from '../../../../services/refresh/reserveManualRefresh.js';
-import releaseManualRefresh from '../../../../services/refresh/releaseManualRefresh.js';
+import log from '../../../../logger';
+import { getAddress } from './getAddress';
+import sendManualRefreshLimit from '../../sendManualRefreshLimit';
+import type { ApiResponse, EmptyResult } from '../../../../types/response';
+import isValidStellarGAddress from '../../../stellar/isValidStellarGAddress';
+import type { StellarActivityScanResult } from '../../../../types/stellar/scan';
+import reserveManualRefresh from '../../../../services/refresh/reserveManualRefresh';
+import releaseManualRefresh from '../../../../services/refresh/releaseManualRefresh';
 import {
   enqueueStellarActivityScan,
   toStellarActivityScanResult,
-} from '../../../../services/stellar/activityScanQueue.js';
-
+} from '../../../../services/stellar/activityScanQueue';
 const postStellarActivityScanRoute: RequestHandler = async (req, res) => {
   const address = getAddress(req.params.address);
 

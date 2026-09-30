@@ -1,15 +1,14 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../../logger.js';
-import { setSessionCookie } from '../../../services/auth/session.js';
-import { OAUTH_STATE_COOKIE_NAME } from '../../../constants/auth.js';
-import { completeGitHubAuthorization } from '../../../services/oauth/github.js';
-import { createClientRedirect } from '../../../utils/routes/oauth/github/callback/createClientRedirect.js';
+import log from '../../../logger';
+import { setSessionCookie } from '../../../services/auth/session';
+import { OAUTH_STATE_COOKIE_NAME } from '../../../constants/auth';
+import { completeGitHubAuthorization } from '../../../services/oauth/github';
+import { createClientRedirect } from '../../../utils/routes/oauth/github/callback/createClientRedirect';
 import {
   clearOAuthStateCookie,
   matchesOAuthStateCookie,
-} from '../../../services/oauth/stateCookie.js';
-
+} from '../../../services/oauth/stateCookie';
 const callbackGitHubOAuthRoute: RequestHandler = async (req, res) => {
   const code = typeof req.query.code === 'string' ? req.query.code : null;
   const state = typeof req.query.state === 'string' ? req.query.state : null;

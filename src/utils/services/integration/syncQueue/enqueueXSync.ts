@@ -1,10 +1,9 @@
-import log from '../../../../logger.js';
-import { calculateXSyncSchedule } from './calculateXSyncSchedule.js';
-import { enqueueIntegrationSync } from './enqueueIntegrationSync.js';
-import type { ExternalAccountDocument } from '../../../../types/integration/model.js';
-import type { IntegrationSyncJobDocument } from '../../../../types/integration/sync.js';
-import { publishReputationJob } from '../../../../services/integration/publishReputationJob.js';
-
+import log from '../../../../logger';
+import { calculateXSyncSchedule } from './calculateXSyncSchedule';
+import { enqueueIntegrationSync } from './enqueueIntegrationSync';
+import type { ExternalAccountDocument } from '../../../../types/integration/model';
+import type { IntegrationSyncJobDocument } from '../../../../types/integration/sync';
+import { publishReputationJob } from '../../../../services/integration/publishReputationJob';
 const X_SYNC_QUEUE = 'lumenrise.reputation.x-sync.v1';
 
 const enqueueXSync = async (

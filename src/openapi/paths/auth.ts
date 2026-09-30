@@ -1,6 +1,5 @@
-import jsonBody from '../../utils/openapi/jsonBody.js';
-import jsonResponse from '../../utils/openapi/jsonResponse.js';
-
+import jsonBody from '../../utils/openapi/jsonBody';
+import jsonResponse from '../../utils/openapi/jsonResponse';
 const authPaths = {
   '/v1/auth/wallet/challenge': {
     post: {

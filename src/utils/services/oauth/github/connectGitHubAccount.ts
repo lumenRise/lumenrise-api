@@ -1,13 +1,12 @@
 import { Types } from 'mongoose';
 
-import Identity from '../../../../models/Identity.js';
-import ExternalAccount from '../../../../models/ExternalAccount.js';
+import Identity from '../../../../models/Identity';
+import ExternalAccount from '../../../../models/ExternalAccount';
 import type {
   ConnectedGitHubAccount,
   GitHubOAuthPurpose,
   GitHubUser,
-} from '../../../../types/integration/github.js';
-
+} from '../../../../types/integration/github';
 const connectGitHubAccount = async (
   user: GitHubUser,
   purpose: GitHubOAuthPurpose,

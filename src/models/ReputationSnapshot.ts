@@ -1,13 +1,12 @@
 import { Schema, model } from 'mongoose';
 
-import { EXTERNAL_ACCOUNT_PROVIDERS } from '../constants/integration.js';
-import { REPUTATION_CATEGORIES, REPUTATION_SNAPSHOT_STATUSES } from '../constants/reputation.js';
+import { EXTERNAL_ACCOUNT_PROVIDERS } from '../constants/integration';
+import { REPUTATION_CATEGORIES, REPUTATION_SNAPSHOT_STATUSES } from '../constants/reputation';
 import type {
   ReputationSignalRecord,
   ReputationSourceRecord,
   ReputationSnapshotRecord,
-} from '../types/reputation/model.js';
-
+} from '../types/reputation/model';
 const reputationSignalSchema = new Schema<ReputationSignalRecord>(
   {
     provider: {

@@ -3,8 +3,7 @@ import { Address, encodeMuxedAccountToAddress, StrKey, xdr } from '@stellar/stel
 import type {
   SorobanEnvelopeEvidence,
   SorobanInvocationEvidence,
-} from '../../types/stellar/soroban.js';
-
+} from '../../types/stellar/soroban';
 // Decode only the outer envelope and authorization tree. Neither an XDR credential
 // nor a source account identifies who actually signed or owns the address.
 const extractSorobanEnvelopeEvidence = (encoded: string | null): SorobanEnvelopeEvidence | null => {

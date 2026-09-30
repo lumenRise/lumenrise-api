@@ -1,9 +1,8 @@
 import { Types } from 'mongoose';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import Session from '../../src/models/Session.js';
-import { issueWalletSession, verifyWalletToken } from '../../src/services/auth/walletToken.js';
-
+import Session from '../../src/models/Session';
+import { issueWalletSession, verifyWalletToken } from '../../src/services/auth/walletToken';
 describe('wallet JWT session', () => {
   afterEach(() => {
     vi.restoreAllMocks();

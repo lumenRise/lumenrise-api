@@ -1,8 +1,7 @@
 import { Schema, model } from 'mongoose';
 
-import type { ExternalAccountRecord } from '../types/integration/model.js';
-import { EXTERNAL_ACCOUNT_PROVIDERS, EXTERNAL_ACCOUNT_STATUSES } from '../constants/integration.js';
-
+import type { ExternalAccountRecord } from '../types/integration/model';
+import { EXTERNAL_ACCOUNT_PROVIDERS, EXTERNAL_ACCOUNT_STATUSES } from '../constants/integration';
 const externalAccountSchema = new Schema<ExternalAccountRecord>(
   {
     identity: {

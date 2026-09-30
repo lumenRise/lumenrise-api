@@ -1,4 +1,4 @@
-import type { ExternalAccountProvider } from '../integration/model.js';
+import type { ExternalAccountProvider } from '../integration/model';
 
 type SybilEvidenceSource = 'stellar' | ExternalAccountProvider;
 type SybilEvidenceOwnership = 'wallet_registration' | 'oauth_connection' | 'not_connected';

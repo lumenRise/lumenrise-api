@@ -2,13 +2,12 @@ import request from 'supertest';
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import app from '../src/app.js';
-import Policy from '../src/models/Policy.js';
-import evaluatePolicy from '../src/services/policy/evaluatePolicy.js';
-import getReputationProfile from '../src/services/reputation/profile.js';
-import reserveManualRefresh from '../src/services/refresh/reserveManualRefresh.js';
-import releaseManualRefresh from '../src/services/refresh/releaseManualRefresh.js';
-
+import app from '../src/app';
+import Policy from '../src/models/Policy';
+import evaluatePolicy from '../src/services/policy/evaluatePolicy';
+import getReputationProfile from '../src/services/reputation/profile';
+import reserveManualRefresh from '../src/services/refresh/reserveManualRefresh';
+import releaseManualRefresh from '../src/services/refresh/releaseManualRefresh';
 const identityId = new Types.ObjectId();
 const policyId = new Types.ObjectId();
 const createdAt = new Date('2026-09-25T12:00:00.000Z');
@@ -20,19 +19,19 @@ const definition = {
 };
 const policy = { _id: policyId, createdAt, ...definition };
 
-vi.mock('../src/middleware/requireSession.js', () => ({
+vi.mock('../src/middleware/requireSession', () => ({
   default: (req: object, _res: unknown, next: () => void) => {
     Object.assign(req, { auth: { identityId } });
     next();
   },
 }));
-vi.mock('../src/models/Policy.js', () => ({
+vi.mock('../src/models/Policy', () => ({
   default: { create: vi.fn(), find: vi.fn(), findOne: vi.fn() },
 }));
-vi.mock('../src/services/reputation/profile.js', () => ({ default: vi.fn() }));
-vi.mock('../src/services/policy/evaluatePolicy.js', () => ({ default: vi.fn() }));
-vi.mock('../src/services/refresh/reserveManualRefresh.js', () => ({ default: vi.fn() }));
-vi.mock('../src/services/refresh/releaseManualRefresh.js', () => ({ default: vi.fn() }));
+vi.mock('../src/services/reputation/profile', () => ({ default: vi.fn() }));
+vi.mock('../src/services/policy/evaluatePolicy', () => ({ default: vi.fn() }));
+vi.mock('../src/services/refresh/reserveManualRefresh', () => ({ default: vi.fn() }));
+vi.mock('../src/services/refresh/releaseManualRefresh', () => ({ default: vi.fn() }));
 
 describe('policy routes', () => {
   beforeEach(() => {

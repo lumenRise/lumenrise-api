@@ -1,8 +1,7 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { enqueueStellarActivityScan } from '../../src/utils/services/stellar/activityScanQueue/enqueueStellarActivityScan.js';
-
+import { enqueueStellarActivityScan } from '../../src/utils/services/stellar/activityScanQueue/enqueueStellarActivityScan';
 const mocks = vi.hoisted(() => ({
   findOne: vi.fn(),
   create: vi.fn(),
@@ -10,16 +9,16 @@ const mocks = vi.hoisted(() => ({
   warn: vi.fn(),
 }));
 
-vi.mock('../../src/models/StellarActivityScan.js', () => ({
+vi.mock('../../src/models/StellarActivityScan', () => ({
   default: { findOne: mocks.findOne, create: mocks.create },
 }));
-vi.mock('../../src/services/integration/publishReputationJob.js', () => ({
+vi.mock('../../src/services/integration/publishReputationJob', () => ({
   publishReputationJob: mocks.publish,
 }));
-vi.mock('../../src/env.js', () => ({
+vi.mock('../../src/env', () => ({
   default: { STELLAR_HORIZON_URL: 'https://horizon-testnet.stellar.org' },
 }));
-vi.mock('../../src/logger.js', () => ({ default: { warn: mocks.warn } }));
+vi.mock('../../src/logger', () => ({ default: { warn: mocks.warn } }));
 
 describe('Stellar scan dispatch', () => {
   beforeEach(() => vi.clearAllMocks());

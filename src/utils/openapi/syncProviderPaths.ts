@@ -1,4 +1,4 @@
-import jsonResponse from './jsonResponse.js';
+import jsonResponse from './jsonResponse';
 
 const syncProviderPaths = (provider: string, displayName: string) => ({
   [`/v1/connections/${provider}/sync`]: {
@@ -6,7 +6,7 @@ const syncProviderPaths = (provider: string, displayName: string) => ({
       tags: ['Connections'],
       summary: `Queue ${displayName} synchronization`,
       description:
-        'Requires a connected provider account. Manual requests are limited to one per provider per identity every 15 minutes. A background worker processes the job; inspect the returned status URL.',
+        'Requires a connected provider account. Synchronization is manual only, limited to one request per provider per identity every 15 minutes. A background worker processes the job; inspect the returned status URL.',
       operationId: `queue${displayName}Sync`,
       responses: {
         '202': {

@@ -1,10 +1,9 @@
-import Identity from '../../models/Identity.js';
-import { issueWalletSession } from './walletToken.js';
-import StellarAccount from '../../models/StellarAccount.js';
-import { consumeSignedWalletChallenge } from './walletChallenge.js';
-import type { WalletAuthServiceResult } from '../../types/auth/wallet.js';
-import { registerWalletIdentity } from '../../utils/services/auth/walletIdentity/registerWalletIdentity.js';
-
+import Identity from '../../models/Identity';
+import { issueWalletSession } from './walletToken';
+import StellarAccount from '../../models/StellarAccount';
+import { consumeSignedWalletChallenge } from './walletChallenge';
+import type { WalletAuthServiceResult } from '../../types/auth/wallet';
+import { registerWalletIdentity } from '../../utils/services/auth/walletIdentity/registerWalletIdentity';
 const loginWalletIdentity = async (
   address: string,
   challengeId: string,

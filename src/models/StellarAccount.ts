@@ -1,8 +1,7 @@
 import { Schema, model } from 'mongoose';
 
-import type { StellarAccountRecord } from '../types/identity/model.js';
-import isValidStellarGAddress from '../utils/stellar/isValidStellarGAddress.js';
-
+import type { StellarAccountRecord } from '../types/identity/model';
+import isValidStellarGAddress from '../utils/stellar/isValidStellarGAddress';
 const stellarAccountSchema = new Schema<StellarAccountRecord>(
   {
     identity: {

@@ -1,4 +1,4 @@
-import { GITHUB_SYNC_MIN_INTERVAL_MS } from '../../../../constants/integration.js';
+import { GITHUB_SYNC_MIN_INTERVAL_MS } from '../../../../constants/integration';
 
 const calculateGitHubSyncSchedule = (lastSyncedAt: Date | null, now = new Date()): Date => {
   if (!lastSyncedAt) {

@@ -1,9 +1,8 @@
-import type { ReputationProfileResult } from '../../types/reputation/profile.js';
+import type { ReputationProfileResult } from '../../types/reputation/profile';
 import type {
   SybilCorroborationResult,
   SybilProviderEvidence,
-} from '../../types/sybil/evidence.js';
-
+} from '../../types/sybil/evidence';
 const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Activity corroborates control of independent accounts, not uniqueness of a person.

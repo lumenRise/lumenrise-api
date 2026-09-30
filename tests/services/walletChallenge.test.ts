@@ -2,13 +2,12 @@ import { createHash } from 'node:crypto';
 import { Keypair } from '@stellar/stellar-sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import WalletAuthChallenge from '../../src/models/WalletAuthChallenge.js';
+import WalletAuthChallenge from '../../src/models/WalletAuthChallenge';
 import {
   consumeSignedWalletChallenge,
   createWalletChallenge,
   hashWalletMessage,
-} from '../../src/services/auth/walletChallenge.js';
-
+} from '../../src/services/auth/walletChallenge';
 describe('wallet message challenge', () => {
   afterEach(() => {
     vi.restoreAllMocks();

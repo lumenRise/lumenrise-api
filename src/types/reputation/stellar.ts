@@ -1,6 +1,5 @@
-import type { StellarActivityScoreResult } from '../stellar/score.js';
-import type { StellarActivityScanResult, StellarActivityScanStatus } from '../stellar/scan.js';
-
+import type { StellarActivityScoreResult } from '../stellar/score';
+import type { StellarActivityScanResult, StellarActivityScanStatus } from '../stellar/scan';
 type VerifiedStellarActivityScanResult = Omit<StellarActivityScanResult, 'ownershipVerified'> & {
   ownershipVerified: true;
 };

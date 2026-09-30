@@ -1,4 +1,4 @@
-import type { IdentityStatus } from '../types/identity/model.js';
+import type { IdentityStatus } from '../types/identity/model';
 
 const IDENTITY_STATUSES = [
   'active',

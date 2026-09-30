@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { SybilProviderEvidence } from '../../src/types/sybil/evidence.js';
-import type { ReputationProfileResult } from '../../src/types/reputation/profile.js';
-import calculateActivityCorroboration from '../../src/utils/sybil/calculateActivityCorroboration.js';
-
+import type { SybilProviderEvidence } from '../../src/types/sybil/evidence';
+import type { ReputationProfileResult } from '../../src/types/reputation/profile';
+import calculateActivityCorroboration from '../../src/utils/sybil/calculateActivityCorroboration';
 const now = new Date('2026-09-26T12:00:00.000Z');
 const scanId = '507f1f77bcf86cd799439013';
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';

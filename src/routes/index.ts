@@ -1,15 +1,14 @@
 import { Router } from 'express';
 
-import authRoutes from './auth/index.js';
-import docsRoutes from './docs/index.js';
-import oauthRoutes from './oauth/index.js';
-import healthRoutes from './health/index.js';
-import policyRoutes from './policies/index.js';
-import stellarRoutes from './stellar/index.js';
-import developerRoutes from './developers/index.js';
-import reputationRoutes from './reputation/index.js';
-import connectionRoutes from './connections/index.js';
-
+import authRoutes from './auth/index';
+import docsRoutes from './docs/index';
+import oauthRoutes from './oauth/index';
+import healthRoutes from './health/index';
+import policyRoutes from './policies/index';
+import stellarRoutes from './stellar/index';
+import developerRoutes from './developers/index';
+import reputationRoutes from './reputation/index';
+import connectionRoutes from './connections/index';
 const router = Router();
 
 router.use('/v1/auth', authRoutes);

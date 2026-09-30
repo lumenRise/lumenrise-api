@@ -1,32 +1,11 @@
 import type { RequestHandler } from 'express';
 
-import ExternalAccount from '../../models/ExternalAccount.js';
-import ReputationSnapshot from '../../models/ReputationSnapshot.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { ReputationSnapshotResult } from '../../types/reputation/model.js';
-import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult.js';
-
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { ReputationSnapshotResult } from '../../types/reputation/model';
+import getCurrentReputationSnapshot from '../../services/reputation/currentSnapshot';
+import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult';
 const getSocialScoreRoute: RequestHandler = async (req, res) => {
-  const account = await ExternalAccount.findOne({
-    identity: req.auth?.identityId,
-    provider: 'x',
-    status: 'connected',
-  }).select('_id');
-
-  if (!account) {
-    const response: ApiResponse<EmptyResult> = {
-      status: 'error',
-      message: 'X account is not connected',
-      result: {},
-    };
-
-    return res.status(404).json(response);
-  }
-
-  const snapshot = await ReputationSnapshot.findOne({
-    identity: req.auth?.identityId,
-    category: 'social',
-  }).sort({ calculatedAt: -1 });
+  const snapshot = await getCurrentReputationSnapshot(req.auth!.identityId, 'social');
 
   if (!snapshot) {
     const response: ApiResponse<EmptyResult> = {

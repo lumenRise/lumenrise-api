@@ -1,6 +1,5 @@
-import type { RuntimeConfiguration } from '../../types/configuration.js';
-import { parseUrl } from '../../utils/services/configuration/validateRuntimeConfiguration/parseUrl.js';
-
+import type { RuntimeConfiguration } from '../../types/configuration';
+import { parseUrl } from '../../utils/services/configuration/validateRuntimeConfiguration/parseUrl';
 const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void => {
   const hasGitHubClientId = configuration.GITHUB_CLIENT_ID.length > 0;
   const hasGitHubClientSecret = configuration.GITHUB_CLIENT_SECRET.length > 0;

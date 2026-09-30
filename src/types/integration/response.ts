@@ -1,6 +1,5 @@
-import type { ExternalAccountProvider } from './model.js';
-import type { IntegrationSyncJobResult } from './sync.js';
-
+import type { ExternalAccountProvider } from './model';
+import type { IntegrationSyncJobResult } from './sync';
 interface ConnectionDataState {
   status: 'complete' | 'partial';
   dataVersion: string;

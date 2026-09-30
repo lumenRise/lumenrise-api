@@ -1,7 +1,6 @@
 import pino from 'pino';
 
-import env from './env.js';
-
+import env from './env';
 const transport =
   env.NODE_ENV === 'development'
     ? {

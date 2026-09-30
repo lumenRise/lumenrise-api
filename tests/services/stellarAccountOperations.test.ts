@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import getStellarAccountOperations from '../../src/services/stellar/getAccountOperations.js';
-
+import getStellarAccountOperations from '../../src/services/stellar/getAccountOperations';
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 const operation = {
   id: '100',

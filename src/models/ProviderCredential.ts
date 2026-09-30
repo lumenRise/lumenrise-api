@@ -1,8 +1,7 @@
 import { Schema, model } from 'mongoose';
 
-import { EXTERNAL_ACCOUNT_PROVIDERS } from '../constants/integration.js';
-import type { ProviderCredentialRecord } from '../types/integration/credential.js';
-
+import { EXTERNAL_ACCOUNT_PROVIDERS } from '../constants/integration';
+import type { ProviderCredentialRecord } from '../types/integration/credential';
 const encryptedSecretSchema = new Schema(
   {
     ciphertext: { type: String, required: true },

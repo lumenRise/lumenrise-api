@@ -1,8 +1,7 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
 
-import ReputationSnapshot from '../../src/models/ReputationSnapshot.js';
-
+import ReputationSnapshot from '../../src/models/ReputationSnapshot';
 describe('ReputationSnapshot model', () => {
   it('stores an explainable and versioned developer score', async () => {
     const calculatedAt = new Date('2026-09-22T12:00:00.000Z');

@@ -1,10 +1,9 @@
 import type { RequestHandler } from 'express';
 
-import ExternalAccount from '../../models/ExternalAccount.js';
-import GitHubDataSnapshot from '../../models/GitHubDataSnapshot.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { GitHubDataSnapshotResult } from '../../types/reputation/github.js';
-
+import ExternalAccount from '../../models/ExternalAccount';
+import GitHubDataSnapshot from '../../models/GitHubDataSnapshot';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { GitHubDataSnapshotResult } from '../../types/reputation/github';
 const getDeveloperReputationRoute: RequestHandler = async (req, res) => {
   const account = await ExternalAccount.findOne({
     identity: req.auth?.identityId,

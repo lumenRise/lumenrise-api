@@ -3,8 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   calculateGitHubSyncSchedule,
   calculateXSyncSchedule,
-} from '../../src/services/integration/syncQueue.js';
-
+} from '../../src/services/integration/syncQueue';
 describe('integration synchronization queue', () => {
   it('schedules a fresh account immediately', () => {
     const now = new Date('2026-09-22T12:00:00.000Z');

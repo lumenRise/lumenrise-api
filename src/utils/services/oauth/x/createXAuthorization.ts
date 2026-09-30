@@ -1,13 +1,12 @@
 import type { Types } from 'mongoose';
 import { createHash, randomBytes } from 'node:crypto';
 
-import env from '../../../../env.js';
-import OAuthState from '../../../../models/OAuthState.js';
-import { assertXConfiguration } from './assertXConfiguration.js';
-import { X_AUTHORIZE_URL } from '../../../../constants/services/oauth/x.js';
-import { OAUTH_STATE_TTL_MS } from '../../../../constants/services/oauth/x.js';
-import type { XAuthorizationFlow, XOAuthPurpose } from '../../../../types/integration/x.js';
-
+import env from '../../../../env';
+import OAuthState from '../../../../models/OAuthState';
+import { assertXConfiguration } from './assertXConfiguration';
+import { X_AUTHORIZE_URL } from '../../../../constants/services/oauth/x';
+import { OAUTH_STATE_TTL_MS } from '../../../../constants/services/oauth/x';
+import type { XAuthorizationFlow, XOAuthPurpose } from '../../../../types/integration/x';
 const createXAuthorization = async (
   purpose: XOAuthPurpose,
   identityId: Types.ObjectId | null,

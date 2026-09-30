@@ -1,4 +1,4 @@
-import serverState from './state.js';
+import serverState from './state';
 
 const closeServer = (): Promise<void> => {
   return new Promise((resolve, reject) => {

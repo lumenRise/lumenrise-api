@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import type { GitHubDataSnapshotRecord } from '../types/reputation/github.js';
-
+import type { GitHubDataSnapshotRecord } from '../types/reputation/github';
 const contributionPeriodSchema = new Schema(
   {
     key: { type: String, required: true },

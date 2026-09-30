@@ -1,12 +1,11 @@
 import type { Types } from 'mongoose';
 import { randomBytes } from 'node:crypto';
 
-import hashApiKey from '../../utils/developer/hashApiKey.js';
-import DeveloperApiKey from '../../models/DeveloperApiKey.js';
-import toApiKeyResult from '../../utils/developer/toApiKeyResult.js';
-import type { DeveloperApiKeyCreatedResult } from '../../types/developer/api.js';
-import { API_KEY_MAX_ACTIVE, API_KEY_TTL_MS } from '../../constants/developer.js';
-
+import hashApiKey from '../../utils/developer/hashApiKey';
+import DeveloperApiKey from '../../models/DeveloperApiKey';
+import toApiKeyResult from '../../utils/developer/toApiKeyResult';
+import type { DeveloperApiKeyCreatedResult } from '../../types/developer/api';
+import { API_KEY_MAX_ACTIVE, API_KEY_TTL_MS } from '../../constants/developer';
 const createApiKey = async (
   identity: Types.ObjectId,
   label: string,

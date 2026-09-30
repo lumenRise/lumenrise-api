@@ -1,15 +1,14 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import Policy from '../../models/Policy.js';
-import evaluatePolicy from '../../services/policy/evaluatePolicy.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import getReputationProfile from '../../services/reputation/profile.js';
-import type { PolicyEvaluation } from '../../types/policy/evaluation.js';
-import reserveManualRefresh from '../../services/refresh/reserveManualRefresh.js';
-import releaseManualRefresh from '../../services/refresh/releaseManualRefresh.js';
-import sendManualRefreshLimit from '../../utils/routes/sendManualRefreshLimit.js';
-
+import log from '../../logger';
+import Policy from '../../models/Policy';
+import evaluatePolicy from '../../services/policy/evaluatePolicy';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import getReputationProfile from '../../services/reputation/profile';
+import type { PolicyEvaluation } from '../../types/policy/evaluation';
+import reserveManualRefresh from '../../services/refresh/reserveManualRefresh';
+import releaseManualRefresh from '../../services/refresh/releaseManualRefresh';
+import sendManualRefreshLimit from '../../utils/routes/sendManualRefreshLimit';
 const evaluatePolicyRoute: RequestHandler = async (req, res) => {
   const key = req.params.key;
 

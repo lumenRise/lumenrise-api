@@ -1,7 +1,6 @@
-import log from '../logger.js';
-import { connectDatabase, disconnectDatabase } from '../db.js';
-import runDatabaseMigrations from './runDatabaseMigrations.js';
-
+import log from '../logger';
+import { connectDatabase, disconnectDatabase } from '../db';
+import runDatabaseMigrations from './runDatabaseMigrations';
 const runMigrations = async (): Promise<void> => {
   await connectDatabase();
 

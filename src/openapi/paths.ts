@@ -1,13 +1,12 @@
-import authPaths from './paths/auth.js';
-import docsPaths from './paths/docs.js';
-import oauthPaths from './paths/oauth.js';
-import healthPaths from './paths/health.js';
-import policyPaths from './paths/policies.js';
-import stellarPaths from './paths/stellar.js';
-import developerPaths from './paths/developers.js';
-import reputationPaths from './paths/reputation.js';
-import connectionPaths from './paths/connections.js';
-
+import authPaths from './paths/auth';
+import docsPaths from './paths/docs';
+import oauthPaths from './paths/oauth';
+import healthPaths from './paths/health';
+import policyPaths from './paths/policies';
+import stellarPaths from './paths/stellar';
+import developerPaths from './paths/developers';
+import reputationPaths from './paths/reputation';
+import connectionPaths from './paths/connections';
 const openApiPaths = {
   ...authPaths,
   ...policyPaths,

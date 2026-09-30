@@ -1,11 +1,10 @@
 import type { RequestHandler } from 'express';
 
-import log from '../../logger.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { StellarAccountOverviewResult } from '../../types/stellar/account.js';
-import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
-import getStellarAccountOverview from '../../services/stellar/getAccountOverview.js';
-
+import log from '../../logger';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { StellarAccountOverviewResult } from '../../types/stellar/account';
+import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
+import getStellarAccountOverview from '../../services/stellar/getAccountOverview';
 const getStellarAccountRoute: RequestHandler = async (req, res) => {
   const address = typeof req.params.address === 'string' ? req.params.address.toUpperCase() : '';
 

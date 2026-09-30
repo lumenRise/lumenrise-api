@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import type { DeveloperApiUsageRecord } from '../types/developer/api.js';
-
+import type { DeveloperApiUsageRecord } from '../types/developer/api';
 const developerApiUsageSchema = new Schema<DeveloperApiUsageRecord>(
   {
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },

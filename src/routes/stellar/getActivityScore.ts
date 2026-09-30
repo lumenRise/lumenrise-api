@@ -1,13 +1,12 @@
 import type { RequestHandler } from 'express';
 
-import env from '../../env.js';
-import log from '../../logger.js';
-import StellarActivityScan from '../../models/StellarActivityScan.js';
-import type { ApiResponse, EmptyResult } from '../../types/response.js';
-import type { StellarActivityScoreResult } from '../../types/stellar/score.js';
-import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress.js';
-import { calculateStellarActivityScore } from '../../services/stellar/activityScore.js';
-
+import env from '../../env';
+import log from '../../logger';
+import StellarActivityScan from '../../models/StellarActivityScan';
+import type { ApiResponse, EmptyResult } from '../../types/response';
+import type { StellarActivityScoreResult } from '../../types/stellar/score';
+import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
+import { calculateStellarActivityScore } from '../../services/stellar/activityScore';
 const getStellarActivityScoreRoute: RequestHandler = async (req, res) => {
   const address = typeof req.params.address === 'string' ? req.params.address.toUpperCase() : '';
 

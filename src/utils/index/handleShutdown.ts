@@ -1,6 +1,5 @@
-import log from '../../logger.js';
-import { shutdown } from './shutdown.js';
-
+import log from '../../logger';
+import { shutdown } from './shutdown';
 const handleShutdown = (signal: NodeJS.Signals): void => {
   void shutdown(signal).catch((error: unknown) => {
     log.error({ error }, 'Graceful shutdown failed');

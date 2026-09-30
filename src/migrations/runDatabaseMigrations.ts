@@ -1,22 +1,21 @@
-import log from '../logger.js';
-import DatabaseMigration from '../models/DatabaseMigration.js';
-import createXDataIndexes from './20260923CreateXDataIndexes.js';
-import createPolicyIndexes from './20260924CreatePolicyIndexes.js';
-import createSessionIndexes from './20260922CreateSessionIndexes.js';
-import createIdentityIndexes from './20260922CreateIdentityIndexes.js';
-import type { MigrationDefinition } from '../types/database/migration.js';
-import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes.js';
-import createReputationIndexes from './20260922CreateReputationIndexes.js';
-import createDeveloperApiIndexes from './20260925CreateDeveloperApiIndexes.js';
-import createSorobanEvidenceIndexes from './20260926CreateSorobanEvidenceIndexes.js';
-import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes.js';
-import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes.js';
-import createIntegrationSyncJobIndexes from './20260922CreateIntegrationSyncJobIndexes.js';
-import createStellarPaymentFactIndexes from './20260925CreateStellarPaymentFactIndexes.js';
-import createStellarActivityScanIndexes from './20260924CreateStellarActivityScanIndexes.js';
-import createWalletAuthChallengeIndexes from './20260924CreateWalletAuthChallengeIndexes.js';
-import createManualRefreshCooldownIndexes from './20260925CreateManualRefreshCooldownIndexes.js';
-
+import log from '../logger';
+import DatabaseMigration from '../models/DatabaseMigration';
+import createXDataIndexes from './20260923CreateXDataIndexes';
+import createPolicyIndexes from './20260924CreatePolicyIndexes';
+import createSessionIndexes from './20260922CreateSessionIndexes';
+import createIdentityIndexes from './20260922CreateIdentityIndexes';
+import type { MigrationDefinition } from '../types/database/migration';
+import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes';
+import createReputationIndexes from './20260922CreateReputationIndexes';
+import createDeveloperApiIndexes from './20260925CreateDeveloperApiIndexes';
+import createSorobanEvidenceIndexes from './20260926CreateSorobanEvidenceIndexes';
+import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes';
+import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes';
+import createIntegrationSyncJobIndexes from './20260922CreateIntegrationSyncJobIndexes';
+import createStellarPaymentFactIndexes from './20260925CreateStellarPaymentFactIndexes';
+import createStellarActivityScanIndexes from './20260924CreateStellarActivityScanIndexes';
+import createWalletAuthChallengeIndexes from './20260924CreateWalletAuthChallengeIndexes';
+import createManualRefreshCooldownIndexes from './20260925CreateManualRefreshCooldownIndexes';
 const migrations: readonly MigrationDefinition[] = [
   createIdentityIndexes,
   createExternalAccountIndexes,

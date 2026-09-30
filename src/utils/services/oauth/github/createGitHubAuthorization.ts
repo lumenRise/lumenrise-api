@@ -1,16 +1,15 @@
 import type { Types } from 'mongoose';
 import { createHash, randomBytes } from 'node:crypto';
 
-import env from '../../../../env.js';
-import OAuthState from '../../../../models/OAuthState.js';
-import { assertGitHubConfiguration } from './assertGitHubConfiguration.js';
-import { OAUTH_STATE_TTL_MS } from '../../../../constants/services/oauth/github.js';
-import { GITHUB_AUTHORIZE_URL } from '../../../../constants/services/oauth/github.js';
+import env from '../../../../env';
+import OAuthState from '../../../../models/OAuthState';
+import { assertGitHubConfiguration } from './assertGitHubConfiguration';
+import { OAUTH_STATE_TTL_MS } from '../../../../constants/services/oauth/github';
+import { GITHUB_AUTHORIZE_URL } from '../../../../constants/services/oauth/github';
 import type {
   GitHubAuthorizationFlow,
   GitHubOAuthPurpose,
-} from '../../../../types/integration/github.js';
-
+} from '../../../../types/integration/github';
 const createGitHubAuthorization = async (
   purpose: GitHubOAuthPurpose,
   identityId: Types.ObjectId | null,

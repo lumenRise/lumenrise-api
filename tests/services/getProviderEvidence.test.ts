@@ -1,12 +1,11 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import XDataSnapshot from '../../src/models/XDataSnapshot.js';
-import GitHubDataSnapshot from '../../src/models/GitHubDataSnapshot.js';
-import getProviderEvidence from '../../src/utils/sybil/getProviderEvidence.js';
-
-vi.mock('../../src/models/GitHubDataSnapshot.js', () => ({ default: { findOne: vi.fn() } }));
-vi.mock('../../src/models/XDataSnapshot.js', () => ({ default: { findOne: vi.fn() } }));
+import XDataSnapshot from '../../src/models/XDataSnapshot';
+import GitHubDataSnapshot from '../../src/models/GitHubDataSnapshot';
+import getProviderEvidence from '../../src/utils/sybil/getProviderEvidence';
+vi.mock('../../src/models/GitHubDataSnapshot', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../../src/models/XDataSnapshot', () => ({ default: { findOne: vi.fn() } }));
 
 describe('provider evidence ownership', () => {
   beforeEach(() => {

@@ -1,13 +1,12 @@
 import { createDecipheriv } from 'node:crypto';
 
-import type { EncryptedSecret } from '../../types/integration/credential.js';
-import { encryptSecret } from '../../utils/services/integration/credentialEncryption/encryptSecret.js';
+import type { EncryptedSecret } from '../../types/integration/credential';
+import { encryptSecret } from '../../utils/services/integration/credentialEncryption/encryptSecret';
 import {
   ALGORITHM,
   INITIALIZATION_VECTOR_LENGTH,
-} from '../../constants/services/integration/credentialEncryption.js';
-import { getCredentialEncryptionKey } from '../../utils/services/integration/credentialEncryption/getCredentialEncryptionKey.js';
-
+} from '../../constants/services/integration/credentialEncryption';
+import { getCredentialEncryptionKey } from '../../utils/services/integration/credentialEncryption/getCredentialEncryptionKey';
 const decryptSecret = (value: EncryptedSecret, key = getCredentialEncryptionKey()): string => {
   const initializationVector = Buffer.from(value.initializationVector, 'base64');
   const authenticationTag = Buffer.from(value.authenticationTag, 'base64');

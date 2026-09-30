@@ -1,4 +1,4 @@
-import env from '../../../../env.js';
+import env from '../../../../env';
 
 const assertXConfiguration = (): void => {
   if (!env.X_CLIENT_ID || !env.X_CLIENT_SECRET) {
