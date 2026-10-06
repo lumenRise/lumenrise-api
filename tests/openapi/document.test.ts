@@ -9,6 +9,8 @@ const expectedOperations = [
   'GET /v1/health',
   'GET /v1/openapi.json',
   'GET /v1/docs/',
+  'GET /v1/launches',
+  'GET /v1/launches/{contractId}',
   'POST /v1/auth/wallet/challenge',
   'POST /v1/auth/wallet/register',
   'POST /v1/auth/wallet/login',

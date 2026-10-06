@@ -1,6 +1,7 @@
 import log from '../logger';
 import DatabaseMigration from '../models/DatabaseMigration';
 import createXDataIndexes from './20260923CreateXDataIndexes';
+import createLaunchIndexes from './20261003CreateLaunchIndexes';
 import createPolicyIndexes from './20260924CreatePolicyIndexes';
 import createSessionIndexes from './20260922CreateSessionIndexes';
 import createIdentityIndexes from './20260922CreateIdentityIndexes';
@@ -33,6 +34,7 @@ const migrations: readonly MigrationDefinition[] = [
   createStellarPaymentFactIndexes,
   createDeveloperApiIndexes,
   createSorobanEvidenceIndexes,
+  createLaunchIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();

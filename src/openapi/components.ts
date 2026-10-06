@@ -53,6 +53,51 @@ const openApiComponents = {
     developerApiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
   },
   schemas: {
+    Launch: {
+      type: 'object',
+      required: [
+        'network', 'factoryContractId', 'factoryIndex', 'contractId', 'owner', 'asset',
+        'pair', 'metadata', 'config', 'state', 'asOfLedger', 'observedAt',
+        'stateAsOfLedger', 'stateObservedAt',
+      ],
+      properties: {
+        network: { type: 'string', enum: ['testnet', 'public'] },
+        factoryContractId: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+        factoryIndex: { type: 'integer', minimum: 1 },
+        contractId: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+        owner: {
+          oneOf: [stellarAddress, { type: 'string', pattern: '^C[A-Z2-7]{55}$' }],
+        },
+        asset: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+        pair: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+        metadata: {
+          type: 'object',
+          required: ['name', 'description', 'logo', 'symbol'],
+          properties: {
+            name: { type: 'string' },
+            description: { type: 'string' },
+            logo: { type: 'string' },
+            symbol: { type: 'string' },
+          },
+        },
+        config: { type: 'object', additionalProperties: true },
+        state: { type: 'object', additionalProperties: true },
+        asOfLedger: { type: 'integer', minimum: 1 },
+        observedAt: dateTime,
+        stateAsOfLedger: { type: 'integer', minimum: 1 },
+        stateObservedAt: dateTime,
+      },
+    },
+    LaunchList: {
+      type: 'object',
+      required: ['launches', 'page', 'limit', 'total'],
+      properties: {
+        launches: { type: 'array', items: { $ref: '#/components/schemas/Launch' } },
+        page: { type: 'integer', minimum: 1 },
+        limit: { type: 'integer', minimum: 1, maximum: 100 },
+        total: { type: 'integer', minimum: 0 },
+      },
+    },
     StellarAddress: stellarAddress,
     ObjectId: objectId,
     ErrorResponse: {
