@@ -77,6 +77,22 @@ const schema = defineConfig({
     default: 'https://horizon-testnet.stellar.org',
     description: 'Horizon base URL used for read-only Stellar account lookups.',
   },
+  STELLAR_TESTNET_HORIZON_URL: {
+    default: 'https://horizon-testnet.stellar.org',
+    description: 'Horizon endpoint for testnet Home Domain verification.',
+  },
+  STELLAR_PUBLIC_HORIZON_URL: {
+    default: 'https://horizon.stellar.org',
+    description: 'Horizon endpoint for public Home Domain verification.',
+  },
+  STELLAR_TESTNET_HOME_DOMAIN: {
+    default: '',
+    description: 'Managed SEP-1 hostname for testnet, when enabled.',
+  },
+  STELLAR_PUBLIC_HOME_DOMAIN: {
+    default: '',
+    description: 'Managed SEP-1 hostname for the public network, when enabled.',
+  },
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',
     description: '64-character hexadecimal key used to encrypt provider credentials.',

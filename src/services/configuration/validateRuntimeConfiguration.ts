@@ -1,3 +1,4 @@
+import parseDomain from '../homeDomain/parseDomain';
 import type { RuntimeConfiguration } from '../../types/configuration';
 import { parseUrl } from '../../utils/services/configuration/validateRuntimeConfiguration/parseUrl';
 
@@ -30,6 +31,8 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
 
   const clientOrigin = parseUrl(configuration.CLIENT_ORIGIN, 'CLIENT_ORIGIN');
   const stellarHorizonUrl = parseUrl(configuration.STELLAR_HORIZON_URL, 'STELLAR_HORIZON_URL');
+  const testnetHorizonUrl = parseUrl(configuration.STELLAR_TESTNET_HORIZON_URL, 'STELLAR_TESTNET_HORIZON_URL');
+  const publicHorizonUrl = parseUrl(configuration.STELLAR_PUBLIC_HORIZON_URL, 'STELLAR_PUBLIC_HORIZON_URL');
   const githubCallbackUrl = parseUrl(configuration.GITHUB_CALLBACK_URL, 'GITHUB_CALLBACK_URL');
   const xCallbackUrl = parseUrl(configuration.X_CALLBACK_URL, 'X_CALLBACK_URL');
 
@@ -45,6 +48,21 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
 
   if (!['http:', 'https:'].includes(stellarHorizonUrl.protocol)) {
     throw new Error('STELLAR_HORIZON_URL must use HTTP or HTTPS');
+  }
+
+  if (testnetHorizonUrl.protocol !== 'https:' || publicHorizonUrl.protocol !== 'https:') {
+    throw new Error('Home Domain Horizon URLs must use HTTPS');
+  }
+
+  const testnetDomain = configuration.STELLAR_TESTNET_HOME_DOMAIN;
+  const publicDomain = configuration.STELLAR_PUBLIC_HOME_DOMAIN;
+
+  if ((testnetDomain && !parseDomain(testnetDomain)) || (publicDomain && !parseDomain(publicDomain))) {
+    throw new Error('Managed Home Domain values must be valid DNS hostnames');
+  }
+
+  if (testnetDomain && publicDomain && parseDomain(testnetDomain) === parseDomain(publicDomain)) {
+    throw new Error('Testnet and public managed Home Domains must differ');
   }
 
 };

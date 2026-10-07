@@ -8,6 +8,10 @@ interface RuntimeConfiguration {
   X_CLIENT_SECRET: string;
   X_CALLBACK_URL: string;
   STELLAR_HORIZON_URL: string;
+  STELLAR_TESTNET_HORIZON_URL: string;
+  STELLAR_PUBLIC_HORIZON_URL: string;
+  STELLAR_TESTNET_HOME_DOMAIN: string;
+  STELLAR_PUBLIC_HOME_DOMAIN: string;
   STELLAR_AUTH_NETWORK: 'testnet' | 'public';
   AUTH_JWT_SECRET: string;
   CREDENTIAL_ENCRYPTION_KEY: string;
