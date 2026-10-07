@@ -43,6 +43,45 @@ const launchPaths = {
       },
     },
   },
+  '/v1/launches/{contractId}/home-domain': {
+    get: {
+      tags: ['Launches'],
+      summary: 'Get the SEP-1 Home Domain status of an indexed launch asset',
+      operationId: 'getLaunchHomeDomain',
+      security: [],
+      parameters: [
+        { in: 'path', name: 'contractId', required: true, schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' } },
+        { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
+      ],
+      responses: {
+        '200': jsonResponse('Home Domain status retrieved.', { $ref: '#/components/schemas/HomeDomainStatus' }),
+        '400': { $ref: '#/components/responses/BadRequest' },
+        '404': { $ref: '#/components/responses/NotFound' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
+  '/v1/launches/{contractId}/home-domain/refresh': {
+    post: {
+      tags: ['Launches'],
+      summary: 'Recheck issuer Home Domain for a connected launch owner or issuer wallet',
+      operationId: 'refreshLaunchHomeDomain',
+      parameters: [
+        { in: 'path', name: 'contractId', required: true, schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' } },
+        { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
+      ],
+      responses: {
+        '200': jsonResponse('Home Domain refreshed.', { $ref: '#/components/schemas/HomeDomainStatus' }),
+        '400': { $ref: '#/components/responses/BadRequest' },
+        '401': { $ref: '#/components/responses/Unauthorized' },
+        '403': { $ref: '#/components/responses/Forbidden' },
+        '404': { $ref: '#/components/responses/NotFound' },
+        '409': { $ref: '#/components/responses/Conflict' },
+        '429': { $ref: '#/components/responses/TooManyRequests' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
 } as const;
 
 export default launchPaths;
