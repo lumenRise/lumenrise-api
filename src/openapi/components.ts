@@ -53,6 +53,20 @@ const openApiComponents = {
     developerApiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
   },
   schemas: {
+    HomeDomainStatus: {
+      type: 'object',
+      required: ['status', 'reason', 'assetCode', 'issuer', 'domain', 'tomlUrl', 'checkedAt'],
+      properties: {
+        status: { type: 'string', enum: ['verified', 'pending', 'mismatch', 'unavailable', 'unverified'] },
+        reason: { type: ['string', 'null'] },
+        assetCode: { type: ['string', 'null'] },
+        issuer: { type: ['string', 'null'] },
+        domain: { type: ['string', 'null'] },
+        tomlUrl: { type: ['string', 'null'], format: 'uri' },
+        checkedAt: { type: ['string', 'null'], format: 'date-time' },
+      },
+      description: 'SEP-1 domain linkage status; verification does not assess asset quality or contract safety.',
+    },
     Launch: {
       type: 'object',
       required: [
@@ -983,6 +997,10 @@ const openApiComponents = {
     },
     Unauthorized: {
       description: 'Authentication is required or invalid.',
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
+    },
+    Forbidden: {
+      description: 'The connected wallet is not authorized for this resource.',
       content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
     },
     NotFound: {

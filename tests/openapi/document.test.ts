@@ -11,6 +11,8 @@ const expectedOperations = [
   'GET /v1/docs/',
   'GET /v1/launches',
   'GET /v1/launches/{contractId}',
+  'GET /v1/launches/{contractId}/home-domain',
+  'POST /v1/launches/{contractId}/home-domain/refresh',
   'POST /v1/auth/wallet/challenge',
   'POST /v1/auth/wallet/register',
   'POST /v1/auth/wallet/login',
