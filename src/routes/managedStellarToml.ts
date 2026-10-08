@@ -4,6 +4,7 @@ import { Networks } from '@stellar/stellar-sdk';
 
 import env from '../env';
 import log from '../logger';
+import Launch from '../models/Launch';
 import AssetIdentity from '../models/AssetIdentity';
 import parseDomain from '../services/homeDomain/parseDomain';
 import HomeDomainVerification from '../models/HomeDomainVerification';
@@ -29,11 +30,45 @@ const getManagedStellarTomlRoute: RequestHandler = async (req, res) => {
     }).lean();
 
     const issuers = verifications.map((item) => item.issuer);
+
     const assets = await AssetIdentity.find({
       network,
       issuer: { $in: issuers },
       status: 'verified',
     }).lean();
+
+    const launches = await Launch.find({
+      network,
+      asset: { $in: assets.map((asset) => asset.assetContractId) },
+    })
+      .sort({ asOfLedger: -1 })
+      .select('asset metadata.logo')
+      .lean();
+
+    const images = new Map<string, string>();
+
+    for (const launch of launches) {
+      const logo = launch.metadata?.logo;
+
+      if (images.has(launch.asset) || !logo) {
+        continue;
+      }
+
+      try {
+        const url = new URL(logo);
+
+        if (
+          url.protocol === 'https:' &&
+          url.username === '' &&
+          url.password === '' &&
+          url.pathname.toLowerCase().endsWith('.png')
+        ) {
+          images.set(launch.asset, logo);
+        }
+      } catch {
+        // A malformed launch logo is omitted from SEP-1 metadata.
+      }
+    }
     const byIssuer = new Map(verifications.map((item) => [item.issuer, item]));
 
     const currencies = assets
@@ -43,7 +78,11 @@ const getManagedStellarTomlRoute: RequestHandler = async (req, res) => {
           asset.issuer &&
           byIssuer.get(asset.issuer)?.publishedAssets.includes(asset.assetCode),
       )
-      .map((asset) => ({ code: asset.assetCode!, issuer: asset.issuer! }));
+      .map((asset) => ({
+        code: asset.assetCode!,
+        issuer: asset.issuer!,
+        ...(images.has(asset.assetContractId) ? { image: images.get(asset.assetContractId)! } : {}),
+      }));
 
     currencies.sort((a, b) => a.code.localeCompare(b.code) || a.issuer.localeCompare(b.issuer));
 
