@@ -77,24 +77,24 @@ const schema = defineConfig({
   },
   STELLAR_TESTNET_HOME_DOMAIN: {
     default: '',
-    description: 'Managed SEP-1 hostname for testnet, when enabled.',
+    example: 'testnet.lumenrise.app',
   },
   STELLAR_PUBLIC_HOME_DOMAIN: {
     default: '',
-    description: 'Managed SEP-1 hostname for the public network, when enabled.',
+    example: 'lumenrise.app',
   },
   R2_ENDPOINT: {
     default: '',
-    description: 'Cloudflare R2 S3 endpoint for profile images.',
+    example: 'https://<account_id>.r2.cloudflarestorage.com',
   },
   R2_ACCESS_KEY_ID: {
     default: '',
-    description: 'Cloudflare R2 access key ID.',
+    example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
   },
   R2_SECRET_ACCESS_KEY: {
     default: '',
     secret: true,
-    description: 'Cloudflare R2 secret access key.',
+    example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
   },
   R2_BUCKET_NAME: {
     default: '',
