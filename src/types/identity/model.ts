@@ -4,6 +4,8 @@ type IdentityStatus = 'active' | 'suspended' | 'deleted';
 
 interface IdentityRecord {
   name: string | null;
+  avatarObjectKey: string | null;
+  avatarUrl: string | null;
   status: IdentityStatus;
   deletedAt: Date | null;
   createdAt: Date;

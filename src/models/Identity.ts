@@ -6,6 +6,8 @@ import type { IdentityRecord } from '../types/identity/model';
 const identitySchema = new Schema<IdentityRecord>(
   {
     name: { type: String, default: null, trim: true, maxlength: 80 },
+    avatarObjectKey: { type: String, default: null, select: false },
+    avatarUrl: { type: String, default: null },
     status: {
       type: String,
       enum: IDENTITY_STATUSES,
