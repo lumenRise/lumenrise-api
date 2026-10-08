@@ -13,6 +13,7 @@ const openApiDocument = {
   tags: [
     { name: 'System' },
     { name: 'Authentication' },
+    { name: 'Profile' },
     { name: 'Connections' },
     { name: 'Policies' },
     { name: 'Developers' },

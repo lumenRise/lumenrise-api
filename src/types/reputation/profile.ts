@@ -5,6 +5,7 @@ interface ReputationProfileResult {
   identity: {
     id: string;
     name: string | null;
+    avatarUrl: string | null;
     primaryWalletAddress: string | null;
   };
   developer: ReputationSnapshotResult | null;

@@ -6,7 +6,7 @@ import type { ReputationProfileResult } from '../../src/types/reputation/profile
 
 const evaluatedAt = new Date('2026-09-24T12:00:00.000Z');
 const profile: ReputationProfileResult = {
-  identity: { id: '507f1f77bcf86cd799439011', name: 'Mahdi', primaryWalletAddress: null },
+  identity: { id: '507f1f77bcf86cd799439011', name: 'Mahdi', avatarUrl: null, primaryWalletAddress: null },
   developer: {
     category: 'developer',
     status: 'complete',
