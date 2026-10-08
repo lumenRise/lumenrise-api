@@ -65,6 +65,50 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
     throw new Error('Testnet and public managed Home Domains must differ');
   }
 
+  const r2Values = [
+    configuration.R2_ENDPOINT,
+    configuration.R2_ACCESS_KEY_ID,
+    configuration.R2_SECRET_ACCESS_KEY,
+    configuration.R2_BUCKET_NAME,
+    configuration.R2_PUBLIC_BASE_URL,
+  ];
+
+  if (r2Values.some(Boolean) && !r2Values.every(Boolean)) {
+    throw new Error('All R2 settings must be configured together');
+  }
+
+  if (r2Values.every(Boolean)) {
+    const endpoint = parseUrl(configuration.R2_ENDPOINT, 'R2_ENDPOINT');
+    const publicBase = parseUrl(configuration.R2_PUBLIC_BASE_URL, 'R2_PUBLIC_BASE_URL');
+
+    if (
+      endpoint.protocol !== 'https:' ||
+      publicBase.protocol !== 'https:' ||
+      endpoint.username ||
+      endpoint.password ||
+      publicBase.username ||
+      publicBase.password ||
+      endpoint.search ||
+      endpoint.hash ||
+      publicBase.search ||
+      publicBase.hash
+    ) {
+      throw new Error('R2 endpoint and public image URL must be clean HTTPS URLs');
+    }
+
+    if (endpoint.origin === publicBase.origin) {
+      throw new Error('R2_PUBLIC_BASE_URL must be a public image domain, not the S3 endpoint');
+    }
+  }
+
+  if (
+    !Number.isInteger(configuration.R2_MAX_AVATAR_BYTES) ||
+    configuration.R2_MAX_AVATAR_BYTES < 1 ||
+    configuration.R2_MAX_AVATAR_BYTES > 10_485_760
+  ) {
+    throw new Error('R2_MAX_AVATAR_BYTES must be between 1 and 10485760');
+  }
+
 };
 
 export default validateRuntimeConfiguration;
