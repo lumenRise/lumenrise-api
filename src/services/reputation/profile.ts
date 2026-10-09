@@ -35,6 +35,7 @@ const getReputationProfile = async (
     identity: {
       id: identity._id.toString(),
       name: identity.name,
+      avatarUrl: identity.avatarUrl ?? null,
       primaryWalletAddress: wallet?.address ?? null,
     },
     developer: developerSnapshot ? toReputationSnapshotResult(developerSnapshot) : null,

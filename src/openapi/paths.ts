@@ -1,4 +1,5 @@
 import authPaths from './paths/auth';
+import userPaths from './paths/user';
 import docsPaths from './paths/docs';
 import oauthPaths from './paths/oauth';
 import healthPaths from './paths/health';
@@ -11,6 +12,7 @@ import connectionPaths from './paths/connections';
 
 const openApiPaths = {
   ...authPaths,
+  ...userPaths,
   ...policyPaths,
   ...developerPaths,
   ...docsPaths,

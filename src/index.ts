@@ -6,6 +6,7 @@ import serverState from './utils/index/state';
 import { handleShutdown } from './utils/index/handleShutdown';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations';
 import refreshHomeDomains from './services/homeDomain/refreshHomeDomains';
+import refreshAvatarCleanup from './services/avatar/refreshAvatarCleanup';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration';
 
 const bootstrap = async (): Promise<void> => {
@@ -20,6 +21,9 @@ const bootstrap = async (): Promise<void> => {
 
   void refreshHomeDomains();
   setInterval(() => void refreshHomeDomains(), 60_000).unref();
+
+  void refreshAvatarCleanup();
+  setInterval(() => void refreshAvatarCleanup(), 5 * 60_000).unref();
 
   process.once('SIGINT', handleShutdown);
   process.once('SIGTERM', handleShutdown);

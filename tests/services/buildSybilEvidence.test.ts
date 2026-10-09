@@ -9,6 +9,7 @@ const profile: ReputationProfileResult = {
     id: '507f1f77bcf86cd799439011',
     name: null,
     primaryWalletAddress: 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR',
+    avatarUrl: null,
   },
   developer: null,
   social: null,

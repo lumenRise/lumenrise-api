@@ -53,6 +53,15 @@ const openApiComponents = {
     developerApiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
   },
   schemas: {
+    MyProfile: {
+      type: 'object',
+      required: ['identityId', 'name', 'avatarUrl'],
+      properties: {
+        identityId: objectId,
+        name: nullableString,
+        avatarUrl: { type: ['string', 'null'], format: 'uri' },
+      },
+    },
     HomeDomainStatus: {
       type: 'object',
       required: ['status', 'reason', 'assetCode', 'issuer', 'domain', 'tomlUrl', 'checkedAt'],
@@ -500,10 +509,11 @@ const openApiComponents = {
       properties: {
         identity: {
           type: 'object',
-          required: ['id', 'name', 'primaryWalletAddress'],
+          required: ['id', 'name', 'avatarUrl', 'primaryWalletAddress'],
           properties: {
             id: { $ref: '#/components/schemas/ObjectId' },
             name: nullableString,
+            avatarUrl: { type: ['string', 'null'], format: 'uri' },
             primaryWalletAddress: {
               oneOf: [{ $ref: '#/components/schemas/StellarAddress' }, { type: 'null' }],
             },

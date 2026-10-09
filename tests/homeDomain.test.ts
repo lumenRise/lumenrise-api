@@ -2,6 +2,7 @@ import { Keypair } from '@stellar/stellar-sdk';
 import type { Request, Response } from 'express';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import Launch from '../src/models/Launch';
 import AssetIdentity from '../src/models/AssetIdentity';
 import HomeDomainVerification from '../src/models/HomeDomainVerification';
 import getManagedStellarTomlRoute from '../src/routes/managedStellarToml';
@@ -9,6 +10,7 @@ import fetchStellarToml from '../src/services/homeDomain/fetchStellarToml';
 import verifyIssuerDomain from '../src/services/homeDomain/verifyIssuerDomain';
 
 vi.mock('../src/models/AssetIdentity', () => ({ default: { find: vi.fn() } }));
+vi.mock('../src/models/Launch', () => ({ default: { find: vi.fn() } }));
 vi.mock('../src/models/HomeDomainVerification', () => ({ default: { find: vi.fn() } }));
 vi.mock('../src/services/homeDomain/fetchStellarToml', () => ({ default: vi.fn() }));
 vi.mock('../src/services/homeDomain/checkHorizonNetwork', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
@@ -28,8 +30,15 @@ describe('Home Domain verification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(AssetIdentity.find).mockReturnValue({ lean: vi.fn().mockResolvedValue([
-      { network: 'testnet', assetCode: 'TEST', issuer, status: 'verified' },
+      { network: 'testnet', assetContractId: 'CTEST', assetCode: 'TEST', issuer, status: 'verified' },
     ]) } as never);
+    vi.mocked(Launch.find).mockReturnValue({
+      sort: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([
+          { asset: 'CTEST', metadata: { logo: 'https://images.lumenrise.app/tokens/test.png' } },
+        ]) }),
+      }),
+    } as never);
   });
 
   afterEach(() => vi.unstubAllGlobals());
@@ -70,5 +79,7 @@ describe('Home Domain verification', () => {
     expect(response.status).toHaveBeenCalledWith(200);
     expect(response.send).toHaveBeenCalledWith(expect.stringContaining('[[CURRENCIES]]'));
     expect(response.send).toHaveBeenCalledWith(expect.stringContaining(`issuer = "${issuer}"`));
+    expect(response.send).toHaveBeenCalledWith(expect.stringContaining('image = "https://images.lumenrise.app/tokens/test.png"'));
+    expect(Launch.find).toHaveBeenCalledWith({ network: 'testnet', asset: { $in: ['CTEST'] } });
   });
 });

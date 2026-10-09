@@ -10,6 +10,7 @@ import createHomeDomainIndexes from './20261007CreateHomeDomainIndexes';
 import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes';
 import createReputationIndexes from './20260922CreateReputationIndexes';
 import createDeveloperApiIndexes from './20260925CreateDeveloperApiIndexes';
+import createAvatarCleanupIndexes from './20261008CreateAvatarCleanupIndexes';
 import createSorobanEvidenceIndexes from './20260926CreateSorobanEvidenceIndexes';
 import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes';
 import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes';
@@ -37,6 +38,7 @@ const migrations: readonly MigrationDefinition[] = [
   createSorobanEvidenceIndexes,
   createLaunchIndexes,
   createHomeDomainIndexes,
+  createAvatarCleanupIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();

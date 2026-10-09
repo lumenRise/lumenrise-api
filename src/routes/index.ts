@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import authRoutes from './auth/index';
+import userRoutes from './user/index';
 import docsRoutes from './docs/index';
 import oauthRoutes from './oauth/index';
 import healthRoutes from './health/index';
@@ -14,6 +15,7 @@ import connectionRoutes from './connections/index';
 const router = Router();
 
 router.use('/v1/auth', authRoutes);
+router.use('/v1/user', userRoutes);
 router.use('/v1/policies', policyRoutes);
 router.use('/v1/developers', developerRoutes);
 router.use('/v1', docsRoutes);

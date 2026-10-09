@@ -47,7 +47,7 @@ describe('reputation profile route', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.result).toEqual({
-      identity: { id: identityId.toString(), name: 'Mahdi', primaryWalletAddress: address },
+      identity: { id: identityId.toString(), name: 'Mahdi', avatarUrl: null, primaryWalletAddress: address },
       developer: null,
       social: null,
       stellar: {
