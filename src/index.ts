@@ -5,7 +5,6 @@ import { connectDatabase } from './db';
 import serverState from './utils/index/state';
 import { handleShutdown } from './utils/index/handleShutdown';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations';
-import refreshHomeDomains from './services/homeDomain/refreshHomeDomains';
 import refreshAvatarCleanup from './services/avatar/refreshAvatarCleanup';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration';
 
@@ -18,9 +17,6 @@ const bootstrap = async (): Promise<void> => {
   serverState.server = app.listen(env.PORT, () => {
     log.info({ port: env.PORT }, 'Lumenrise API started');
   });
-
-  void refreshHomeDomains();
-  setInterval(() => void refreshHomeDomains(), 60_000).unref();
 
   void refreshAvatarCleanup();
   setInterval(() => void refreshAvatarCleanup(), 5 * 60_000).unref();

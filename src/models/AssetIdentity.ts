@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import type { AssetIdentityRecord } from '../types/homeDomain/assetIdentity';
+import type { AssetIdentityRecord } from '../types/launch/assetIdentity';
 
 const schema = new Schema<AssetIdentityRecord>(
   {
