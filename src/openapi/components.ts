@@ -54,6 +54,28 @@ const openApiComponents = {
     developerApiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
   },
   schemas: {
+    LaunchDraft: {
+      type: 'object',
+      required: ['draftId', 'schemaVersion', 'network', 'ownerAddress', 'method', 'status', 'data', 'imageId', 'assetContractId', 'transactionHash', 'verifiedContractId', 'launchContractId', 'submittedAt', 'confirmedAt', 'createdAt', 'updatedAt'],
+      properties: {
+        draftId: objectId,
+        schemaVersion: { type: 'integer', const: 1 },
+        network: { type: 'string', enum: ['testnet', 'public'] },
+        ownerAddress: stellarAddress,
+        method: { type: 'string', const: 'bonding' },
+        status: { type: 'string', enum: ['editing', 'submitted', 'confirmed', 'unmatched', 'failed'] },
+        data: { type: 'object', description: 'Private form snapshot; editable before submission.' },
+        imageId: { oneOf: [objectId, { type: 'null' }] },
+        assetContractId: nullableString,
+        transactionHash: nullableString,
+        verifiedContractId: nullableString,
+        launchContractId: nullableString,
+        submittedAt: nullableDateTime,
+        confirmedAt: nullableDateTime,
+        createdAt: dateTime,
+        updatedAt: dateTime,
+      },
+    },
     MyProfile: {
       type: 'object',
       required: ['identityId', 'name', 'avatarUrl'],

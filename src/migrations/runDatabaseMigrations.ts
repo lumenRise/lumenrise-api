@@ -9,6 +9,7 @@ import type { MigrationDefinition } from '../types/database/migration';
 import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes';
 import createReputationIndexes from './20260922CreateReputationIndexes';
 import createTokenImageIndexes from './20261009CreateTokenImageIndexes';
+import createLaunchDraftIndexes from './20261010CreateLaunchDraftIndexes';
 import createDeveloperApiIndexes from './20260925CreateDeveloperApiIndexes';
 import createAvatarCleanupIndexes from './20261008CreateAvatarCleanupIndexes';
 import createAssetIdentityIndexes from './20261007CreateAssetIdentityIndexes';
@@ -43,6 +44,7 @@ const migrations: readonly MigrationDefinition[] = [
   createAvatarCleanupIndexes,
   createTokenImageIndexes,
   createTokenImageCleanupIndex,
+  createLaunchDraftIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();
