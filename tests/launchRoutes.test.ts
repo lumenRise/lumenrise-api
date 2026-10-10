@@ -22,8 +22,23 @@ const launch = {
   asset: StrKey.encodeContract(Buffer.alloc(32, 3)),
   pair: StrKey.encodeContract(Buffer.alloc(32, 4)),
   metadata: { name: 'Launch', description: '', logo: '', symbol: 'LAUNCH' },
-  config: { total_supply: '10000000' },
-  state: { sold: '0', graduated: false },
+  config: {
+    total_supply: '10000000', platform_fee_bps: 100,
+    buckets: { pool: '2000000', curve: '7000000', team: '1000000' },
+    params: {
+      starts_at: '1791000000', ends_at: '1792000000',
+      allocations: { pool_bps: 2000, curve_bps: 7000, team_bps: 1000 },
+      vesting: { cliff_seconds: '0', duration_seconds: '2592000', schedule: { tag: 'Weekly' } },
+      curve: {
+        graduation_target: '4000000', virtual_base_reserve: '21000000',
+        virtual_quote_reserve: '21000000', creator_fee_bps: 10, creator_payout_bps: 1000,
+      },
+    },
+  },
+  state: {
+    sold: '0', quote_reserve: '0', creator_fees: '0', team_claimed: '0',
+    buyer_count: 0, graduated: false,
+  },
   asOfLedger: 123,
   observedAt: new Date('2026-10-03T00:00:00.000Z'),
   stateAsOfLedger: 124,
@@ -56,7 +71,7 @@ describe('public launch handlers', () => {
     expect(Launch.find).toHaveBeenCalledWith({ network: 'testnet' });
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       result: expect.objectContaining({
-        launches: [expect.objectContaining({ contractId, asOfLedger: 123 })],
+        launches: [expect.objectContaining({ contractId, asOfLedger: 123, bonding: expect.objectContaining({ version: 1, progressBps: 0 }) })],
       }),
     }));
   });
