@@ -6,11 +6,12 @@ import createPolicyIndexes from './20260924CreatePolicyIndexes';
 import createSessionIndexes from './20260922CreateSessionIndexes';
 import createIdentityIndexes from './20260922CreateIdentityIndexes';
 import type { MigrationDefinition } from '../types/database/migration';
-import createHomeDomainIndexes from './20261007CreateHomeDomainIndexes';
 import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes';
 import createReputationIndexes from './20260922CreateReputationIndexes';
+import createTokenImageIndexes from './20261009CreateTokenImageIndexes';
 import createDeveloperApiIndexes from './20260925CreateDeveloperApiIndexes';
 import createAvatarCleanupIndexes from './20261008CreateAvatarCleanupIndexes';
+import createAssetIdentityIndexes from './20261007CreateAssetIdentityIndexes';
 import createSorobanEvidenceIndexes from './20260926CreateSorobanEvidenceIndexes';
 import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes';
 import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes';
@@ -37,8 +38,9 @@ const migrations: readonly MigrationDefinition[] = [
   createDeveloperApiIndexes,
   createSorobanEvidenceIndexes,
   createLaunchIndexes,
-  createHomeDomainIndexes,
+  createAssetIdentityIndexes,
   createAvatarCleanupIndexes,
+  createTokenImageIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();

@@ -5,9 +5,9 @@ import { Networks } from '@stellar/stellar-sdk';
 import env from '../env';
 import log from '../logger';
 import Launch from '../models/Launch';
+import TokenImage from '../models/TokenImage';
 import AssetIdentity from '../models/AssetIdentity';
-import parseDomain from '../services/homeDomain/parseDomain';
-import HomeDomainVerification from '../models/HomeDomainVerification';
+import parseDomain from '../services/stellar/parseDomain';
 
 const getManagedStellarTomlRoute: RequestHandler = async (req, res) => {
   const host = parseDomain((req.get('host') ?? '').split(':')[0] ?? '');
@@ -21,72 +21,71 @@ const getManagedStellarTomlRoute: RequestHandler = async (req, res) => {
   }
 
   try {
-    const validAfter = new Date(Date.now() - 60 * 60 * 1000);
-
-    const verifications = await HomeDomainVerification.find({
+    const launches = await Launch.find({ network })
+      .sort({ factoryIndex: 1 })
+      .select('contractId asset metadata')
+      .lean();
+    const identities = await AssetIdentity.find({
       network,
-      claimedDomain: host,
-      checkedAt: { $gte: validAfter },
-    }).lean();
-
-    const issuers = verifications.map((item) => item.issuer);
-
-    const assets = await AssetIdentity.find({
-      network,
-      issuer: { $in: issuers },
+      assetContractId: { $in: launches.map((launch) => launch.asset) },
       status: 'verified',
     }).lean();
-
-    const launches = await Launch.find({
+    const images = await TokenImage.find({
       network,
-      asset: { $in: assets.map((asset) => asset.assetContractId) },
-    })
-      .sort({ asOfLedger: -1 })
-      .select('asset metadata.logo')
-      .lean();
+      status: 'finalized',
+      assetContractId: { $in: launches.map((launch) => launch.asset) },
+    }).lean();
+    const byContract = new Map(identities.map((identity) => [identity.assetContractId, identity]));
+    const imageByContract = new Map(
+      images.map((image) => [image.launchContractId, image.publicUrl]),
+    );
+    const publishedAssets = new Set<string>();
+    const currencies = launches.flatMap((launch) => {
+      const identity = byContract.get(launch.asset);
 
-    const images = new Map<string, string>();
-
-    for (const launch of launches) {
-      const logo = launch.metadata?.logo;
-
-      if (images.has(launch.asset) || !logo) {
-        continue;
+      if (
+        !identity?.assetCode ||
+        !identity.issuer ||
+        identity.assetCode !== launch.metadata.symbol ||
+        publishedAssets.has(launch.asset)
+      ) {
+        return [];
       }
+
+      publishedAssets.add(launch.asset);
+      const logo = imageByContract.get(launch.contractId) ?? '';
+      let image: string | undefined;
 
       try {
         const url = new URL(logo);
 
         if (
           url.protocol === 'https:' &&
-          url.username === '' &&
-          url.password === '' &&
+          !url.username &&
+          !url.password &&
           url.pathname.toLowerCase().endsWith('.png')
         ) {
-          images.set(launch.asset, logo);
+          image = logo;
         }
       } catch {
-        // A malformed launch logo is omitted from SEP-1 metadata.
+        // A malformed image URL is omitted from the published metadata.
       }
-    }
-    const byIssuer = new Map(verifications.map((item) => [item.issuer, item]));
 
-    const currencies = assets
-      .filter(
-        (asset) =>
-          asset.assetCode &&
-          asset.issuer &&
-          byIssuer.get(asset.issuer)?.publishedAssets.includes(asset.assetCode),
-      )
-      .map((asset) => ({
-        code: asset.assetCode!,
-        issuer: asset.issuer!,
-        ...(images.has(asset.assetContractId) ? { image: images.get(asset.assetContractId)! } : {}),
-      }));
-
-    currencies.sort((a, b) => a.code.localeCompare(b.code) || a.issuer.localeCompare(b.issuer));
+      return [
+        {
+          code: identity.assetCode,
+          issuer: identity.issuer,
+          ...(launch.metadata.name.length <= 20 ? { name: launch.metadata.name } : {}),
+          desc: launch.metadata.description,
+          display_decimals: 7,
+          is_asset_anchored: false,
+          ...(image ? { image } : {}),
+        },
+      ];
+    });
 
     const body = stringify({
+      VERSION: '2.3.0',
       NETWORK_PASSPHRASE: network === 'testnet' ? Networks.TESTNET : Networks.PUBLIC,
       DOCUMENTATION: { ORG_NAME: 'Lumenrise', ORG_URL: `https://${host}` },
       CURRENCIES: currencies,
@@ -98,7 +97,7 @@ const getManagedStellarTomlRoute: RequestHandler = async (req, res) => {
       .set('Access-Control-Allow-Origin', '*')
       .set('Cross-Origin-Resource-Policy', 'cross-origin')
       .set('Vary', 'Host')
-      .set('Cache-Control', 'public, max-age=300')
+      .set('Cache-Control', 'no-store')
       .send(body);
   } catch (error) {
     log.error({ error }, 'Managed stellar.toml generation failed');
