@@ -2,6 +2,7 @@ const dateTime = { type: 'string', format: 'date-time' };
 const nullableDateTime = { oneOf: [dateTime, { type: 'null' }] };
 const nullableString = { oneOf: [{ type: 'string' }, { type: 'null' }] };
 const objectId = { type: 'string', pattern: '^[a-fA-F0-9]{24}$' };
+const unsignedAmount = { type: 'string', pattern: '^\\d+$', description: 'Exact integer in 7-decimal token stroops or Unix seconds, as applicable.' };
 const stellarAddress = {
   type: 'string',
   pattern: '^G[A-Z2-7]{55}$',
@@ -67,7 +68,7 @@ const openApiComponents = {
       required: [
         'network', 'factoryContractId', 'factoryIndex', 'contractId', 'owner', 'asset',
         'pair', 'metadata', 'config', 'state', 'asOfLedger', 'observedAt',
-        'stateAsOfLedger', 'stateObservedAt',
+        'stateAsOfLedger', 'stateObservedAt', 'bonding',
       ],
       properties: {
         network: { type: 'string', enum: ['testnet', 'public'] },
@@ -95,6 +96,66 @@ const openApiComponents = {
         observedAt: dateTime,
         stateAsOfLedger: { type: 'integer', minimum: 1 },
         stateObservedAt: dateTime,
+        bonding: { oneOf: [{ $ref: '#/components/schemas/BondingSummary' }, { type: 'null' }] },
+      },
+    },
+    BondingSummary: {
+      type: 'object',
+      description: 'Derived from the stored, confirmed curve config and latest indexed state. Null for records without the current Bonding fields.',
+      required: ['version', 'status', 'statusAsOf', 'stateStale', 'startsAt', 'endsAt', 'totalSupply', 'allocations', 'buckets', 'vesting', 'curve', 'state', 'progressBps'],
+      properties: {
+        version: { type: 'integer', const: 1 },
+        status: { type: 'string', enum: ['Scheduled', 'Open', 'Failed', 'Graduated'], description: 'Derived using server time and the latest indexed graduated flag; check stateStale.' },
+        statusAsOf: dateTime,
+        stateStale: { type: 'boolean', description: 'True when the latest state observation is older than 60 seconds.' },
+        startsAt: unsignedAmount,
+        endsAt: unsignedAmount,
+        totalSupply: unsignedAmount,
+        allocations: {
+          type: 'object', required: ['poolBps', 'curveBps', 'teamBps'],
+          properties: {
+            poolBps: { type: 'integer', minimum: 0 },
+            curveBps: { type: 'integer', minimum: 0 },
+            teamBps: { type: 'integer', minimum: 0 },
+          },
+        },
+        buckets: {
+          type: 'object', required: ['pool', 'curve', 'team'],
+          properties: { pool: unsignedAmount, curve: unsignedAmount, team: unsignedAmount },
+        },
+        vesting: {
+          type: 'object', required: ['cliffSeconds', 'durationSeconds', 'schedule'],
+          properties: {
+            cliffSeconds: unsignedAmount,
+            durationSeconds: unsignedAmount,
+            schedule: { type: 'string', enum: ['Daily', 'Weekly', 'Monthly'] },
+          },
+        },
+        curve: {
+          type: 'object',
+          required: ['graduationTarget', 'virtualBaseReserve', 'virtualQuoteReserve', 'creatorFeeBps', 'creatorPayoutBps', 'platformFeeBps'],
+          properties: {
+            graduationTarget: unsignedAmount,
+            virtualBaseReserve: unsignedAmount,
+            virtualQuoteReserve: unsignedAmount,
+            creatorFeeBps: { type: 'integer', minimum: 0 },
+            creatorPayoutBps: { type: 'integer', minimum: 0 },
+            platformFeeBps: { type: 'integer', minimum: 0 },
+          },
+        },
+        state: {
+          type: 'object',
+          required: ['sold', 'quoteReserve', 'creatorFees', 'teamClaimed', 'buyerCount', 'graduated'],
+          properties: {
+            sold: unsignedAmount,
+            quoteReserve: unsignedAmount,
+            creatorFees: unsignedAmount,
+            teamClaimed: unsignedAmount,
+            buyerCount: { type: 'integer', minimum: 0 },
+            graduated: { type: 'boolean' },
+          },
+        },
+        progressBps: { type: 'integer', minimum: 0, maximum: 10000, description: 'Capped net quote reserve / graduation target in basis points; creator fees are excluded.' },
       },
     },
     LaunchList: {

@@ -37,10 +37,17 @@ const getLaunchesRoute: RequestHandler = async (req, res) => {
       Launch.countDocuments(filter),
     ]);
 
+    const now = new Date();
+
     return res.status(200).json({
       status: 'success',
       message: 'Launches retrieved',
-      result: { launches: launches.map(toLaunchResult), page, limit, total },
+      result: {
+        launches: launches.map((launch) => toLaunchResult(launch, now)),
+        page,
+        limit,
+        total,
+      },
     });
   } catch (error) {
     log.error({ error }, 'Launch list failed');
