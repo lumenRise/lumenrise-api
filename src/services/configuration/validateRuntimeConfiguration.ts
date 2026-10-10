@@ -1,4 +1,4 @@
-import parseDomain from '../homeDomain/parseDomain';
+import parseDomain from '../stellar/parseDomain';
 import type { RuntimeConfiguration } from '../../types/configuration';
 import { parseUrl } from '../../utils/services/configuration/validateRuntimeConfiguration/parseUrl';
 
@@ -31,8 +31,6 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
 
   const clientOrigin = parseUrl(configuration.CLIENT_ORIGIN, 'CLIENT_ORIGIN');
   const stellarHorizonUrl = parseUrl(configuration.STELLAR_HORIZON_URL, 'STELLAR_HORIZON_URL');
-  const testnetHorizonUrl = parseUrl(configuration.STELLAR_TESTNET_HORIZON_URL, 'STELLAR_TESTNET_HORIZON_URL');
-  const publicHorizonUrl = parseUrl(configuration.STELLAR_PUBLIC_HORIZON_URL, 'STELLAR_PUBLIC_HORIZON_URL');
   const githubCallbackUrl = parseUrl(configuration.GITHUB_CALLBACK_URL, 'GITHUB_CALLBACK_URL');
   const xCallbackUrl = parseUrl(configuration.X_CALLBACK_URL, 'X_CALLBACK_URL');
 
@@ -48,10 +46,6 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
 
   if (!['http:', 'https:'].includes(stellarHorizonUrl.protocol)) {
     throw new Error('STELLAR_HORIZON_URL must use HTTP or HTTPS');
-  }
-
-  if (testnetHorizonUrl.protocol !== 'https:' || publicHorizonUrl.protocol !== 'https:') {
-    throw new Error('Home Domain Horizon URLs must use HTTPS');
   }
 
   const testnetDomain = configuration.STELLAR_TESTNET_HOME_DOMAIN;
@@ -107,6 +101,14 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
     configuration.R2_MAX_AVATAR_BYTES > 10_485_760
   ) {
     throw new Error('R2_MAX_AVATAR_BYTES must be between 1 and 10485760');
+  }
+
+  if (
+    !Number.isInteger(configuration.R2_MAX_TOKEN_IMAGE_BYTES) ||
+    configuration.R2_MAX_TOKEN_IMAGE_BYTES < 1 ||
+    configuration.R2_MAX_TOKEN_IMAGE_BYTES > 10_485_760
+  ) {
+    throw new Error('R2_MAX_TOKEN_IMAGE_BYTES must be between 1 and 10485760');
   }
 
 };

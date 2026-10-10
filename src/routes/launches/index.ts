@@ -1,16 +1,17 @@
 import { Router } from 'express';
 
 import getLaunchesRoute from './get';
-import getLaunchHomeDomainRoute from './getHomeDomain';
+import getLaunchImageRoute from './getImage';
+import postLaunchImageRoute from './postImage';
 import getLaunchByContractIdRoute from './getByContractId';
 import requireSession from '../../middleware/requireSession';
-import refreshLaunchHomeDomainRoute from './refreshHomeDomain';
+import tokenImageUpload from '../../middleware/tokenImageUpload';
 
 const launchRoutes = Router();
 
 launchRoutes.get('/', getLaunchesRoute);
+launchRoutes.post('/images', requireSession, tokenImageUpload, postLaunchImageRoute);
+launchRoutes.get('/images/:imageId', requireSession, getLaunchImageRoute);
 launchRoutes.get('/:contractId', getLaunchByContractIdRoute);
-launchRoutes.get('/:contractId/home-domain', getLaunchHomeDomainRoute);
-launchRoutes.post('/:contractId/home-domain/refresh', requireSession, refreshLaunchHomeDomainRoute);
 
 export default launchRoutes;

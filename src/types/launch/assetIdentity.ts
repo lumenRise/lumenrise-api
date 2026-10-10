@@ -1,7 +1,5 @@
-import type { StellarNetwork } from './network';
-
 interface AssetIdentityRecord {
-  network: StellarNetwork;
+  network: 'testnet' | 'public';
   assetContractId: string;
   status: 'verified' | 'unverified' | 'unavailable';
   assetCode: string | null;

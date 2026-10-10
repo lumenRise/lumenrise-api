@@ -67,14 +67,6 @@ const schema = defineConfig({
     default: 'https://horizon-testnet.stellar.org',
     description: 'Horizon base URL used for read-only Stellar account lookups.',
   },
-  STELLAR_TESTNET_HORIZON_URL: {
-    default: 'https://horizon-testnet.stellar.org',
-    description: 'Horizon endpoint for testnet Home Domain verification.',
-  },
-  STELLAR_PUBLIC_HORIZON_URL: {
-    default: 'https://horizon.stellar.org',
-    description: 'Horizon endpoint for public Home Domain verification.',
-  },
   STELLAR_TESTNET_HOME_DOMAIN: {
     default: '',
     example: 'testnet.lumenrise.app',
@@ -105,6 +97,10 @@ const schema = defineConfig({
     example: 'https://images.lumenrise.app',
   },
   R2_MAX_AVATAR_BYTES: {
+    type: 'number',
+    default: 5_242_880,
+  },
+  R2_MAX_TOKEN_IMAGE_BYTES: {
     type: 'number',
     default: 5_242_880,
   },

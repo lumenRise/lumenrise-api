@@ -62,20 +62,6 @@ const openApiComponents = {
         avatarUrl: { type: ['string', 'null'], format: 'uri' },
       },
     },
-    HomeDomainStatus: {
-      type: 'object',
-      required: ['status', 'reason', 'assetCode', 'issuer', 'domain', 'tomlUrl', 'checkedAt'],
-      properties: {
-        status: { type: 'string', enum: ['verified', 'pending', 'mismatch', 'unavailable', 'unverified'] },
-        reason: { type: ['string', 'null'] },
-        assetCode: { type: ['string', 'null'] },
-        issuer: { type: ['string', 'null'] },
-        domain: { type: ['string', 'null'] },
-        tomlUrl: { type: ['string', 'null'], format: 'uri' },
-        checkedAt: { type: ['string', 'null'], format: 'date-time' },
-      },
-      description: 'SEP-1 domain linkage status; verification does not assess asset quality or contract safety.',
-    },
     Launch: {
       type: 'object',
       required: [

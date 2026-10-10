@@ -25,6 +25,50 @@ const launchPaths = {
       },
     },
   },
+  '/v1/launches/images': {
+    post: {
+      tags: ['Launches'],
+      summary: 'Upload a token image before signing a launch transaction',
+      operationId: 'postLaunchImage',
+      requestBody: { required: true, content: { 'multipart/form-data': { schema: {
+        type: 'object', required: ['network', 'ownerAddress', 'image'], properties: {
+          network: { type: 'string', enum: ['testnet', 'public'] },
+          ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
+          image: { type: 'string', format: 'binary' },
+        },
+      } } } },
+      responses: {
+        '201': jsonResponse('Token image uploaded and pending chain confirmation.', { type: 'object', required: ['imageId', 'publicUrl', 'status'], properties: {
+          imageId: { type: 'string' }, publicUrl: { type: 'string', format: 'uri' }, status: { type: 'string', enum: ['pending'] },
+        } }),
+        '400': { $ref: '#/components/responses/BadRequest' },
+        '401': { $ref: '#/components/responses/Unauthorized' },
+        '403': { $ref: '#/components/responses/Forbidden' },
+        '413': { description: 'Image exceeds configured upload limit' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
+  '/v1/launches/images/{imageId}': {
+    get: {
+      tags: ['Launches'],
+      summary: 'Read the current token image state for its owner',
+      operationId: 'getLaunchImage',
+      parameters: [{ in: 'path', name: 'imageId', required: true, schema: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } }],
+      responses: {
+        '200': jsonResponse('Token image retrieved.', { type: 'object', required: ['imageId', 'network', 'ownerAddress', 'publicUrl', 'status', 'launchContractId', 'assetContractId'], properties: {
+          imageId: { type: 'string' }, network: { type: 'string', enum: ['testnet', 'public'] },
+          ownerAddress: { $ref: '#/components/schemas/StellarAddress' }, publicUrl: { type: 'string', format: 'uri' },
+          status: { type: 'string', enum: ['pending', 'finalized'] },
+          launchContractId: { type: ['string', 'null'] }, assetContractId: { type: ['string', 'null'] },
+        } }),
+        '400': { $ref: '#/components/responses/BadRequest' },
+        '401': { $ref: '#/components/responses/Unauthorized' },
+        '404': { $ref: '#/components/responses/NotFound' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
   '/v1/launches/{contractId}': {
     get: {
       tags: ['Launches'],
@@ -39,45 +83,6 @@ const launchPaths = {
         '200': jsonResponse('Launch retrieved.', { $ref: '#/components/schemas/Launch' }),
         '400': { $ref: '#/components/responses/BadRequest' },
         '404': { $ref: '#/components/responses/NotFound' },
-        '503': { $ref: '#/components/responses/ServiceUnavailable' },
-      },
-    },
-  },
-  '/v1/launches/{contractId}/home-domain': {
-    get: {
-      tags: ['Launches'],
-      summary: 'Get the SEP-1 Home Domain status of an indexed launch asset',
-      operationId: 'getLaunchHomeDomain',
-      security: [],
-      parameters: [
-        { in: 'path', name: 'contractId', required: true, schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' } },
-        { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
-      ],
-      responses: {
-        '200': jsonResponse('Home Domain status retrieved.', { $ref: '#/components/schemas/HomeDomainStatus' }),
-        '400': { $ref: '#/components/responses/BadRequest' },
-        '404': { $ref: '#/components/responses/NotFound' },
-        '503': { $ref: '#/components/responses/ServiceUnavailable' },
-      },
-    },
-  },
-  '/v1/launches/{contractId}/home-domain/refresh': {
-    post: {
-      tags: ['Launches'],
-      summary: 'Recheck issuer Home Domain for a connected launch owner or issuer wallet',
-      operationId: 'refreshLaunchHomeDomain',
-      parameters: [
-        { in: 'path', name: 'contractId', required: true, schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' } },
-        { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
-      ],
-      responses: {
-        '200': jsonResponse('Home Domain refreshed.', { $ref: '#/components/schemas/HomeDomainStatus' }),
-        '400': { $ref: '#/components/responses/BadRequest' },
-        '401': { $ref: '#/components/responses/Unauthorized' },
-        '403': { $ref: '#/components/responses/Forbidden' },
-        '404': { $ref: '#/components/responses/NotFound' },
-        '409': { $ref: '#/components/responses/Conflict' },
-        '429': { $ref: '#/components/responses/TooManyRequests' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },
     },
