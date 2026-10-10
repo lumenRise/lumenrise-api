@@ -56,11 +56,13 @@ const launchPaths = {
       operationId: 'getLaunchImage',
       parameters: [{ in: 'path', name: 'imageId', required: true, schema: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } }],
       responses: {
-        '200': jsonResponse('Token image retrieved.', { type: 'object', required: ['imageId', 'network', 'ownerAddress', 'publicUrl', 'status', 'launchContractId', 'assetContractId'], properties: {
+        '200': jsonResponse('Token image retrieved.', { type: 'object', required: ['imageId', 'network', 'ownerAddress', 'publicUrl', 'status', 'launchContractId', 'assetContractId', 'cleanupReadyAt', 'expiredAt'], properties: {
           imageId: { type: 'string' }, network: { type: 'string', enum: ['testnet', 'public'] },
           ownerAddress: { $ref: '#/components/schemas/StellarAddress' }, publicUrl: { type: 'string', format: 'uri' },
-          status: { type: 'string', enum: ['pending', 'finalized'] },
+          status: { type: 'string', enum: ['pending', 'cleanup_ready', 'deleting', 'finalized', 'expired'] },
           launchContractId: { type: ['string', 'null'] }, assetContractId: { type: ['string', 'null'] },
+          cleanupReadyAt: { type: ['string', 'null'], format: 'date-time' },
+          expiredAt: { type: ['string', 'null'], format: 'date-time' },
         } }),
         '400': { $ref: '#/components/responses/BadRequest' },
         '401': { $ref: '#/components/responses/Unauthorized' },
