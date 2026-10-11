@@ -1,5 +1,8 @@
 import { Router } from 'express';
 
+import getChart from './getChart';
+import getTrades from './getTrades';
+import getMarket from './getMarket';
 import getLaunchesRoute from './get';
 import getDraftRoute from './getDraft';
 import getDraftsRoute from './getDrafts';
@@ -22,6 +25,9 @@ launchRoutes.patch('/drafts/:draftId', requireSession, patchLaunchDraftRoute);
 launchRoutes.post('/drafts/:draftId/submit', requireSession, postDraftSubmissionRoute);
 launchRoutes.post('/images', requireSession, tokenImageUpload, postLaunchImageRoute);
 launchRoutes.get('/images/:imageId', requireSession, getLaunchImageRoute);
+launchRoutes.get('/:contractId/trades', getTrades);
+launchRoutes.get('/:contractId/market', getMarket);
+launchRoutes.get('/:contractId/chart', getChart);
 launchRoutes.get('/:contractId', getLaunchByContractIdRoute);
 
 export default launchRoutes;

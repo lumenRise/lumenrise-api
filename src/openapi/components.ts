@@ -1,3 +1,5 @@
+import marketSchemas from './marketSchemas';
+
 const dateTime = { type: 'string', format: 'date-time' };
 const nullableDateTime = { oneOf: [dateTime, { type: 'null' }] };
 const nullableString = { oneOf: [{ type: 'string' }, { type: 'null' }] };
@@ -54,6 +56,7 @@ const openApiComponents = {
     developerApiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
   },
   schemas: {
+    ...marketSchemas,
     LaunchDraft: {
       type: 'object',
       required: ['draftId', 'schemaVersion', 'network', 'ownerAddress', 'method', 'status', 'data', 'imageId', 'assetContractId', 'transactionHash', 'verifiedContractId', 'launchContractId', 'submittedAt', 'confirmedAt', 'createdAt', 'updatedAt'],
