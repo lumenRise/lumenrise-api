@@ -28,7 +28,7 @@ describe('wallet message challenge', () => {
   it('accepts a SEP-53 signature exactly once and binds the registration name', async () => {
     const wallet = Keypair.random();
 
-    vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
+    const createChallenge = vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
 
     const challenge = await createWalletChallenge(wallet.publicKey(), 'register', 'Alice');
     const signature = Buffer.from(wallet.sign(hashWalletMessage(challenge.message))).toString(
@@ -36,6 +36,7 @@ describe('wallet message challenge', () => {
     );
     const stored = {
       _id: challenge.challengeId,
+      message: challenge.message,
       messageHash: hashWalletMessage(challenge.message).toString('hex'),
     };
     const findChallenge = vi
@@ -51,6 +52,13 @@ describe('wallet message challenge', () => {
     expect(challenge.message).toContain('Version: 2');
     expect(challenge.message).toContain('Name: "Alice"');
     expect(challenge.message).not.toMatch(/[\r\n]/);
+    expect(createChallenge).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: challenge.message,
+        messageHash: stored.messageHash,
+      }),
+    );
+    expect(WalletAuthChallenge.schema.path('message').options.immutable).toBe(true);
     expect(
       await consumeSignedWalletChallenge(
         challenge.challengeId,
@@ -76,6 +84,44 @@ describe('wallet message challenge', () => {
     );
   });
 
+  it('accepts a raw UTF-8 message signature exactly once', async () => {
+    const wallet = Keypair.random();
+
+    vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
+
+    const challenge = await createWalletChallenge(wallet.publicKey(), 'login');
+    const signature = Buffer.from(wallet.sign(Buffer.from(challenge.message, 'utf8'))).toString(
+      'base64',
+    );
+    const stored = {
+      _id: challenge.challengeId,
+      message: challenge.message,
+      messageHash: hashWalletMessage(challenge.message).toString('hex'),
+    };
+
+    vi.spyOn(WalletAuthChallenge, 'findOne').mockResolvedValue(stored as never);
+    vi.spyOn(WalletAuthChallenge, 'findOneAndUpdate')
+      .mockResolvedValueOnce(stored as never)
+      .mockResolvedValueOnce(null);
+
+    expect(
+      await consumeSignedWalletChallenge(
+        challenge.challengeId,
+        wallet.publicKey(),
+        'login',
+        signature,
+      ),
+    ).toBe(true);
+    expect(
+      await consumeSignedWalletChallenge(
+        challenge.challengeId,
+        wallet.publicKey(),
+        'login',
+        signature,
+      ),
+    ).toBe(false);
+  });
+
   it('rejects a signature from another wallet without consuming the challenge', async () => {
     const wallet = Keypair.random();
 
@@ -89,6 +135,7 @@ describe('wallet message challenge', () => {
 
     vi.spyOn(WalletAuthChallenge, 'findOne').mockResolvedValue({
       _id: challenge.challengeId,
+      message: challenge.message,
       messageHash: hashWalletMessage(challenge.message).toString('hex'),
     } as never);
 
@@ -126,6 +173,7 @@ describe('wallet message challenge', () => {
 
     vi.spyOn(WalletAuthChallenge, 'findOne').mockResolvedValue({
       _id: challenge.challengeId,
+      message: challenge.message,
       messageHash: hashWalletMessage(challenge.message).toString('hex'),
     } as never);
 
@@ -137,6 +185,62 @@ describe('wallet message challenge', () => {
         signature,
       ),
     ).toBe(false);
+  });
+
+  it('rejects a raw signature for altered message content without consuming the challenge', async () => {
+    const wallet = Keypair.random();
+
+    vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
+
+    const challenge = await createWalletChallenge(wallet.publicKey(), 'login');
+    const signature = Buffer.from(
+      wallet.sign(Buffer.from(`${challenge.message} `, 'utf8')),
+    ).toString('base64');
+    const consume = vi.spyOn(WalletAuthChallenge, 'findOneAndUpdate');
+
+    vi.spyOn(WalletAuthChallenge, 'findOne').mockResolvedValue({
+      _id: challenge.challengeId,
+      message: challenge.message,
+      messageHash: hashWalletMessage(challenge.message).toString('hex'),
+    } as never);
+
+    expect(
+      await consumeSignedWalletChallenge(
+        challenge.challengeId,
+        wallet.publicKey(),
+        'login',
+        signature,
+      ),
+    ).toBe(false);
+    expect(consume).not.toHaveBeenCalled();
+  });
+
+  it('rejects a stored message that does not match its hash', async () => {
+    const wallet = Keypair.random();
+
+    vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
+
+    const challenge = await createWalletChallenge(wallet.publicKey(), 'login');
+    const signature = Buffer.from(wallet.sign(Buffer.from(challenge.message, 'utf8'))).toString(
+      'base64',
+    );
+    const consume = vi.spyOn(WalletAuthChallenge, 'findOneAndUpdate');
+
+    vi.spyOn(WalletAuthChallenge, 'findOne').mockResolvedValue({
+      _id: challenge.challengeId,
+      message: challenge.message,
+      messageHash: hashWalletMessage(`${challenge.message} `).toString('hex'),
+    } as never);
+
+    expect(
+      await consumeSignedWalletChallenge(
+        challenge.challengeId,
+        wallet.publicKey(),
+        'login',
+        signature,
+      ),
+    ).toBe(false);
+    expect(consume).not.toHaveBeenCalled();
   });
 
   it('rejects expired challenges before checking the signature', async () => {

@@ -2,6 +2,33 @@ import jsonBody from '../../utils/openapi/jsonBody';
 import jsonResponse from '../../utils/openapi/jsonResponse';
 
 const authPaths = {
+  '/v1/auth/wallet/status': {
+    get: {
+      tags: ['Authentication'],
+      summary: 'Check whether a wallet is already registered',
+      description:
+        'Call after connecting a wallet, before asking for a name or signing a challenge. Registered wallets should use login; unregistered wallets should use registration. This lookup does not prove ownership or create a session. A registered address remains reserved even if disconnected or its identity is inactive.',
+      operationId: 'getWalletStatus',
+      security: [],
+      parameters: [
+        {
+          in: 'query',
+          name: 'address',
+          required: true,
+          schema: { $ref: '#/components/schemas/StellarAddress' },
+        },
+      ],
+      responses: {
+        '200': jsonResponse('Wallet registration status.', {
+          type: 'object',
+          required: ['registered'],
+          properties: { registered: { type: 'boolean' } },
+        }),
+        '400': { $ref: '#/components/responses/BadRequest' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
   '/v1/auth/wallet/challenge': {
     post: {
       tags: ['Authentication'],
@@ -59,7 +86,8 @@ const authPaths = {
           challengeId: { $ref: '#/components/schemas/ObjectId' },
           signature: {
             type: 'string',
-            description: 'Base64-encoded Ed25519 signMessage signature.',
+            description:
+              'Base64-encoded Ed25519 signature of the exact challenge message, using SEP-53 or raw UTF-8 message bytes.',
             maxLength: 200,
           },
         },
@@ -91,7 +119,8 @@ const authPaths = {
           challengeId: { $ref: '#/components/schemas/ObjectId' },
           signature: {
             type: 'string',
-            description: 'Base64-encoded signMessage signature.',
+            description:
+              'Base64-encoded Ed25519 signature of the exact challenge message, using SEP-53 or raw UTF-8 message bytes.',
             maxLength: 200,
           },
         },

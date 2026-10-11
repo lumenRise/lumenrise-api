@@ -6,10 +6,7 @@ import { hashWalletMessage } from './hashWalletMessage';
 import { getNetworkPassphrase } from './getNetworkPassphrase';
 import WalletAuthChallenge from '../../../../models/WalletAuthChallenge';
 import { CHALLENGE_TTL_MS } from '../../../../constants/services/auth/walletChallenge';
-import type {
-  WalletAuthChallengeResult,
-  WalletAuthPurpose,
-} from '../../../../types/auth/wallet';
+import type { WalletAuthChallengeResult, WalletAuthPurpose } from '../../../../types/auth/wallet';
 
 const createWalletChallenge = async (
   address: string,
@@ -40,6 +37,7 @@ const createWalletChallenge = async (
     address,
     purpose,
     nameHash,
+    message,
     messageHash: hashWalletMessage(message).toString('hex'),
     expiresAt,
   });

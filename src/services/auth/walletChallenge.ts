@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { Keypair } from '@stellar/stellar-sdk';
 
 import type { WalletAuthPurpose } from '../../types/auth/wallet';
 import WalletAuthChallenge from '../../models/WalletAuthChallenge';
@@ -11,6 +10,7 @@ import {
   CHALLENGE_TTL_MS,
   SIGNED_MESSAGE_PREFIX,
 } from '../../constants/services/auth/walletChallenge';
+import { verifyWalletChallengeSignature } from '../../utils/services/auth/walletChallenge/verifyWalletChallengeSignature';
 
 const consumeSignedWalletChallenge = async (
   challengeId: string,
@@ -42,10 +42,7 @@ const consumeSignedWalletChallenge = async (
     if (
       signatureBytes.length !== 64 ||
       signatureBytes.toString('base64') !== signature ||
-      !Keypair.fromPublicKey(address).verify(
-        Buffer.from(challenge.messageHash, 'hex'),
-        signatureBytes,
-      )
+      !verifyWalletChallengeSignature(challenge, address, signatureBytes)
     ) {
       return false;
     }

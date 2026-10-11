@@ -2,10 +2,15 @@ import type { HydratedDocument, Types } from 'mongoose';
 
 type WalletAuthPurpose = 'register' | 'login';
 
+interface WalletStatusResult {
+  registered: boolean;
+}
+
 interface WalletAuthChallengeRecord {
   address: string;
   purpose: WalletAuthPurpose;
   nameHash: string | null;
+  message: string;
   messageHash: string;
   expiresAt: Date;
   consumedAt: Date | null;
@@ -59,5 +64,6 @@ export type {
   WalletAuthResult,
   WalletAuthServiceResult,
   WalletAuthTokenPayload,
+  WalletStatusResult,
   IssuedWalletSession,
 };
