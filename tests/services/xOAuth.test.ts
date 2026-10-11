@@ -37,7 +37,7 @@ describe('X OAuth', () => {
     expect(authorizationUrl.origin).toBe('https://x.com');
     expect(authorizationUrl.pathname).toBe('/i/oauth2/authorize');
     expect(authorizationUrl.searchParams.get('scope')).toBe(
-      'users.read tweet.read offline.access',
+      'users.read tweet.read follows.read offline.access',
     );
     expect(authorizationUrl.searchParams.get('code_challenge_method')).toBe('S256');
     expect(authorizationUrl.searchParams.get('state')).toBe(flow.state);
