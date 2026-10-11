@@ -6,6 +6,7 @@ interface WalletAuthChallengeRecord {
   address: string;
   purpose: WalletAuthPurpose;
   nameHash: string | null;
+  message: string;
   messageHash: string;
   expiresAt: Date;
   consumedAt: Date | null;

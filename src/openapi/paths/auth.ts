@@ -59,7 +59,8 @@ const authPaths = {
           challengeId: { $ref: '#/components/schemas/ObjectId' },
           signature: {
             type: 'string',
-            description: 'Base64-encoded Ed25519 signMessage signature.',
+            description:
+              'Base64-encoded Ed25519 signature of the exact challenge message, using SEP-53 or raw UTF-8 message bytes.',
             maxLength: 200,
           },
         },
@@ -91,7 +92,8 @@ const authPaths = {
           challengeId: { $ref: '#/components/schemas/ObjectId' },
           signature: {
             type: 'string',
-            description: 'Base64-encoded signMessage signature.',
+            description:
+              'Base64-encoded Ed25519 signature of the exact challenge message, using SEP-53 or raw UTF-8 message bytes.',
             maxLength: 200,
           },
         },
