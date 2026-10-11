@@ -420,7 +420,7 @@ const openApiComponents = {
         message: {
           type: 'string',
           description:
-            'Sign these exact bytes with the wallet signMessage method. Do not submit a transaction.',
+            'Single-line text to sign exactly with the wallet signMessage method. Do not submit a transaction.',
         },
         networkPassphrase: { type: 'string' },
         expiresAt: dateTime,

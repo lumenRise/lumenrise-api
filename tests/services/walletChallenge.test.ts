@@ -48,6 +48,9 @@ describe('wallet message challenge', () => {
 
     expect(challenge.message).toContain(`Address: ${wallet.publicKey()}`);
     expect(challenge.message).toContain('Purpose: register');
+    expect(challenge.message).toContain('Version: 2');
+    expect(challenge.message).toContain('Name: "Alice"');
+    expect(challenge.message).not.toMatch(/[\r\n]/);
     expect(
       await consumeSignedWalletChallenge(
         challenge.challengeId,
@@ -98,6 +101,17 @@ describe('wallet message challenge', () => {
       ),
     ).toBe(false);
     expect(consumed).not.toHaveBeenCalled();
+  });
+
+  it('keeps the challenge on one line when the name contains a newline', async () => {
+    const wallet = Keypair.random();
+
+    vi.spyOn(WalletAuthChallenge, 'create').mockResolvedValue({} as never);
+
+    const challenge = await createWalletChallenge(wallet.publicKey(), 'register', 'Alice\nBob');
+
+    expect(challenge.message).toContain('Name: "Alice\\nBob"');
+    expect(challenge.message).not.toMatch(/[\r\n]/);
   });
 
   it('rejects a signature for altered message content', async () => {
