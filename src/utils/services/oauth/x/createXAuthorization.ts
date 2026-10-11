@@ -39,7 +39,7 @@ const createXAuthorization = async (
   authorizationUrl.searchParams.set('response_type', 'code');
   authorizationUrl.searchParams.set('client_id', env.X_CLIENT_ID);
   authorizationUrl.searchParams.set('redirect_uri', env.X_CALLBACK_URL);
-  authorizationUrl.searchParams.set('scope', 'users.read tweet.read offline.access');
+  authorizationUrl.searchParams.set('scope', 'users.read tweet.read follows.read offline.access');
   authorizationUrl.searchParams.set('state', state);
   authorizationUrl.searchParams.set('code_challenge', codeChallenge);
   authorizationUrl.searchParams.set('code_challenge_method', 'S256');
