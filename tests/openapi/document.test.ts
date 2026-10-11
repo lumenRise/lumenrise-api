@@ -24,6 +24,7 @@ const expectedOperations = [
   'GET /v1/user',
   'PUT /v1/user/avatar',
   'DELETE /v1/user/avatar',
+  'GET /v1/auth/wallet/status',
   'POST /v1/auth/wallet/challenge',
   'POST /v1/auth/wallet/register',
   'POST /v1/auth/wallet/login',
