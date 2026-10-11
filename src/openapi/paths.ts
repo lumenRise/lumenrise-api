@@ -9,6 +9,7 @@ import launchPaths from './paths/launches';
 import developerPaths from './paths/developers';
 import reputationPaths from './paths/reputation';
 import connectionPaths from './paths/connections';
+import launchMarketPaths from './paths/launchMarket';
 
 const openApiPaths = {
   ...authPaths,
@@ -22,6 +23,7 @@ const openApiPaths = {
   ...connectionPaths,
   ...reputationPaths,
   ...launchPaths,
+  ...launchMarketPaths,
 };
 
 export default openApiPaths;
