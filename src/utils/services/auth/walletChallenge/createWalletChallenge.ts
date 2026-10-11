@@ -24,16 +24,16 @@ const createWalletChallenge = async (
 
   const message = [
     'Lumenrise Wallet Authentication',
-    'Version: 1',
+    'Version: 2',
     `Purpose: ${purpose}`,
     `Network: ${networkPassphrase}`,
     `Address: ${address}`,
     `Challenge ID: ${challengeId.toString()}`,
     `Nonce: ${nonce}`,
-    `Name: ${name ?? 'none'}`,
+    `Name: ${JSON.stringify(name ?? 'none')}`,
     `Name Hash: ${nameHash ?? 'none'}`,
     `Expires At: ${expiresAt.toISOString()}`,
-  ].join('\n');
+  ].join(' | ');
 
   await WalletAuthChallenge.create({
     _id: challengeId,

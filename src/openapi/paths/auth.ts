@@ -7,7 +7,7 @@ const authPaths = {
       tags: ['Authentication'],
       summary: 'Create a single-use wallet signing challenge',
       description:
-        'Sign the returned message exactly as supplied. Challenges expire after five minutes and are consumed once. No Stellar transaction is submitted.',
+        'Sign the returned single-line message exactly as supplied. Challenges expire after five minutes and are consumed once. No Stellar transaction is submitted.',
       operationId: 'createWalletChallenge',
       security: [],
       requestBody: jsonBody({
