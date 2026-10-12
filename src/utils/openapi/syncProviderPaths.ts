@@ -6,7 +6,9 @@ const syncProviderPaths = (provider: string, displayName: string) => ({
       tags: ['Connections'],
       summary: `Queue ${displayName} synchronization`,
       description:
-        'Requires a connected provider account. Synchronization is manual only, limited to one request per provider per identity every 15 minutes. A background worker processes the job; inspect the returned status URL.',
+        provider === 'x'
+          ? 'Connect X first, then explicitly request score calculation. Connection alone does not calculate a score. One accepted request per identity every rolling 30 days, including after reconnecting. A background worker processes the job; inspect the returned status URL. Missing selected-account relationships award zero points.'
+          : 'Requires a connected provider account. Synchronization is manual only, limited to one request per provider per identity every 15 minutes. A background worker processes the job; inspect the returned status URL.',
       operationId: `queue${displayName}Sync`,
       responses: {
         '202': {

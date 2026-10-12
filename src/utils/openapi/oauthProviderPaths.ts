@@ -23,7 +23,9 @@ const oauthProviderPaths = (provider: string, displayName: string) => ({
       tags: ['Connections'],
       summary: `Complete ${displayName} OAuth callback`,
       description:
-        'Provider redirect endpoint. Verifies the state cookie, connects the account, queues an initial sync, then redirects the browser to the client onboarding page with provider, status, username and syncJobId query parameters as available. It also redirects on failure.',
+        provider === 'x'
+          ? 'Verifies the state cookie, connects X and stores OAuth credentials, then redirects with provider, status and username. Does not queue synchronization or calculate a score. Request POST /v1/connections/x/sync explicitly when ready.'
+          : 'Provider redirect endpoint. Verifies the state cookie, connects the account, queues an initial sync, then redirects the browser to the client onboarding page with provider, status, username and syncJobId query parameters as available. It also redirects on failure.',
       operationId: `callback${displayName}`,
       security: [],
       parameters: [

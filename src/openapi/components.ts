@@ -4,7 +4,11 @@ const dateTime = { type: 'string', format: 'date-time' };
 const nullableDateTime = { oneOf: [dateTime, { type: 'null' }] };
 const nullableString = { oneOf: [{ type: 'string' }, { type: 'null' }] };
 const objectId = { type: 'string', pattern: '^[a-fA-F0-9]{24}$' };
-const unsignedAmount = { type: 'string', pattern: '^\\d+$', description: 'Exact integer in 7-decimal token stroops or Unix seconds, as applicable.' };
+const unsignedAmount = {
+  type: 'string',
+  pattern: '^\\d+$',
+  description: 'Exact integer in 7-decimal token stroops or Unix seconds, as applicable.',
+};
 const stellarAddress = {
   type: 'string',
   pattern: '^G[A-Z2-7]{55}$',
@@ -59,14 +63,34 @@ const openApiComponents = {
     ...marketSchemas,
     LaunchDraft: {
       type: 'object',
-      required: ['draftId', 'schemaVersion', 'network', 'ownerAddress', 'method', 'status', 'data', 'imageId', 'assetContractId', 'transactionHash', 'verifiedContractId', 'launchContractId', 'submittedAt', 'confirmedAt', 'createdAt', 'updatedAt'],
+      required: [
+        'draftId',
+        'schemaVersion',
+        'network',
+        'ownerAddress',
+        'method',
+        'status',
+        'data',
+        'imageId',
+        'assetContractId',
+        'transactionHash',
+        'verifiedContractId',
+        'launchContractId',
+        'submittedAt',
+        'confirmedAt',
+        'createdAt',
+        'updatedAt',
+      ],
       properties: {
         draftId: objectId,
         schemaVersion: { type: 'integer', const: 1 },
         network: { type: 'string', enum: ['testnet', 'public'] },
         ownerAddress: stellarAddress,
         method: { type: 'string', const: 'bonding' },
-        status: { type: 'string', enum: ['editing', 'submitted', 'confirmed', 'unmatched', 'failed'] },
+        status: {
+          type: 'string',
+          enum: ['editing', 'submitted', 'confirmed', 'unmatched', 'failed'],
+        },
         data: { type: 'object', description: 'Private form snapshot; editable before submission.' },
         imageId: { oneOf: [objectId, { type: 'null' }] },
         assetContractId: nullableString,
@@ -91,9 +115,21 @@ const openApiComponents = {
     Launch: {
       type: 'object',
       required: [
-        'network', 'factoryContractId', 'factoryIndex', 'contractId', 'owner', 'asset',
-        'pair', 'metadata', 'config', 'state', 'asOfLedger', 'observedAt',
-        'stateAsOfLedger', 'stateObservedAt', 'bonding',
+        'network',
+        'factoryContractId',
+        'factoryIndex',
+        'contractId',
+        'owner',
+        'asset',
+        'pair',
+        'metadata',
+        'config',
+        'state',
+        'asOfLedger',
+        'observedAt',
+        'stateAsOfLedger',
+        'stateObservedAt',
+        'bonding',
       ],
       properties: {
         network: { type: 'string', enum: ['testnet', 'public'] },
@@ -126,18 +162,42 @@ const openApiComponents = {
     },
     BondingSummary: {
       type: 'object',
-      description: 'Derived from the stored, confirmed curve config and latest indexed state. Null for records without the current Bonding fields.',
-      required: ['version', 'status', 'statusAsOf', 'stateStale', 'startsAt', 'endsAt', 'totalSupply', 'allocations', 'buckets', 'vesting', 'curve', 'state', 'progressBps'],
+      description:
+        'Derived from the stored, confirmed curve config and latest indexed state. Null for records without the current Bonding fields.',
+      required: [
+        'version',
+        'status',
+        'statusAsOf',
+        'stateStale',
+        'startsAt',
+        'endsAt',
+        'totalSupply',
+        'allocations',
+        'buckets',
+        'vesting',
+        'curve',
+        'state',
+        'progressBps',
+      ],
       properties: {
         version: { type: 'integer', const: 1 },
-        status: { type: 'string', enum: ['Scheduled', 'Open', 'Failed', 'Graduated'], description: 'Derived using server time and the latest indexed graduated flag; check stateStale.' },
+        status: {
+          type: 'string',
+          enum: ['Scheduled', 'Open', 'Failed', 'Graduated'],
+          description:
+            'Derived using server time and the latest indexed graduated flag; check stateStale.',
+        },
         statusAsOf: dateTime,
-        stateStale: { type: 'boolean', description: 'True when the latest state observation is older than 60 seconds.' },
+        stateStale: {
+          type: 'boolean',
+          description: 'True when the latest state observation is older than 60 seconds.',
+        },
         startsAt: unsignedAmount,
         endsAt: unsignedAmount,
         totalSupply: unsignedAmount,
         allocations: {
-          type: 'object', required: ['poolBps', 'curveBps', 'teamBps'],
+          type: 'object',
+          required: ['poolBps', 'curveBps', 'teamBps'],
           properties: {
             poolBps: { type: 'integer', minimum: 0 },
             curveBps: { type: 'integer', minimum: 0 },
@@ -145,11 +205,13 @@ const openApiComponents = {
           },
         },
         buckets: {
-          type: 'object', required: ['pool', 'curve', 'team'],
+          type: 'object',
+          required: ['pool', 'curve', 'team'],
           properties: { pool: unsignedAmount, curve: unsignedAmount, team: unsignedAmount },
         },
         vesting: {
-          type: 'object', required: ['cliffSeconds', 'durationSeconds', 'schedule'],
+          type: 'object',
+          required: ['cliffSeconds', 'durationSeconds', 'schedule'],
           properties: {
             cliffSeconds: unsignedAmount,
             durationSeconds: unsignedAmount,
@@ -158,7 +220,14 @@ const openApiComponents = {
         },
         curve: {
           type: 'object',
-          required: ['graduationTarget', 'virtualBaseReserve', 'virtualQuoteReserve', 'creatorFeeBps', 'creatorPayoutBps', 'platformFeeBps'],
+          required: [
+            'graduationTarget',
+            'virtualBaseReserve',
+            'virtualQuoteReserve',
+            'creatorFeeBps',
+            'creatorPayoutBps',
+            'platformFeeBps',
+          ],
           properties: {
             graduationTarget: unsignedAmount,
             virtualBaseReserve: unsignedAmount,
@@ -170,7 +239,14 @@ const openApiComponents = {
         },
         state: {
           type: 'object',
-          required: ['sold', 'quoteReserve', 'creatorFees', 'teamClaimed', 'buyerCount', 'graduated'],
+          required: [
+            'sold',
+            'quoteReserve',
+            'creatorFees',
+            'teamClaimed',
+            'buyerCount',
+            'graduated',
+          ],
           properties: {
             sold: unsignedAmount,
             quoteReserve: unsignedAmount,
@@ -180,7 +256,13 @@ const openApiComponents = {
             graduated: { type: 'boolean' },
           },
         },
-        progressBps: { type: 'integer', minimum: 0, maximum: 10000, description: 'Capped net quote reserve / graduation target in basis points; creator fees are excluded.' },
+        progressBps: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 10000,
+          description:
+            'Capped net quote reserve / graduation target in basis points; creator fees are excluded.',
+        },
       },
     },
     LaunchList: {
@@ -491,6 +573,14 @@ const openApiComponents = {
         avatarUrl: nullableString,
         connectedAt: dateTime,
         lastSyncedAt: nullableDateTime,
+        canUpdateScore: {
+          type: 'boolean',
+          description: 'For X, whether a score update may be requested now.',
+        },
+        nextScoreUpdateAt: {
+          ...nullableDateTime,
+          description: 'For X, the next eligible update time; null when available.',
+        },
         data: {
           oneOf: [
             {
@@ -533,7 +623,7 @@ const openApiComponents = {
         provider: { type: 'string', enum: ['github', 'x'] },
         key: { type: 'string' },
         rawValue: { type: 'number' },
-        normalization: { type: 'string', const: 'diminishing_returns' },
+        normalization: { type: 'string', enum: ['diminishing_returns', 'linear'] },
         scale: { type: 'number' },
         baseWeight: { type: 'number' },
         normalizedScore: { type: 'number' },
@@ -557,7 +647,7 @@ const openApiComponents = {
         category: { type: 'string', enum: ['developer', 'social'] },
         status: { type: 'string', enum: ['complete', 'partial', 'failed'] },
         algorithmVersion: { type: 'string' },
-        score: { oneOf: [{ type: 'number', minimum: 0, maximum: 100 }, { type: 'null' }] },
+        score: { oneOf: [{ type: 'number', minimum: 0, maximum: 300 }, { type: 'null' }] },
         signals: { type: 'array', items: { $ref: '#/components/schemas/ReputationSignal' } },
         sources: {
           type: 'array',
@@ -670,9 +760,23 @@ const openApiComponents = {
           properties: {
             profile: { type: 'boolean' },
             posts: { type: 'boolean' },
+            connections: { type: 'boolean' },
           },
         },
         metrics: numberMetrics,
+        connections: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['username', 'connectionStatus'],
+            properties: {
+              username: { type: 'string' },
+              connectionStatus: {
+                oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }],
+              },
+            },
+          },
+        },
         activityFrom: nullableDateTime,
         activityTo: dateTime,
         collectedAt: dateTime,

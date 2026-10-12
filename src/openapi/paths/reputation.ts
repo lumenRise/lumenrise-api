@@ -69,7 +69,8 @@ const reputationPaths = {
       tags: ['Reputation'],
       summary: 'Page through collected GitHub repositories',
       operationId: 'getGitHubRepositories',
-      description: 'Historical GitHub snapshots and their repository pages are retained for 90 days.',
+      description:
+        'Historical GitHub snapshots and their repository pages are retained for 90 days.',
       parameters: paginationParameters,
       responses: {
         '200': jsonResponse('Repositories retrieved.', {
@@ -114,7 +115,8 @@ const reputationPaths = {
       tags: ['Reputation'],
       summary: 'Get explainable X social score',
       operationId: 'getSocialScore',
-      description: 'Returns a complete or partial score only from the current connected X account. Scores older than 90 days, or from a disconnected or previous account, are unavailable.',
+      description:
+        'Returns the manually calculated 0–300 score for the current connected X account. Missing selected-account relationships earn zero points and do not make the score partial. Connect X first, then POST /v1/connections/x/sync when ready; accepted calculations are limited to one per rolling 30 days. Scores older than 90 days, or from a disconnected or previous account, are unavailable.',
       responses: {
         '200': jsonResponse('Social score retrieved.', {
           $ref: '#/components/schemas/ReputationScore',
