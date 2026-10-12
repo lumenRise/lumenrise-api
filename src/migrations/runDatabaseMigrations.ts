@@ -20,6 +20,7 @@ import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes
 import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes';
 import createIntegrationSyncJobIndexes from './20260922CreateIntegrationSyncJobIndexes';
 import createStellarPaymentFactIndexes from './20260925CreateStellarPaymentFactIndexes';
+import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
 import createStellarActivityScanIndexes from './20260924CreateStellarActivityScanIndexes';
 import createWalletAuthChallengeIndexes from './20260924CreateWalletAuthChallengeIndexes';
 import createManualRefreshCooldownIndexes from './20260925CreateManualRefreshCooldownIndexes';
@@ -47,6 +48,7 @@ const migrations: readonly MigrationDefinition[] = [
   createTokenImageCleanupIndex,
   createLaunchDraftIndexes,
   createLaunchMarketIndexes,
+  authProviderAndTokenImageIndexes,
 ];
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();
