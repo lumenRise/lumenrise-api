@@ -23,7 +23,7 @@ const validConfiguration: RuntimeConfiguration = {
   R2_MAX_AVATAR_BYTES: 5_242_880,
   R2_MAX_TOKEN_IMAGE_BYTES: 5_242_880,
   STELLAR_AUTH_NETWORK: 'testnet',
-  AUTH_PROVIDER_API_URL: 'https://identity.example/server',
+  AUTH_PROVIDER_API_URL: 'https://identity.example',
   AUTH_PROVIDER_APP_ID: 'app-id',
   AUTH_PROVIDER_APP_SECRET: 'app-secret',
   CREDENTIAL_ENCRYPTION_KEY: 'a'.repeat(64),

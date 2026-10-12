@@ -8,7 +8,7 @@ import {
 
 vi.mock('../../src/env', () => ({
   default: {
-    AUTH_PROVIDER_API_URL: 'https://identity.example/server',
+    AUTH_PROVIDER_API_URL: 'https://identity.example',
     AUTH_PROVIDER_APP_ID: 'app-id',
     AUTH_PROVIDER_APP_SECRET: 'app-secret',
   },
