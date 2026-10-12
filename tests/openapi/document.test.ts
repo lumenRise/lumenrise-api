@@ -18,6 +18,7 @@ const expectedOperations = [
   'GET /v1/launches/{contractId}',
   'GET /v1/launches/{contractId}/market',
   'GET /v1/launches/{contractId}/trades',
+  'POST /v1/launches/{contractId}/trades',
   'GET /v1/launches/{contractId}/chart',
   'POST /v1/launches/images',
   'GET /v1/launches/images/{imageId}',
