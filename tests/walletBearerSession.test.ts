@@ -3,59 +3,58 @@ import { Types } from 'mongoose';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import app from '../src/app';
-import Session from '../src/models/Session';
 import Identity from '../src/models/Identity';
-import { issueWalletSession } from '../src/services/auth/walletToken';
 
-describe('wallet bearer authentication', () => {
+const identityId = new Types.ObjectId();
+
+describe('Auth provider user ID authentication', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('authenticates a valid JWT against its revocable database session', async () => {
-    const identityId = new Types.ObjectId();
-
-    vi.spyOn(Session, 'create').mockResolvedValue([] as never);
-    const issued = await issueWalletSession(identityId);
-    const save = vi.fn().mockResolvedValue(undefined);
-    const findSession = vi.spyOn(Session, 'findOne').mockResolvedValue({
-      _id: issued.sessionId,
-      identity: identityId,
-      expiresAt: issued.expiresAt,
-      lastSeenAt: new Date(),
-      save,
+  it('identifies an active user locally without a session or Auth provider request', async () => {
+    const fetch = vi.spyOn(globalThis, 'fetch');
+    const lookup = vi.spyOn(Identity, 'findOne').mockReturnValue({
+      select: vi.fn().mockResolvedValue({ _id: identityId, status: 'active' }),
     } as never);
-
-    vi.spyOn(Identity, 'findOne').mockReturnValue({
-      select: vi.fn().mockResolvedValue({ _id: identityId }),
-    } as never);
-    vi.spyOn(Session, 'findById').mockReturnValue({
-      select: vi.fn().mockResolvedValue({ expiresAt: issued.expiresAt }),
-    } as never);
-
-    const response = await request(app)
-      .get('/v1/auth/session')
-      .set('Authorization', `Bearer ${issued.token}`);
-
+    const response = await request(app).get('/v1/auth/session').set('X-User-Id', '42');
     expect(response.status).toBe(200);
-    expect(response.body.result.identityId).toBe(identityId.toString());
-    expect(findSession).toHaveBeenCalledWith(
-      expect.objectContaining({
-        _id: issued.sessionId.toString(),
-        identity: identityId.toString(),
-      }),
-    );
-    expect(save).toHaveBeenCalledOnce();
+    expect(response.body.result).toEqual({ identityId: identityId.toString(), userId: '42' });
+    expect(lookup).toHaveBeenCalledWith({ externalUserId: '42' });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(response.headers['set-cookie']).toBeUndefined();
   });
 
-  it('rejects a tampered bearer even if another cookie exists', async () => {
-    const findSession = vi.spyOn(Session, 'findOne');
+  it('ignores legacy bearer tokens and session cookies', async () => {
+    const lookup = vi.spyOn(Identity, 'findOne');
     const response = await request(app)
       .get('/v1/auth/session')
-      .set('Authorization', 'Bearer invalid.jwt.token')
-      .set('Cookie', 'lumenrise_session=some-cookie');
-
+      .set('Authorization', 'Bearer old.jwt.token')
+      .set('Cookie', 'lumenrise_session=old-cookie');
     expect(response.status).toBe(401);
-    expect(findSession).not.toHaveBeenCalled();
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
+  it.each(['invalid', '0', '-1', '42.0', '042', '9007199254740992'])(
+    'rejects invalid IDs: %s',
+    async (id) => {
+      const lookup = vi.spyOn(Identity, 'findOne');
+      expect((await request(app).get('/v1/auth/session').set('X-User-Id', id)).status).toBe(401);
+      expect(lookup).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['suspended', 'deleted'])('rejects %s identities', async (status) => {
+    vi.spyOn(Identity, 'findOne').mockReturnValue({
+      select: vi.fn().mockResolvedValue({ _id: identityId, status }),
+    } as never);
+    expect((await request(app).get('/v1/auth/session').set('X-User-Id', '42')).status).toBe(403);
+  });
+
+  it('rejects an unregistered ID', async () => {
+    vi.spyOn(Identity, 'findOne').mockReturnValue({
+      select: vi.fn().mockResolvedValue(null),
+    } as never);
+    expect((await request(app).get('/v1/auth/session').set('X-User-Id', '42')).status).toBe(401);
   });
 });

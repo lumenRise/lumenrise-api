@@ -10,7 +10,8 @@ interface SessionRecord {
 }
 
 interface AuthContext {
-  sessionId: Types.ObjectId;
+  sessionId?: Types.ObjectId;
+  userId?: string;
   identityId: Types.ObjectId;
 }
 
