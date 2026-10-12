@@ -37,14 +37,6 @@ const schema = defineConfig({
     example: 'application-secret',
     secret: true,
   },
-  SESSION_TTL_DAYS: {
-    type: 'number',
-    default: 30,
-  },
-  AUTH_JWT_SECRET: {
-    default: '',
-    example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
-  },
   STELLAR_AUTH_NETWORK: {
     type: 'enum',
     values: ['testnet', 'public'],
