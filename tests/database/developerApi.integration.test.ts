@@ -2,22 +2,35 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { randomUUID } from 'node:crypto';
 import { Keypair } from '@stellar/stellar-sdk';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import app from '../../src/app';
-import Session from '../../src/models/Session';
 import Identity from '../../src/models/Identity';
 import StellarAccount from '../../src/models/StellarAccount';
 import DeveloperApiKey from '../../src/models/DeveloperApiKey';
 import DeveloperApiUsage from '../../src/models/DeveloperApiUsage';
 import createApiKey from '../../src/services/developer/createApiKey';
-import WalletAuthChallenge from '../../src/models/WalletAuthChallenge';
 import reserveApiUsage from '../../src/services/developer/reserveApiUsage';
-import { hashWalletMessage } from '../../src/utils/services/auth/walletChallenge/hashWalletMessage';
 
 const databaseName = `lumenrise_developer_test_${randomUUID().replaceAll('-', '')}`;
 const wallet = Keypair.random();
-let bearer: string;
+const userId = '42';
+
+vi.mock('../../src/env', async (original) => {
+  const module = await original<{ default: Record<string, unknown> }>();
+  return {
+    default: {
+      ...module.default,
+      AUTH_PROVIDER_API_URL: 'https://identity.example/server',
+      AUTH_PROVIDER_APP_ID: 'app-id',
+      AUTH_PROVIDER_APP_SECRET: 'app-secret',
+    },
+  };
+});
+vi.mock('../../src/services/auth/provider', async (original) => ({
+  ...(await original<Record<string, unknown>>()),
+  getVerifiedProviderAddresses: vi.fn(async () => [wallet.publicKey()]),
+}));
 let identityId: string;
 let apiKey: string;
 let keyId: string;
@@ -30,12 +43,10 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('developer API access
       serverSelectionTimeoutMS: 5_000,
     });
     await Promise.all([
-      Session.createIndexes(),
       Identity.createIndexes(),
       StellarAccount.createIndexes(),
       DeveloperApiKey.createIndexes(),
       DeveloperApiUsage.createIndexes(),
-      WalletAuthChallenge.createIndexes(),
     ]);
   });
 
@@ -47,32 +58,20 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('developer API access
     await mongoose.disconnect();
   });
 
-  it('requires a wallet session to create a key and never returns its secret in listings', async () => {
+  it('requires a registered Auth provider user to create a key and never returns its secret in listings', async () => {
     expect((await request(app).post('/v1/developers/keys').send({ label: 'My app' })).status).toBe(
       401,
     );
-    const challenge = await request(app).post('/v1/auth/wallet/challenge').send({
-      address: wallet.publicKey(),
-      purpose: 'register',
-      name: 'Developer Test',
+    const registered = await request(app).post('/v1/auth/register').send({
+      userId,
+      name: 'Integration Test',
     });
-    const signature = Buffer.from(
-      wallet.sign(hashWalletMessage(challenge.body.result.message)),
-    ).toString('base64');
-    const registered = await request(app).post('/v1/auth/wallet/register').send({
-      address: wallet.publicKey(),
-      name: 'Developer Test',
-      challengeId: challenge.body.result.challengeId,
-      signature,
-    });
-
-    expect(registered.status).toBe(201);
-    bearer = registered.body.result.accessToken;
+    expect(registered.status, registered.body.message).toBe(200);
     identityId = registered.body.result.identityId;
 
     const created = await request(app)
       .post('/v1/developers/keys')
-      .auth(bearer, { type: 'bearer' })
+      .set('X-User-Id', userId)
       .send({ label: 'My app' });
 
     expect(created.status).toBe(201);
@@ -85,17 +84,17 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('developer API access
 
     expect(stored?.tokenHash).not.toBe(apiKey);
 
-    const listed = await request(app).get('/v1/developers/keys').auth(bearer, { type: 'bearer' });
+    const listed = await request(app).get('/v1/developers/keys').set('X-User-Id', userId);
 
     expect(listed.status).toBe(200);
     expect(listed.body.result.keys[0]).not.toHaveProperty('apiKey');
     expect(listed.body.result.keys[0]).not.toHaveProperty('tokenHash');
   });
 
-  it('only reads the identity owning the key and rejects bearer-only access', async () => {
-    expect(
-      (await request(app).get('/v1/developers/profile').auth(bearer, { type: 'bearer' })).status,
-    ).toBe(401);
+  it('only reads the identity owning the key and requires a developer key for profile access', async () => {
+    expect((await request(app).get('/v1/developers/profile').set('X-User-Id', userId)).status).toBe(
+      401,
+    );
 
     const mine = await request(app).get('/v1/developers/profile').set('X-API-Key', apiKey);
 
@@ -148,13 +147,13 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('developer API access
     const otherKey = await DeveloperApiKey.findOne({ identity: other!._id });
     const forbidden = await request(app)
       .delete(`/v1/developers/keys/${otherKey!._id.toString()}`)
-      .auth(bearer, { type: 'bearer' });
+      .set('X-User-Id', userId);
 
     expect(forbidden.status).toBe(404);
 
     const revoked = await request(app)
       .delete(`/v1/developers/keys/${keyId}`)
-      .auth(bearer, { type: 'bearer' });
+      .set('X-User-Id', userId);
 
     expect(revoked.status).toBe(200);
     expect((await request(app).get('/v1/developers/profile').set('X-API-Key', apiKey)).status).toBe(
