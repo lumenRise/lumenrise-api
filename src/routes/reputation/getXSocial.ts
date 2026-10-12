@@ -46,6 +46,7 @@ const getXSocialRoute: RequestHandler = async (req, res) => {
       username: snapshot.username,
       coverage: snapshot.coverage,
       metrics: snapshot.metrics,
+      connections: snapshot.connections ?? [],
       activityFrom: snapshot.activityFrom?.toISOString() ?? null,
       activityTo: snapshot.activityTo.toISOString(),
       collectedAt: snapshot.collectedAt.toISOString(),

@@ -4,7 +4,7 @@ import type { ExternalAccountProvider } from '../integration/model';
 
 type ReputationCategory = 'social' | 'developer';
 type ReputationSnapshotStatus = 'complete' | 'partial' | 'failed';
-type ReputationNormalization = 'diminishing_returns';
+type ReputationNormalization = 'diminishing_returns' | 'linear';
 
 interface ReputationSignalRecord {
   provider: ExternalAccountProvider;
