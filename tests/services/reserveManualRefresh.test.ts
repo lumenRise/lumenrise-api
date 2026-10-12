@@ -53,4 +53,16 @@ describe('manual refresh reservation', () => {
       reservedUntil: null,
     });
   });
+  it('reserves 30 days for X without changing other provider intervals', async () => {
+    const identity = new Types.ObjectId();
+    const now = new Date('2026-10-13T00:00:00.000Z');
+    vi.mocked(ManualRefreshCooldown.findOneAndUpdate).mockResolvedValue({} as never);
+    const result = await reserveManualRefresh(identity, 'x-sync', now);
+    expect(result.reservedUntil).toEqual(new Date('2026-11-12T00:00:00.000Z'));
+    expect(ManualRefreshCooldown.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ identity, target: 'x-sync' }),
+      expect.objectContaining({ $set: { nextAllowedAt: result.reservedUntil } }),
+      expect.anything(),
+    );
+  });
 });

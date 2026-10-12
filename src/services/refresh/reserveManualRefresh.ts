@@ -1,5 +1,6 @@
 import type { Types } from 'mongoose';
 
+import { X_SYNC_MIN_INTERVAL_MS } from '../../constants/integration';
 import { MANUAL_REFRESH_INTERVAL_MS } from '../../constants/refresh';
 import ManualRefreshCooldown from '../../models/ManualRefreshCooldown';
 import type { ManualRefreshReservation } from '../../types/refresh/cooldown';
@@ -9,7 +10,8 @@ const reserveManualRefresh = async (
   target: string,
   now = new Date(),
 ): Promise<ManualRefreshReservation> => {
-  const nextAllowedAt = new Date(now.getTime() + MANUAL_REFRESH_INTERVAL_MS);
+  const interval = target === 'x-sync' ? X_SYNC_MIN_INTERVAL_MS : MANUAL_REFRESH_INTERVAL_MS;
+  const nextAllowedAt = new Date(now.getTime() + interval);
 
   try {
     const cooldown = await ManualRefreshCooldown.findOneAndUpdate(

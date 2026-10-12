@@ -7,6 +7,7 @@ import GitHubDataSnapshot from '../../models/GitHubDataSnapshot';
 import IntegrationSyncJob from '../../models/IntegrationSyncJob';
 import createIntegrationSyncJobResult from '../../services/integration/syncJobResult';
 import type { ConnectionResult, ConnectionsResult } from '../../types/integration/response';
+import getXScoreUpdateAvailability from '../../services/integration/getXScoreUpdateAvailability';
 
 const getConnectionsRoute: RequestHandler = async (req, res) => {
   const accounts = await ExternalAccount.find({
@@ -41,6 +42,7 @@ const getConnectionsRoute: RequestHandler = async (req, res) => {
           : null;
 
       return {
+        ...(account.provider === 'x' ? await getXScoreUpdateAvailability(account) : {}),
         provider: account.provider,
         username: account.username,
         displayName: account.displayName,

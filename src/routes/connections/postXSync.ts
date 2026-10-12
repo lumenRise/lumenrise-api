@@ -8,6 +8,7 @@ import reserveManualRefresh from '../../services/refresh/reserveManualRefresh';
 import releaseManualRefresh from '../../services/refresh/releaseManualRefresh';
 import sendManualRefreshLimit from '../../utils/routes/sendManualRefreshLimit';
 import createIntegrationSyncJobResult from '../../services/integration/syncJobResult';
+import getXScoreUpdateAvailability from '../../services/integration/getXScoreUpdateAvailability';
 
 const postXSyncRoute: RequestHandler = async (req, res) => {
   const account = await ExternalAccount.findOne({
@@ -24,6 +25,12 @@ const postXSyncRoute: RequestHandler = async (req, res) => {
     };
 
     return res.status(404).json(response);
+  }
+
+  const availability = await getXScoreUpdateAvailability(account);
+
+  if (!availability.canUpdateScore && availability.nextScoreUpdateAt) {
+    return sendManualRefreshLimit(res, new Date(availability.nextScoreUpdateAt));
   }
 
   const reservation = await reserveManualRefresh(account.identity, 'x-sync');
