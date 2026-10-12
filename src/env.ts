@@ -28,7 +28,7 @@ const schema = defineConfig({
     default: 'http://localhost:5173',
   },
   AUTH_PROVIDER_API_URL: {
-    example: 'https://identity.example/server',
+    example: 'https://identity.example',
   },
   AUTH_PROVIDER_APP_ID: {
     example: 'application-id',

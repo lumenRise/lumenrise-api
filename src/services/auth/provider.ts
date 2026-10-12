@@ -4,7 +4,7 @@ import { requestAuthProvider } from '../../utils/services/auth/provider/requestA
 import { parseExternalUserId } from '../../utils/services/auth/provider/parseExternalUserId';
 
 const getVerifiedProviderAddresses = async (userId: string): Promise<string[] | null> => {
-  const user = await requestAuthProvider(`users/${userId}`);
+  const user = await requestAuthProvider(`server/users/${userId}`);
 
   if (user === null) {
     return null;
@@ -43,7 +43,7 @@ const getVerifiedProviderAddresses = async (userId: string): Promise<string[] | 
   ];
 
   for (const address of addresses) {
-    const result = await requestAuthProvider('wallets/verify', {
+    const result = await requestAuthProvider('server/wallets/verify', {
       address,
       user_id: Number(userId),
     });
