@@ -1,124 +1,58 @@
 import type { Response } from 'express';
-import { StrKey } from '@stellar/stellar-sdk';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import Launch from '../src/models/Launch';
-import request from './helpers/createMarketRequest';
 import LaunchTrade from '../src/models/LaunchTrade';
+import request from './helpers/createMarketRequest';
 import response from './helpers/createMarketResponse';
 import getChart from '../src/routes/launches/getChart';
 import getTrades from '../src/routes/launches/getTrades';
 import getMarket from '../src/routes/launches/getMarket';
-import bondingPrice from '../src/utils/launch/bondingPrice';
 import LaunchPriceSample from '../src/models/LaunchPriceSample';
-import LaunchTradeCursor from '../src/models/LaunchTradeCursor';
-import decimalInteger from '../src/utils/launch/decimalInteger';
 
-vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn(), exists: vi.fn() } }));
-vi.mock('../src/models/LaunchTrade', () => ({
-  default: { aggregate: vi.fn(), find: vi.fn(), findOne: vi.fn() },
-}));
-vi.mock('../src/models/LaunchPriceSample', () => ({
-  default: { aggregate: vi.fn(), findOne: vi.fn() },
-}));
-vi.mock('../src/models/LaunchTradeCursor', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet', LOG_LEVEL: 'silent', NODE_ENV: 'test' } }));
 
-const contractId = StrKey.encodeContract(Buffer.alloc(32, 1));
+vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../src/models/LaunchTrade', () => ({ default: { aggregate: vi.fn(), find: vi.fn() } }));
+vi.mock('../src/models/LaunchPriceSample', () => ({ default: { aggregate: vi.fn(), findOne: vi.fn() } }));
 const now = new Date('2026-10-11T00:00:00Z');
-const config = {
-  params: { curve: { virtual_base_reserve: '3000000000', virtual_quote_reserve: '3000000000' } },
-};
 const launch = {
-  contractId,
-  network: 'testnet',
-  asset: contractId,
-  pair: contractId,
-  config,
-  state: { sold: '1000000000', quote_reserve: '1500000000', buyer_count: 1 },
+  asset: 'token',
+  pair: 'pair',
+  state: { sold: '100', quote_reserve: '200', buyer_count: 1 },
   stateObservedAt: now,
-  stateAsOfLedger: 200,
 };
-const cursor = {
-  nextLedger: 200,
-  scannedThroughLedger: 200,
-  scannedAt: now,
-  coverageFrom: new Date('2026-10-01T00:00:00Z'),
-  historyGap: false,
-  unclassifiedCount: 0,
-};
-describe('market API and exact prices', () => {
+describe('submitted trades and observed price reads', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(now);
     vi.mocked(Launch.findOne).mockReturnValue({ lean: async () => launch } as never);
-    vi.mocked(Launch.exists).mockResolvedValue({ _id: 'launch' } as never);
-    vi.mocked(LaunchTradeCursor.findOne).mockReturnValue({ lean: async () => cursor } as never);
+    vi.mocked(LaunchPriceSample.findOne).mockReturnValue({
+      sort: () => ({ lean: async () => ({ price: '12345678', sampledAt: now }) }),
+    } as never);
   });
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-  it('matches contract price rounding without losing precision', () => {
-    expect(bondingPrice(config, { sold: '0' })).toBe('10000000');
-    expect(bondingPrice(config, { sold: '1000000000' })).toBe('22500000');
-    expect(bondingPrice(config, { sold: '3000000000' })).toBeNull();
-    expect(decimalInteger('1.234567890123456789E+19')).toBe('12345678901234567890');
-  });
-  it('returns gross volume separately from fees and honest availability', async () => {
+  afterEach(() => vi.useRealTimers());
+  it('uses the recorded contract price without calculating a formula', async () => {
     vi.mocked(LaunchTrade.aggregate).mockResolvedValue([
-      {
-        tradeCount: 3,
-        buyCount: 2,
-        grossVolume: '9007199254740993',
-        assetVolume: '20000000',
-        creatorFees: '123',
-      },
+      { tradeCount: 3, buyCount: 2, grossVolume: '9007199254740993', assetVolume: '20000000' },
     ]);
     const res = response();
     await getMarket(request(), res as unknown as Response, vi.fn());
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        result: expect.objectContaining({
-          currentPrice: '22500000',
-          holders: null,
-          poolLiquidity: null,
-          volume24h: expect.objectContaining({
-            grossPairAmount: '9007199254740993',
-            sellCount: 1,
-            partial: false,
-          }),
-        }),
-      }),
-    );
+    expect(res.json.mock.calls[0]![0].result).toMatchObject({
+      currentPrice: '12345678',
+      volume24h: { sellCount: 1, grossPairAmount: '9007199254740993' },
+    });
+    expect(res.json.mock.calls[0]![0].result).not.toHaveProperty('coverage');
   });
-  it('does not equate missing indexing with zero volume', async () => {
-    vi.mocked(LaunchTradeCursor.findOne).mockReturnValue({ lean: async () => null } as never);
+  it('does not fabricate a price when no contract observation exists', async () => {
+    vi.mocked(LaunchPriceSample.findOne).mockReturnValue({ sort: () => ({ lean: async () => null }) } as never);
     vi.mocked(LaunchTrade.aggregate).mockResolvedValue([]);
     const res = response();
     await getMarket(request(), res as unknown as Response, vi.fn());
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({ result: expect.objectContaining({ volume24h: null }) }),
-    );
+    expect(res.json.mock.calls[0]![0].result.currentPrice).toBeNull();
   });
-  it('flags lagging or partial historical statistics', async () => {
-    vi.mocked(LaunchTradeCursor.findOne).mockReturnValue({
-      lean: async () => ({ ...cursor, scannedThroughLedger: 199 }),
-    } as never);
-    vi.mocked(LaunchTrade.aggregate).mockResolvedValue([]);
-    const res = response();
-    await getMarket(request(), res as unknown as Response, vi.fn());
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        result: expect.objectContaining({
-          volume24h: expect.objectContaining({ partial: true }),
-        }),
-      }),
-    );
-  });
-  it('returns sampled OHLC without inventing missing buckets', async () => {
-    vi.mocked(LaunchPriceSample.findOne).mockReturnValue({
-      sort: () => ({ lean: async () => ({ sampledAt: now }) }),
-    } as never);
+  it('returns sample candles and a preceding price for a flat carry-forward', async () => {
     vi.mocked(LaunchPriceSample.aggregate).mockResolvedValue([
       {
         timestamp: now,
@@ -133,21 +67,17 @@ describe('market API and exact prices', () => {
     ]);
     const res = response();
     await getChart(request({ range: '1W' }), res as unknown as Response, vi.fn());
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({
-        result: expect.objectContaining({
-          intervalSeconds: 900,
-          priceType: 'observed_marginal_before_fee',
-          emptyBuckets: 'omitted',
-          items: [
-            expect.objectContaining({ high: '22500000', low: '10000000', grossVolume: null }),
-          ],
-        }),
-      }),
-    );
+    expect(res.json.mock.calls[0]![0].result).toMatchObject({
+      intervalSeconds: 900,
+      previousPrice: '12345678',
+      interpolation: 'step',
+      items: [expect.objectContaining({ high: '22500000', low: '10000000' })],
+    });
+    expect(res.json.mock.calls[0]![0].result).not.toHaveProperty('coverage');
   });
-  it('validates network, timeframe and pagination before querying', async () => {
+  it('rejects invalid queries and the removed execution chart', async () => {
     for (const [handler, query] of [
+      [getChart, { kind: 'execution' }],
       [getChart, { range: 'bad' }],
       [getMarket, { network: ['testnet'] }],
       [getTrades, { cursor: 'garbage' }],
@@ -158,18 +88,20 @@ describe('market API and exact prices', () => {
       expect(res.status).toHaveBeenCalledWith(400);
     }
     expect(Launch.findOne).not.toHaveBeenCalled();
-    expect(LaunchTrade.aggregate).not.toHaveBeenCalled();
   });
-  it('paginates recent trades by chain order and hides storage fields', async () => {
+  it('returns only the six trade fields while retaining stable pagination', async () => {
     const row = {
       tradedAt: now,
       ledger: 200,
       transactionIndex: 3,
       operationIndex: 0,
       priceSort: 'internal',
-      _id: 'internal',
+      transactionHash: 'hash',
+      grossAmount: '500',
       assetAmount: '123',
+      executionPrice: '40000000',
       trader: 'wallet',
+      side: 'buy',
     };
     vi.mocked(LaunchTrade.find).mockReturnValue({
       sort: () => ({ limit: () => ({ lean: async () => [row, row] }) }),
@@ -177,27 +109,21 @@ describe('market API and exact prices', () => {
     const res = response();
     await getTrades(request({ limit: '1' }), res as unknown as Response, vi.fn());
     const result = res.json.mock.calls[0]![0].result;
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0]).not.toHaveProperty('priceSort');
-    expect(result.items[0]).not.toHaveProperty('_id');
-    expect(JSON.parse(Buffer.from(result.nextCursor, 'base64url').toString())).toEqual([
-      now.toISOString(),
-      200,
-      3,
-      0,
+    expect(result.items).toEqual([
+      {
+        trader: 'wallet',
+        tradedAt: now.toISOString(),
+        asset: 'token',
+        side: 'buy',
+        assetAmount: '123',
+        executionPrice: '40000000',
+      },
     ]);
-    await getTrades(
-      request({ cursor: result.nextCursor }),
-      response() as unknown as Response,
-      vi.fn(),
-    );
+    expect(JSON.parse(Buffer.from(result.nextCursor, 'base64url').toString())).toEqual([now.toISOString(), 200, 3, 0]);
+    await getTrades(request({ cursor: result.nextCursor }), response() as unknown as Response, vi.fn());
     expect(LaunchTrade.find).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        network: 'testnet',
-        contractId,
-        $or: expect.arrayContaining([
-          { tradedAt: now, ledger: 200, transactionIndex: 3, operationIndex: { $lt: 0 } },
-        ]),
+        $or: expect.arrayContaining([{ tradedAt: now, ledger: 200, transactionIndex: 3, operationIndex: { $lt: 0 } }]),
       }),
     );
   });

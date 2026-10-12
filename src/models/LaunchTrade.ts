@@ -15,10 +15,8 @@ const schema = new Schema<TradeRecord>(
     side: { type: String, enum: ['buy', 'sell'], required: true },
     assetAmount: { type: String, required: true },
     grossAmount: { type: String, required: true },
-    creatorFee: { type: String, required: true },
-    userAmount: { type: String, required: true },
     executionPrice: { type: String, required: true },
-    priceSort: { type: String, required: true },
+    priceRecordedAt: { type: Date },
   },
   { collection: 'launch_trades', versionKey: false },
 );

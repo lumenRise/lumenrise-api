@@ -20,6 +20,7 @@ interface LaunchRecord {
   observedAt: Date;
   stateAsOfLedger: number;
   stateObservedAt: Date;
+  nextStatePollAt?: Date | null;
 }
 
 export type { LaunchMetadata, LaunchRecord };

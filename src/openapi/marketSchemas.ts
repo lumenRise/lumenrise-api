@@ -1,77 +1,46 @@
 const amount = {
   type: 'string',
   pattern: '^\\d+$',
-  description: 'Exact integer with 7 decimal places; divide by 10^7 for display.',
+  description: 'Exact integer scaled by 10^7; divide by 10^7 for display.',
 };
-const nullableDate = { type: ['string', 'null'], format: 'date-time' };
 const date = { type: 'string', format: 'date-time' };
+const nullableDate = { type: ['string', 'null'], format: 'date-time' };
 const nullableAmount = { oneOf: [amount, { type: 'null' }] };
-const network = { type: 'string', enum: ['testnet', 'public'] };
 const contract = { type: 'string', pattern: '^C[A-Z2-7]{55}$' };
 const count = { type: 'integer', minimum: 0 };
-const coverage = {
+const network = { type: 'string', enum: ['testnet', 'public'] };
+const trade = {
   type: 'object',
+  required: ['trader', 'tradedAt', 'asset', 'side', 'assetAmount', 'executionPrice'],
+  additionalProperties: false,
   properties: {
-    source: { type: 'string', const: 'successful_direct_curve_calls' },
-    historyComplete: { type: 'boolean', const: false },
-    coverageFrom: nullableDate,
-    scannedThroughLedger: { type: ['integer', 'null'] },
-    scannedAt: nullableDate,
-    stale: { type: 'boolean' },
-    caughtUp: { type: 'boolean' },
-    historyGap: { type: 'boolean' },
-    unclassifiedCount: count,
+    trader: { type: 'string' },
+    tradedAt: date,
+    asset: contract,
+    side: { type: 'string', enum: ['buy', 'sell'] },
+    assetAmount: amount,
+    executionPrice: {
+      ...amount,
+      description: 'Average execution price before creator fees, rounded up to 7 decimals, in the pair asset.',
+    },
   },
 };
-
 const marketSchemas = {
-  LaunchTradeCoverage: coverage,
+  LaunchTrade: trade,
+  LaunchTradeSubmission: {
+    type: 'object',
+    required: ['trade', 'pair', 'amountScale', 'priceScale'],
+    properties: { trade, pair: contract, amountScale: { const: 7 }, priceScale: { const: 7 } },
+  },
   LaunchTradeList: {
     type: 'object',
-    required: ['items', 'nextCursor', 'amountScale', 'priceScale', 'coverage'],
+    required: ['items', 'nextCursor', 'pair', 'amountScale', 'priceScale'],
     properties: {
+      items: { type: 'array', items: trade },
       nextCursor: { type: ['string', 'null'] },
+      pair: contract,
       amountScale: { const: 7 },
       priceScale: { const: 7 },
-      coverage: { $ref: '#/components/schemas/LaunchTradeCoverage' },
-      items: {
-        type: 'array',
-        items: {
-          type: 'object',
-          required: [
-            'network',
-            'contractId',
-            'transactionHash',
-            'operationIndex',
-            'transactionIndex',
-            'ledger',
-            'tradedAt',
-            'trader',
-            'side',
-            'assetAmount',
-            'grossAmount',
-            'creatorFee',
-            'userAmount',
-            'executionPrice',
-          ],
-          properties: {
-            network,
-            contractId: contract,
-            transactionHash: { type: 'string', pattern: '^[a-f0-9]{64}$' },
-            operationIndex: count,
-            transactionIndex: count,
-            ledger: count,
-            tradedAt: date,
-            trader: { type: 'string' },
-            side: { type: 'string', enum: ['buy', 'sell'] },
-            assetAmount: amount,
-            grossAmount: amount,
-            creatorFee: amount,
-            userAmount: amount,
-            executionPrice: amount,
-          },
-        },
-      },
     },
   },
   LaunchMarket: {
@@ -84,6 +53,7 @@ const marketSchemas = {
       amountScale: { const: 7 },
       priceScale: { const: 7 },
       currentPrice: nullableAmount,
+      priceObservedAt: nullableDate,
       priceType: { const: 'marginal_before_fee' },
       stateAsOfLedger: count,
       stateObservedAt: date,
@@ -92,27 +62,16 @@ const marketSchemas = {
       netTokensSold: amount,
       distinctBuyers: count,
       volume24h: {
-        oneOf: [
-          { type: 'null' },
-          {
-            type: 'object',
-            properties: {
-              grossPairAmount: amount,
-              assetAmount: amount,
-              creatorFees: amount,
-              tradeCount: count,
-              buyCount: count,
-              sellCount: count,
-              partial: { type: 'boolean' },
-            },
-          },
-        ],
+        type: 'object',
+        description: 'Verified transactions submitted by this client, not all network activity.',
+        properties: {
+          grossPairAmount: amount,
+          assetAmount: amount,
+          tradeCount: count,
+          buyCount: count,
+          sellCount: count,
+        },
       },
-      holders: { type: 'null' },
-      circulatingSupply: { type: 'null' },
-      poolLiquidity: { type: 'null' },
-      unavailable: { type: 'object', additionalProperties: { type: 'string' } },
-      coverage: { $ref: '#/components/schemas/LaunchTradeCoverage' },
     },
   },
   LaunchChart: {
@@ -123,13 +82,12 @@ const marketSchemas = {
       'asset',
       'pair',
       'range',
-      'kind',
       'intervalSeconds',
       'priceScale',
       'priceType',
-      'firstObservationAt',
       'items',
-      'coverage',
+      'previousPrice',
+      'interpolation',
     ],
     properties: {
       network,
@@ -137,45 +95,23 @@ const marketSchemas = {
       asset: contract,
       pair: contract,
       range: { type: 'string', enum: ['1D', '1W', '1M', '3M', 'ALL'] },
-      kind: { type: 'string', enum: ['sampled', 'execution'] },
       intervalSeconds: { type: 'integer', minimum: 1 },
       amountScale: { const: 7 },
       priceScale: { const: 7 },
-      priceType: { type: 'string', enum: ['observed_marginal_before_fee', 'execution_before_fee'] },
+      priceType: { const: 'marginal_before_fee' },
       firstObservationAt: nullableDate,
       lastObservationAt: nullableDate,
-      emptyBuckets: { const: 'omitted' },
-      historyComplete: { const: false },
-      coverage: {
-        oneOf: [
-          { $ref: '#/components/schemas/LaunchTradeCoverage' },
-          {
-            type: 'object',
-            properties: {
-              source: { const: 'indexed_state_samples' },
-              coverageFrom: nullableDate,
-              stale: { type: 'boolean' },
-              note: { type: 'string' },
-            },
-          },
-        ],
+      previousPrice: {
+        ...nullableAmount,
+        description: 'Last observed price before the requested range; carry it into empty intervals.',
       },
+      interpolation: { const: 'step' },
       items: {
         type: 'array',
         maxItems: 1000,
         items: {
           type: 'object',
-          required: [
-            'timestamp',
-            'open',
-            'high',
-            'low',
-            'close',
-            'count',
-            'grossVolume',
-            'firstObservedAt',
-            'lastObservedAt',
-          ],
+          required: ['timestamp', 'open', 'high', 'low', 'close', 'count', 'firstObservedAt', 'lastObservedAt'],
           properties: {
             timestamp: date,
             open: amount,
@@ -183,7 +119,6 @@ const marketSchemas = {
             low: amount,
             close: amount,
             count,
-            grossVolume: nullableAmount,
             firstObservedAt: date,
             lastObservedAt: date,
           },
@@ -192,5 +127,4 @@ const marketSchemas = {
     },
   },
 };
-
 export default marketSchemas;

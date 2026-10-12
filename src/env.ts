@@ -61,9 +61,14 @@ const schema = defineConfig({
     default: 'http://localhost:5000/v1/oauth/x/callback',
     description: 'X OAuth callback URL registered for the application.',
   },
+  STELLAR_RPC_URL: {
+    default: 'https://soroban-testnet.stellar.org',
+  },
+  STELLAR_READ_ACCOUNT: {
+    example: 'G...',
+  },
   STELLAR_HORIZON_URL: {
     default: 'https://horizon-testnet.stellar.org',
-    description: 'Horizon base URL used for read-only Stellar account lookups.',
   },
   STELLAR_TESTNET_HOME_DOMAIN: {
     example: 'testnet.lumenrise.app',

@@ -28,6 +28,7 @@ const launchSchema = new Schema<LaunchRecord>(
     observedAt: { type: Date, required: true },
     stateAsOfLedger: { type: Number, required: true, min: 1 },
     stateObservedAt: { type: Date, required: true },
+    nextStatePollAt: { type: Date },
   },
   { collection: 'launches', versionKey: false },
 );
