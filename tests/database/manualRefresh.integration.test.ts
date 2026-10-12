@@ -2,25 +2,38 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { randomUUID } from 'node:crypto';
 import { Keypair } from '@stellar/stellar-sdk';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import app from '../../src/app';
 import Policy from '../../src/models/Policy';
-import Session from '../../src/models/Session';
 import Identity from '../../src/models/Identity';
 import StellarAccount from '../../src/models/StellarAccount';
 import ExternalAccount from '../../src/models/ExternalAccount';
 import IntegrationSyncJob from '../../src/models/IntegrationSyncJob';
 import StellarActivityScan from '../../src/models/StellarActivityScan';
-import WalletAuthChallenge from '../../src/models/WalletAuthChallenge';
 import ManualRefreshCooldown from '../../src/models/ManualRefreshCooldown';
 import reserveManualRefresh from '../../src/services/refresh/reserveManualRefresh';
 import releaseManualRefresh from '../../src/services/refresh/releaseManualRefresh';
-import { hashWalletMessage } from '../../src/utils/services/auth/walletChallenge/hashWalletMessage';
 
 const databaseName = `lumenrise_integration_${randomUUID().replaceAll('-', '')}`;
 const wallet = Keypair.random();
-let token: string;
+const userId = '42';
+
+vi.mock('../../src/env', async (original) => {
+  const module = await original<{ default: Record<string, unknown> }>();
+  return {
+    default: {
+      ...module.default,
+      AUTH_PROVIDER_API_URL: 'https://identity.example/server',
+      AUTH_PROVIDER_APP_ID: 'app-id',
+      AUTH_PROVIDER_APP_SECRET: 'app-secret',
+    },
+  };
+});
+vi.mock('../../src/services/auth/provider', async (original) => ({
+  ...(await original<Record<string, unknown>>()),
+  getVerifiedProviderAddresses: vi.fn(async () => [wallet.publicKey()]),
+}));
 let identityId: string;
 
 describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refresh flows', () => {
@@ -31,14 +44,12 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
     });
     await Promise.all([
       Policy.createIndexes(),
-      Session.createIndexes(),
       Identity.createIndexes(),
       StellarAccount.createIndexes(),
       ExternalAccount.createIndexes(),
       IntegrationSyncJob.createIndexes(),
       StellarActivityScan.createIndexes(),
       ManualRefreshCooldown.createIndexes(),
-      WalletAuthChallenge.createIndexes(),
     ]);
   });
 
@@ -50,30 +61,15 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
     await mongoose.disconnect();
   });
 
-  it('registers a wallet with a signed message and accepts the resulting session', async () => {
-    const challenge = await request(app).post('/v1/auth/wallet/challenge').send({
-      address: wallet.publicKey(),
-      purpose: 'register',
+  it('registers verified Auth provider wallets and identifies subsequent requests by user ID', async () => {
+    const registered = await request(app).post('/v1/auth/register').send({
+      userId,
       name: 'Integration Test',
     });
-
-    expect(challenge.status).toBe(201);
-
-    const signature = Buffer.from(
-      wallet.sign(hashWalletMessage(challenge.body.result.message)),
-    ).toString('base64');
-    const registered = await request(app).post('/v1/auth/wallet/register').send({
-      address: wallet.publicKey(),
-      name: 'Integration Test',
-      challengeId: challenge.body.result.challengeId,
-      signature,
-    });
-
-    expect(registered.status, registered.body.message).toBe(201);
-    token = registered.body.result.accessToken;
+    expect(registered.status, registered.body.message).toBe(200);
     identityId = registered.body.result.identityId;
 
-    const session = await request(app).get('/v1/auth/session').auth(token, { type: 'bearer' });
+    const session = await request(app).get('/v1/auth/session').set('X-User-Id', userId);
 
     expect(session.status).toBe(200);
   });
@@ -87,12 +83,8 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
       connectedAt: new Date(),
     });
 
-    const first = await request(app)
-      .post('/v1/connections/github/sync')
-      .auth(token, { type: 'bearer' });
-    const second = await request(app)
-      .post('/v1/connections/github/sync')
-      .auth(token, { type: 'bearer' });
+    const first = await request(app).post('/v1/connections/github/sync').set('X-User-Id', userId);
+    const second = await request(app).post('/v1/connections/github/sync').set('X-User-Id', userId);
 
     expect(first.status).toBe(202);
     expect(second.status).toBe(429);
@@ -114,7 +106,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
 
     const conflict = await request(app)
       .post(`/v1/stellar/accounts/${otherAddress}/activity-scan`)
-      .auth(token, { type: 'bearer' });
+      .set('X-User-Id', userId);
 
     expect(conflict.status).toBe(409);
     expect(
@@ -126,7 +118,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
 
     const accepted = await request(app)
       .post(`/v1/stellar/accounts/${wallet.publicKey()}/activity-scan`)
-      .auth(token, { type: 'bearer' });
+      .set('X-User-Id', userId);
 
     expect(accepted.status).toBe(202);
   });
@@ -134,7 +126,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
   it('creates and evaluates a policy from stored evidence with a cooldown', async () => {
     const created = await request(app)
       .post('/v1/policies')
-      .auth(token, { type: 'bearer' })
+      .set('X-User-Id', userId)
       .send({
         key: 'developer-minimum',
         version: 1,
@@ -146,10 +138,10 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
 
     const first = await request(app)
       .post('/v1/policies/developer-minimum/evaluate')
-      .auth(token, { type: 'bearer' });
+      .set('X-User-Id', userId);
     const second = await request(app)
       .post('/v1/policies/developer-minimum/evaluate')
-      .auth(token, { type: 'bearer' });
+      .set('X-User-Id', userId);
 
     expect(first.status).toBe(200);
     expect(first.body.result.decision).toBe('insufficient_data');
@@ -160,7 +152,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
   it('reports linked evidence without claiming a Sybil verdict', async () => {
     const response = await request(app)
       .get('/v1/reputation/sybil/evidence')
-      .auth(token, { type: 'bearer' });
+      .set('X-User-Id', userId);
 
     expect(response.status).toBe(200);
     expect(response.body.result.assessment).toBe('not_assessed');

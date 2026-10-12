@@ -1,7 +1,6 @@
 import type { RequestHandler } from 'express';
 
 import log from '../../../logger';
-import { setSessionCookie } from '../../../services/auth/session';
 import { OAUTH_STATE_COOKIE_NAME } from '../../../constants/auth';
 import { completeGitHubAuthorization } from '../../../services/oauth/github';
 import { createClientRedirect } from '../../../utils/routes/oauth/github/callback/createClientRedirect';
@@ -27,8 +26,6 @@ const callbackGitHubOAuthRoute: RequestHandler = async (req, res) => {
 
   try {
     const result = await completeGitHubAuthorization(code, state);
-
-    setSessionCookie(res, result.session);
 
     return res.redirect(
       302,

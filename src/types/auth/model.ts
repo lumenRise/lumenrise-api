@@ -1,29 +1,8 @@
-import type { HydratedDocument, Types } from 'mongoose';
-
-interface SessionRecord {
-  identity: Types.ObjectId;
-  tokenHash: string;
-  expiresAt: Date;
-  lastSeenAt: Date;
-  revokedAt: Date | null;
-  createdAt: Date;
-}
+import type { Types } from 'mongoose';
 
 interface AuthContext {
-  sessionId: Types.ObjectId;
+  userId?: string;
   identityId: Types.ObjectId;
 }
 
-interface IssuedSession {
-  token: string;
-  expiresAt: Date;
-}
-
-interface SessionResult {
-  identityId: string;
-  expiresAt: string;
-}
-
-type SessionDocument = HydratedDocument<SessionRecord>;
-
-export type { AuthContext, IssuedSession, SessionDocument, SessionRecord, SessionResult };
+export type { AuthContext };

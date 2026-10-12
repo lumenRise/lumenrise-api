@@ -1,65 +1,30 @@
 import log from '../logger';
 import DatabaseMigration from '../models/DatabaseMigration';
-import createXDataIndexes from './20260923CreateXDataIndexes';
-import createLaunchIndexes from './20261003CreateLaunchIndexes';
-import createPolicyIndexes from './20260924CreatePolicyIndexes';
-import createSessionIndexes from './20260922CreateSessionIndexes';
-import createIdentityIndexes from './20260922CreateIdentityIndexes';
+import createCurrentIndexes from './20261012CreateCurrentIndexes';
 import type { MigrationDefinition } from '../types/database/migration';
-import createGitHubDataIndexes from './20260922CreateGitHubDataIndexes';
-import createReputationIndexes from './20260922CreateReputationIndexes';
-import createTokenImageIndexes from './20261009CreateTokenImageIndexes';
-import createLaunchDraftIndexes from './20261010CreateLaunchDraftIndexes';
-import createLaunchMarketIndexes from './20261011CreateLaunchMarketIndexes';
-import createDeveloperApiIndexes from './20260925CreateDeveloperApiIndexes';
-import createAvatarCleanupIndexes from './20261008CreateAvatarCleanupIndexes';
-import createAssetIdentityIndexes from './20261007CreateAssetIdentityIndexes';
-import createTokenImageCleanupIndex from './20261010CreateTokenImageCleanupIndex';
-import createSorobanEvidenceIndexes from './20260926CreateSorobanEvidenceIndexes';
-import createExternalAccountIndexes from './20260922CreateExternalAccountIndexes';
-import createProviderCredentialIndexes from './20260922CreateProviderCredentialIndexes';
-import createIntegrationSyncJobIndexes from './20260922CreateIntegrationSyncJobIndexes';
-import createStellarPaymentFactIndexes from './20260925CreateStellarPaymentFactIndexes';
-import createStellarActivityScanIndexes from './20260924CreateStellarActivityScanIndexes';
-import createWalletAuthChallengeIndexes from './20260924CreateWalletAuthChallengeIndexes';
-import createManualRefreshCooldownIndexes from './20260925CreateManualRefreshCooldownIndexes';
+import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
 
 const migrations: readonly MigrationDefinition[] = [
-  createIdentityIndexes,
-  createExternalAccountIndexes,
-  createReputationIndexes,
-  createSessionIndexes,
-  createGitHubDataIndexes,
-  createXDataIndexes,
-  createProviderCredentialIndexes,
-  createIntegrationSyncJobIndexes,
-  createStellarActivityScanIndexes,
-  createWalletAuthChallengeIndexes,
-  createPolicyIndexes,
-  createManualRefreshCooldownIndexes,
-  createStellarPaymentFactIndexes,
-  createDeveloperApiIndexes,
-  createSorobanEvidenceIndexes,
-  createLaunchIndexes,
-  createAssetIdentityIndexes,
-  createAvatarCleanupIndexes,
-  createTokenImageIndexes,
-  createTokenImageCleanupIndex,
-  createLaunchDraftIndexes,
-  createLaunchMarketIndexes,
+  authProviderAndTokenImageIndexes,
+  createCurrentIndexes,
 ];
+
 const runDatabaseMigrations = async (): Promise<void> => {
   await DatabaseMigration.createIndexes();
 
   for (const migration of migrations) {
-    const appliedMigration = await DatabaseMigration.exists({ name: migration.name });
-
-    if (appliedMigration) {
+    if (await DatabaseMigration.exists({ name: migration.name })) {
       continue;
     }
 
     await migration.up();
-    await DatabaseMigration.create({ name: migration.name });
+
+    await DatabaseMigration.updateOne(
+      { name: migration.name },
+      { $setOnInsert: { name: migration.name, appliedAt: new Date() } },
+      { upsert: true },
+    );
+
     log.info({ migration: migration.name }, 'Database migration applied');
   }
 };

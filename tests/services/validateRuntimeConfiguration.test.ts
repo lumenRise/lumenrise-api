@@ -23,7 +23,9 @@ const validConfiguration: RuntimeConfiguration = {
   R2_MAX_AVATAR_BYTES: 5_242_880,
   R2_MAX_TOKEN_IMAGE_BYTES: 5_242_880,
   STELLAR_AUTH_NETWORK: 'testnet',
-  AUTH_JWT_SECRET: 'a'.repeat(32),
+  AUTH_PROVIDER_API_URL: 'https://identity.example/server',
+  AUTH_PROVIDER_APP_ID: 'app-id',
+  AUTH_PROVIDER_APP_SECRET: 'app-secret',
   CREDENTIAL_ENCRYPTION_KEY: 'a'.repeat(64),
 };
 
@@ -57,32 +59,38 @@ describe('runtime configuration validation', () => {
   });
 
   it('rejects partial R2 settings', () => {
-    expect(() => validateRuntimeConfiguration({
-      ...validConfiguration,
-      R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
-    })).toThrow('All R2 settings must be configured together');
+    expect(() =>
+      validateRuntimeConfiguration({
+        ...validConfiguration,
+        R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
+      }),
+    ).toThrow('All R2 settings must be configured together');
   });
 
   it('accepts complete HTTPS R2 settings', () => {
-    expect(() => validateRuntimeConfiguration({
-      ...validConfiguration,
-      R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
-      R2_ACCESS_KEY_ID: 'key',
-      R2_SECRET_ACCESS_KEY: 'secret',
-      R2_BUCKET_NAME: 'lumenrise-profiles',
-      R2_PUBLIC_BASE_URL: 'https://images.lumenrise.app',
-    })).not.toThrow();
+    expect(() =>
+      validateRuntimeConfiguration({
+        ...validConfiguration,
+        R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
+        R2_ACCESS_KEY_ID: 'key',
+        R2_SECRET_ACCESS_KEY: 'secret',
+        R2_BUCKET_NAME: 'lumenrise-profiles',
+        R2_PUBLIC_BASE_URL: 'https://images.lumenrise.app',
+      }),
+    ).not.toThrow();
   });
 
   it('rejects the S3 API endpoint as the public image URL', () => {
-    expect(() => validateRuntimeConfiguration({
-      ...validConfiguration,
-      R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
-      R2_ACCESS_KEY_ID: 'key',
-      R2_SECRET_ACCESS_KEY: 'secret',
-      R2_BUCKET_NAME: 'lumenrise-profiles',
-      R2_PUBLIC_BASE_URL: 'https://account.r2.cloudflarestorage.com/lumenrise-profiles',
-    })).toThrow('public image domain');
+    expect(() =>
+      validateRuntimeConfiguration({
+        ...validConfiguration,
+        R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
+        R2_ACCESS_KEY_ID: 'key',
+        R2_SECRET_ACCESS_KEY: 'secret',
+        R2_BUCKET_NAME: 'lumenrise-profiles',
+        R2_PUBLIC_BASE_URL: 'https://account.r2.cloudflarestorage.com/lumenrise-profiles',
+      }),
+    ).toThrow('public image domain');
   });
 
   it('requires HTTPS URLs in production', () => {
@@ -91,13 +99,14 @@ describe('runtime configuration validation', () => {
     ).toThrow('must use HTTPS in production');
   });
 
-  it('requires a durable JWT signing secret in production', () => {
+  it('requires Auth provider credentials in production', () => {
     expect(() =>
       validateRuntimeConfiguration({
         ...validConfiguration,
         NODE_ENV: 'production',
-        AUTH_JWT_SECRET: '',
+        AUTH_PROVIDER_APP_ID: '',
+        AUTH_PROVIDER_APP_SECRET: '',
       }),
-    ).toThrow('AUTH_JWT_SECRET');
+    ).toThrow('AUTH_PROVIDER_APP_ID');
   });
 });

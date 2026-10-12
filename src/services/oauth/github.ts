@@ -1,8 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import { issueSession } from '../auth/session';
 import OAuthState from '../../models/OAuthState';
-import type { IssuedSession } from '../../types/auth/model';
 import { enqueueGitHubSync } from '../integration/syncQueue';
 import type { CompletedGitHubOAuth } from '../../types/integration/github';
 import { storeProviderCredential } from '../integration/providerCredential';
@@ -25,7 +23,7 @@ import {
 const completeGitHubAuthorization = async (
   code: string,
   state: string,
-): Promise<{ connection: CompletedGitHubOAuth; session: IssuedSession }> => {
+): Promise<{ connection: CompletedGitHubOAuth }> => {
   assertGitHubConfiguration();
 
   const stateHash = createHash('sha256').update(state).digest('hex');
@@ -63,7 +61,6 @@ const completeGitHubAuthorization = async (
   });
 
   const syncJob = await enqueueGitHubSync(account.externalAccount);
-  const session = await issueSession(account.identityId);
 
   return {
     connection: {
@@ -71,7 +68,6 @@ const completeGitHubAuthorization = async (
       username: user.login,
       syncJobId: syncJob._id.toString(),
     },
-    session,
   };
 };
 

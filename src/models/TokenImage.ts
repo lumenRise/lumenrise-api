@@ -9,7 +9,12 @@ const schema = new Schema<TokenImageRecord>(
     network: { type: String, enum: ['testnet', 'public'], required: true, immutable: true },
     objectKey: { type: String, required: true, unique: true, immutable: true },
     publicUrl: { type: String, required: true, unique: true, immutable: true },
-    status: { type: String, enum: ['pending', 'cleanup_ready', 'deleting', 'finalized', 'expired'], required: true, default: 'pending' },
+    status: {
+      type: String,
+      enum: ['pending', 'cleanup_ready', 'deleting', 'finalized', 'expired'],
+      required: true,
+      default: 'pending',
+    },
     launchContractId: { type: String, default: null },
     assetContractId: { type: String, default: null },
     createdAt: { type: Date, required: true, default: Date.now, immutable: true },
@@ -23,10 +28,30 @@ const schema = new Schema<TokenImageRecord>(
 );
 
 schema.index({ network: 1, publicUrl: 1, ownerAddress: 1 }, { name: 'token_images_launch_match' });
-schema.index({ network: 1, assetContractId: 1 }, { name: 'token_images_asset' });
+
 schema.index({ ownerIdentityId: 1, createdAt: -1 }, { name: 'token_images_owner' });
+
 schema.index({ status: 1, cleanupNextAt: 1 }, { name: 'token_images_cleanup_due' });
+
 schema.index({ network: 1, status: 1, createdAt: 1 }, { name: 'token_images_pending_age' });
+
+schema.index(
+  { network: 1, assetContractId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { assetContractId: { $type: 'string' } },
+    name: 'token_images_asset_unique',
+  },
+);
+
+schema.index(
+  { network: 1, launchContractId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { launchContractId: { $type: 'string' } },
+    name: 'token_images_launch_unique',
+  },
+);
 
 const TokenImage = model<TokenImageRecord>('TokenImage', schema);
 
