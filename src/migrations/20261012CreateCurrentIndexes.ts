@@ -12,7 +12,6 @@ import DeveloperApiKey from '../models/DeveloperApiKey';
 import ExternalAccount from '../models/ExternalAccount';
 import LaunchPriceSample from '../models/LaunchPriceSample';
 import DeveloperApiUsage from '../models/DeveloperApiUsage';
-import LaunchTradeCursor from '../models/LaunchTradeCursor';
 import GitHubDataSnapshot from '../models/GitHubDataSnapshot';
 import ProviderCredential from '../models/ProviderCredential';
 import StellarPaymentFact from '../models/StellarPaymentFact';
@@ -40,7 +39,6 @@ const createCurrentIndexes: MigrationDefinition = {
       Launch.createIndexes(),
       LaunchPriceSample.createIndexes(),
       LaunchTrade.createIndexes(),
-      LaunchTradeCursor.createIndexes(),
       ManualRefreshCooldown.createIndexes(),
       OAuthState.createIndexes(),
       Policy.createIndexes(),

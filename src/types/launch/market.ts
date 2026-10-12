@@ -10,23 +10,8 @@ interface TradeRecord {
   side: 'buy' | 'sell';
   assetAmount: string;
   grossAmount: string;
-  creatorFee: string;
-  userAmount: string;
   executionPrice: string;
-  priceSort: string;
-}
-
-interface TradeCursorRecord {
-  network: 'testnet' | 'public';
-  contractId: string;
-  cursor: string | null;
-  nextLedger: number;
-  coverageFrom: Date;
-  scannedThroughLedger: number;
-  scannedAt: Date;
-  nextPollAt: Date;
-  historyGap: boolean;
-  unclassifiedCount: number;
+  priceRecordedAt?: Date;
 }
 
 interface PriceSampleRecord {
@@ -51,31 +36,6 @@ interface TradePosition {
   operationIndex: number;
 }
 
-interface CurvePriceParams {
-  curve: Record<string, unknown>;
-}
-
-interface TradeCoverage {
-  source: 'successful_direct_curve_calls';
-  historyComplete: false;
-  coverageFrom: string | null;
-  scannedThroughLedger: number | null;
-  scannedAt: string | null;
-  stale: boolean;
-  caughtUp: boolean;
-  historyGap: boolean;
-  unclassifiedCount: number;
-}
-
 type ChartRange = '1D' | '1W' | '1M' | '3M' | 'ALL';
 
-export type {
-  TradeRecord,
-  TradeCursorRecord,
-  PriceSampleRecord,
-  MarketIdentity,
-  TradePosition,
-  CurvePriceParams,
-  TradeCoverage,
-  ChartRange,
-};
+export type { TradeRecord, PriceSampleRecord, MarketIdentity, TradePosition, ChartRange };

@@ -4,9 +4,8 @@ import { StrKey } from '@stellar/stellar-sdk';
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import LaunchTrade from '../../models/LaunchTrade';
+import toTradeResult from '../../utils/launch/toTradeResult';
 import type { TradePosition } from '../../types/launch/market';
-import LaunchTradeCursor from '../../models/LaunchTradeCursor';
-import toTradeCoverage from '../../utils/launch/toTradeCoverage';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 
 const getTrades: RequestHandler = async (req, res) => {
@@ -72,7 +71,8 @@ const getTrades: RequestHandler = async (req, res) => {
   }
 
   try {
-    if (!(await Launch.exists(identity))) {
+    const launch = await Launch.findOne(identity).lean();
+    if (!launch) {
       return res.status(404).json({ status: 'error', message: 'Launch not found', result: {} });
     }
 
@@ -96,32 +96,24 @@ const getTrades: RequestHandler = async (req, res) => {
         }
       : {};
 
-    const [rows, cursor] = await Promise.all([
-      LaunchTrade.find({
-        ...identity,
-        ...(trader ? { trader } : {}),
-        ...(side ? { side } : {}),
-        ...pagination,
-      })
-        .sort({ tradedAt: -1, ledger: -1, transactionIndex: -1, operationIndex: -1 })
-        .limit(limit + 1)
-        .lean(),
-      LaunchTradeCursor.findOne(identity).lean(),
-    ]);
+    const rows = await LaunchTrade.find({
+      ...identity,
+      ...(trader ? { trader } : {}),
+      ...(side ? { side } : {}),
+      ...pagination,
+    })
+      .sort({ tradedAt: -1, ledger: -1, transactionIndex: -1, operationIndex: -1 })
+      .limit(limit + 1)
+      .lean();
+    const items = rows.slice(0, limit).map((trade) => toTradeResult(trade, launch.asset));
 
-    const items = rows.slice(0, limit).map(({ _id, priceSort, ...trade }) => {
-      void _id;
-      void priceSort;
-      return { ...trade, tradedAt: trade.tradedAt.toISOString() };
-    });
-
-    const last = items.at(-1);
+    const last = rows.slice(0, limit).at(-1);
 
     const nextCursor =
       rows.length > limit && last
         ? Buffer.from(
             JSON.stringify([
-              last.tradedAt,
+              last.tradedAt.toISOString(),
               last.ledger,
               last.transactionIndex,
               last.operationIndex,
@@ -139,7 +131,7 @@ const getTrades: RequestHandler = async (req, res) => {
         nextCursor,
         amountScale: 7,
         priceScale: 7,
-        coverage: toTradeCoverage(cursor),
+        pair: launch.pair,
       },
     });
   } catch (error) {

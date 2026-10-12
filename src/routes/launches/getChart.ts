@@ -2,13 +2,9 @@ import type { RequestHandler } from 'express';
 
 import log from '../../logger';
 import Launch from '../../models/Launch';
-import LaunchTrade from '../../models/LaunchTrade';
+import type { ChartRange } from '../../types/launch/market';
 import LaunchPriceSample from '../../models/LaunchPriceSample';
-import LaunchTradeCursor from '../../models/LaunchTradeCursor';
-import decimalInteger from '../../utils/launch/decimalInteger';
-import toTradeCoverage from '../../utils/launch/toTradeCoverage';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
-import type { ChartRange, TradePosition, PriceSampleRecord } from '../../types/launch/market';
 
 const ranges = { '1D': 1, '1W': 7, '1M': 30, '3M': 90, ALL: 0 };
 const intervals = { '1D': 300, '1W': 900, '1M': 3600, '3M': 14_400, ALL: 86_400 };
@@ -16,13 +12,12 @@ const intervals = { '1D': 300, '1W': 900, '1M': 3600, '3M': 14_400, ALL: 86_400 
 const getChart: RequestHandler = async (req, res) => {
   const identity = parseMarketRequest(req);
   const range = req.query.range ?? '1D';
-  const kind = req.query.kind ?? 'sampled';
 
   if (
     !identity ||
     typeof range !== 'string' ||
     !Object.hasOwn(ranges, range) ||
-    (kind !== 'sampled' && kind !== 'execution')
+    (req.query.kind !== undefined && req.query.kind !== 'sampled')
   ) {
     return res.status(400).json({ status: 'error', message: 'Invalid chart query', result: {} });
   }
@@ -37,46 +32,29 @@ const getChart: RequestHandler = async (req, res) => {
     const now = new Date();
     const days = ranges[range as ChartRange];
     const since = days ? new Date(now.getTime() - days * 86_400_000) : new Date(0);
-    const execution = kind === 'execution';
-    const timeField = execution ? 'tradedAt' : 'sampledAt';
-    const priceField = execution ? 'executionPrice' : 'price';
-    const model = execution ? LaunchTrade : LaunchPriceSample;
 
-    const [first, last, cursor] = await Promise.all([
-      execution
-        ? LaunchTrade.findOne(identity).sort({ tradedAt: 1 }).lean()
-        : LaunchPriceSample.findOne(identity).sort({ sampledAt: 1 }).lean(),
-      execution
-        ? LaunchTrade.findOne(identity).sort({ tradedAt: -1 }).lean()
-        : LaunchPriceSample.findOne(identity).sort({ sampledAt: -1 }).lean(),
-      LaunchTradeCursor.findOne(identity).lean(),
+    const [first, last, previous] = await Promise.all([
+      LaunchPriceSample.findOne(identity).sort({ sampledAt: 1 }).lean(),
+      LaunchPriceSample.findOne(identity).sort({ ledger: -1, sampledAt: -1 }).lean(),
+      LaunchPriceSample.findOne({ ...identity, sampledAt: { $lt: since } })
+        .sort({ sampledAt: -1, ledger: -1 })
+        .lean(),
     ]);
 
-    const firstTime = first
-      ? execution
-        ? (first as TradePosition).tradedAt
-        : (first as PriceSampleRecord).sampledAt
-      : null;
-
-    const lastTime = last
-      ? execution
-        ? (last as TradePosition).tradedAt
-        : (last as PriceSampleRecord).sampledAt
-      : null;
-
+    const firstTime = first?.sampledAt ?? null;
+    const lastTime = last?.sampledAt ?? null;
     // Keep every response below 1000 buckets, including ALL for old launches.
     const intervalSeconds = Math.max(
       intervals[range as ChartRange],
       days || !firstTime ? 0 : Math.ceil((now.getTime() - firstTime.getTime()) / 998_000),
     );
 
-    const candles = await model.aggregate([
-      { $match: { ...identity, [timeField]: { $gte: since, $lte: now } } },
+    const candles = await LaunchPriceSample.aggregate([
+      { $match: { ...identity, sampledAt: { $gte: since, $lte: now } } },
       {
         $sort: {
-          [timeField]: 1,
+          sampledAt: 1,
           ledger: 1,
-          ...(execution ? { transactionIndex: 1, operationIndex: 1 } : {}),
         },
       },
       {
@@ -84,19 +62,18 @@ const getChart: RequestHandler = async (req, res) => {
           _id: {
             $toDate: {
               $subtract: [
-                { $toLong: `$${timeField}` },
-                { $mod: [{ $toLong: `$${timeField}` }, intervalSeconds * 1000] },
+                { $toLong: '$sampledAt' },
+                { $mod: [{ $toLong: '$sampledAt' }, intervalSeconds * 1000] },
               ],
             },
           },
-          open: { $first: `$${priceField}` },
-          close: { $last: `$${priceField}` },
+          open: { $first: '$price' },
+          close: { $last: '$price' },
           high: { $max: '$priceSort' },
           low: { $min: '$priceSort' },
           count: { $sum: 1 },
-          firstObservedAt: { $first: `$${timeField}` },
-          lastObservedAt: { $last: `$${timeField}` },
-          ...(execution ? { grossVolume: { $sum: { $toDecimal: '$grossAmount' } } } : {}),
+          firstObservedAt: { $first: '$sampledAt' },
+          lastObservedAt: { $last: '$sampledAt' },
         },
       },
       { $sort: { _id: 1 } },
@@ -112,7 +89,6 @@ const getChart: RequestHandler = async (req, res) => {
           count: 1,
           firstObservedAt: 1,
           lastObservedAt: 1,
-          ...(execution ? { grossVolume: { $toString: '$grossVolume' } } : {}),
         },
       },
     ]);
@@ -124,7 +100,6 @@ const getChart: RequestHandler = async (req, res) => {
       lastObservedAt: (row.lastObservedAt as Date).toISOString(),
       high: BigInt(row.high).toString(),
       low: BigInt(row.low).toString(),
-      grossVolume: execution ? decimalInteger(row.grossVolume) : null,
     }));
 
     res.set('Cache-Control', 'public, max-age=15');
@@ -137,26 +112,15 @@ const getChart: RequestHandler = async (req, res) => {
         asset: launch.asset,
         pair: launch.pair,
         range,
-        kind,
         intervalSeconds,
         priceScale: 7,
         amountScale: 7,
-        priceType: execution ? 'execution_before_fee' : 'observed_marginal_before_fee',
+        priceType: 'marginal_before_fee',
         firstObservationAt: firstTime?.toISOString() ?? null,
         lastObservationAt: lastTime?.toISOString() ?? null,
         items,
-        emptyBuckets: 'omitted',
-        historyComplete: false,
-        ...(execution
-          ? { coverage: toTradeCoverage(cursor, now) }
-          : {
-              coverage: {
-                source: 'indexed_state_samples',
-                coverageFrom: firstTime?.toISOString() ?? null,
-                stale: !lastTime || now.getTime() - lastTime.getTime() > 60_000,
-                note: 'Minute samples of observed state; intraminute extremes and pre-indexing prices are not reconstructed.',
-              },
-            }),
+        previousPrice: previous?.price ?? null,
+        interpolation: 'step',
       },
     });
   } catch (error) {

@@ -3,10 +3,8 @@ import type { RequestHandler } from 'express';
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import LaunchTrade from '../../models/LaunchTrade';
-import bondingPrice from '../../utils/launch/bondingPrice';
-import LaunchTradeCursor from '../../models/LaunchTradeCursor';
+import LaunchPriceSample from '../../models/LaunchPriceSample';
 import decimalInteger from '../../utils/launch/decimalInteger';
-import toTradeCoverage from '../../utils/launch/toTradeCoverage';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 
 const getMarket: RequestHandler = async (req, res) => {
@@ -19,9 +17,9 @@ const getMarket: RequestHandler = async (req, res) => {
   try {
     const now = new Date();
     const since = new Date(now.getTime() - 86_400_000);
-    const [launch, cursor, totals] = await Promise.all([
+    const [launch, price, totals] = await Promise.all([
       Launch.findOne(identity).lean(),
-      LaunchTradeCursor.findOne(identity).lean(),
+      LaunchPriceSample.findOne(identity).sort({ ledger: -1, sampledAt: -1 }).lean(),
       LaunchTrade.aggregate([
         { $match: { ...identity, tradedAt: { $gte: since, $lte: now } } },
         {
@@ -31,7 +29,6 @@ const getMarket: RequestHandler = async (req, res) => {
             buyCount: { $sum: { $cond: [{ $eq: ['$side', 'buy'] }, 1, 0] } },
             grossVolume: { $sum: { $toDecimal: '$grossAmount' } },
             assetVolume: { $sum: { $toDecimal: '$assetAmount' } },
-            creatorFees: { $sum: { $toDecimal: '$creatorFee' } },
           },
         },
         {
@@ -41,7 +38,6 @@ const getMarket: RequestHandler = async (req, res) => {
             buyCount: 1,
             grossVolume: { $toString: '$grossVolume' },
             assetVolume: { $toString: '$assetVolume' },
-            creatorFees: { $toString: '$creatorFees' },
           },
         },
       ]),
@@ -52,7 +48,6 @@ const getMarket: RequestHandler = async (req, res) => {
     }
 
     const total = totals[0];
-    const coverage = toTradeCoverage(cursor, now);
 
     res.set('Cache-Control', 'public, max-age=10');
 
@@ -65,39 +60,22 @@ const getMarket: RequestHandler = async (req, res) => {
         pair: launch.pair,
         amountScale: 7,
         priceScale: 7,
-        currentPrice: bondingPrice(launch.config, launch.state),
+        currentPrice: price?.price ?? null,
+        priceObservedAt: price?.sampledAt.toISOString() ?? null,
         priceType: 'marginal_before_fee',
         stateAsOfLedger: launch.stateAsOfLedger,
         stateObservedAt: launch.stateObservedAt.toISOString(),
-        stateStale: now.getTime() - launch.stateObservedAt.getTime() > 60_000,
+        stateStale: now.getTime() - launch.stateObservedAt.getTime() > 660_000,
         curveReserve: launch.state.quote_reserve,
         netTokensSold: launch.state.sold,
         distinctBuyers: launch.state.buyer_count,
-        volume24h: cursor
-          ? {
-              grossPairAmount: decimalInteger(total?.grossVolume ?? '0'),
-              assetAmount: decimalInteger(total?.assetVolume ?? '0'),
-              creatorFees: decimalInteger(total?.creatorFees ?? '0'),
-              tradeCount: total?.tradeCount ?? 0,
-              buyCount: total?.buyCount ?? 0,
-              sellCount: (total?.tradeCount ?? 0) - (total?.buyCount ?? 0),
-              partial:
-                coverage.stale ||
-                !coverage.caughtUp ||
-                coverage.historyGap ||
-                coverage.unclassifiedCount > 0 ||
-                cursor.coverageFrom > since,
-            }
-          : null,
-        holders: null,
-        circulatingSupply: null,
-        poolLiquidity: null,
-        unavailable: {
-          holders: 'holder_index_not_available',
-          circulatingSupply: 'supply_index_not_available',
-          poolLiquidity: 'curve_does_not_create_pool',
+        volume24h: {
+          grossPairAmount: decimalInteger(total?.grossVolume ?? '0'),
+          assetAmount: decimalInteger(total?.assetVolume ?? '0'),
+          tradeCount: total?.tradeCount ?? 0,
+          buyCount: total?.buyCount ?? 0,
+          sellCount: (total?.tradeCount ?? 0) - (total?.buyCount ?? 0),
         },
-        coverage,
       },
     });
   } catch (error) {
