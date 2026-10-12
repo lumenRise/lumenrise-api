@@ -1,5 +1,6 @@
 import log from '../logger';
 import DatabaseMigration from '../models/DatabaseMigration';
+import manualXReputation from './20261013ManualXReputation';
 import createCurrentIndexes from './20261012CreateCurrentIndexes';
 import type { MigrationDefinition } from '../types/database/migration';
 import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
@@ -7,6 +8,7 @@ import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImag
 const migrations: readonly MigrationDefinition[] = [
   authProviderAndTokenImageIndexes,
   createCurrentIndexes,
+  manualXReputation,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {
