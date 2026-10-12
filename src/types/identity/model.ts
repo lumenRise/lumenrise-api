@@ -3,6 +3,7 @@ import type { HydratedDocument, Types } from 'mongoose';
 type IdentityStatus = 'active' | 'suspended' | 'deleted';
 
 interface IdentityRecord {
+  externalUserId: string | null;
   name: string | null;
   avatarObjectKey: string | null;
   avatarUrl: string | null;

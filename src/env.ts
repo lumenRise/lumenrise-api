@@ -27,6 +27,16 @@ const schema = defineConfig({
   CLIENT_ORIGIN: {
     default: 'http://localhost:5173',
   },
+  AUTH_PROVIDER_API_URL: {
+    example: 'https://identity.example/server',
+  },
+  AUTH_PROVIDER_APP_ID: {
+    example: 'application-id',
+  },
+  AUTH_PROVIDER_APP_SECRET: {
+    example: 'application-secret',
+    secret: true,
+  },
   SESSION_TTL_DAYS: {
     type: 'number',
     default: 30,

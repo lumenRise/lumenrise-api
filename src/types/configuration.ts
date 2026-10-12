@@ -18,7 +18,9 @@ interface RuntimeConfiguration {
   R2_MAX_AVATAR_BYTES: number;
   R2_MAX_TOKEN_IMAGE_BYTES: number;
   STELLAR_AUTH_NETWORK: 'testnet' | 'public';
-  AUTH_JWT_SECRET: string;
+  AUTH_PROVIDER_API_URL: string;
+  AUTH_PROVIDER_APP_ID: string;
+  AUTH_PROVIDER_APP_SECRET: string;
   CREDENTIAL_ENCRYPTION_KEY: string;
 }
 

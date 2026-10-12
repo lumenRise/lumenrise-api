@@ -3,13 +3,35 @@ import type { RuntimeConfiguration } from '../../types/configuration';
 import { parseUrl } from '../../utils/services/configuration/validateRuntimeConfiguration/parseUrl';
 
 const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void => {
-  const hasGitHubClientId = configuration.GITHUB_CLIENT_ID.length > 0;
-  const hasGitHubClientSecret = configuration.GITHUB_CLIENT_SECRET.length > 0;
   const hasXClientId = configuration.X_CLIENT_ID.length > 0;
   const hasXClientSecret = configuration.X_CLIENT_SECRET.length > 0;
+  const hasGitHubClientId = configuration.GITHUB_CLIENT_ID.length > 0;
+  const hasGitHubClientSecret = configuration.GITHUB_CLIENT_SECRET.length > 0;
 
-  if (configuration.NODE_ENV === 'production' && configuration.AUTH_JWT_SECRET.length < 32) {
-    throw new Error('AUTH_JWT_SECRET must contain at least 32 characters in production');
+  const authProviderValues = [
+    configuration.AUTH_PROVIDER_API_URL,
+    configuration.AUTH_PROVIDER_APP_ID,
+    configuration.AUTH_PROVIDER_APP_SECRET,
+  ];
+
+  if (authProviderValues.some(Boolean) && !authProviderValues.every(Boolean)) {
+    throw new Error(
+      'AUTH_PROVIDER_API_URL, AUTH_PROVIDER_APP_ID and AUTH_PROVIDER_APP_SECRET must be configured together',
+    );
+  }
+
+  if (configuration.NODE_ENV === 'production' && !authProviderValues.every(Boolean)) {
+    throw new Error(
+      'AUTH_PROVIDER_API_URL, AUTH_PROVIDER_APP_ID and AUTH_PROVIDER_APP_SECRET are required in production',
+    );
+  }
+
+  if (configuration.AUTH_PROVIDER_API_URL) {
+    const url = parseUrl(configuration.AUTH_PROVIDER_API_URL, 'AUTH_PROVIDER_API_URL');
+
+    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
+      throw new Error('AUTH_PROVIDER_API_URL must be a clean HTTPS URL');
+    }
   }
 
   if (hasGitHubClientId !== hasGitHubClientSecret) {
@@ -51,7 +73,10 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   const testnetDomain = configuration.STELLAR_TESTNET_HOME_DOMAIN;
   const publicDomain = configuration.STELLAR_PUBLIC_HOME_DOMAIN;
 
-  if ((testnetDomain && !parseDomain(testnetDomain)) || (publicDomain && !parseDomain(publicDomain))) {
+  if (
+    (testnetDomain && !parseDomain(testnetDomain)) ||
+    (publicDomain && !parseDomain(publicDomain))
+  ) {
     throw new Error('Managed Home Domain values must be valid DNS hostnames');
   }
 
@@ -110,7 +135,6 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   ) {
     throw new Error('R2_MAX_TOKEN_IMAGE_BYTES must be between 1 and 10485760');
   }
-
 };
 
 export default validateRuntimeConfiguration;
