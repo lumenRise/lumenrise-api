@@ -1,7 +1,6 @@
 import type { RequestHandler } from 'express';
 
 import log from '../../../logger';
-import { setSessionCookie } from '../../../services/auth/session';
 import { OAUTH_STATE_COOKIE_NAME } from '../../../constants/auth';
 import { completeXAuthorization } from '../../../services/oauth/x';
 import { createClientRedirect } from '../../../utils/routes/oauth/x/callback/createClientRedirect';
@@ -27,8 +26,6 @@ const callbackXOAuthRoute: RequestHandler = async (req, res) => {
 
   try {
     const result = await completeXAuthorization(code, state);
-
-    setSessionCookie(res, result.session);
 
     return res.redirect(
       302,

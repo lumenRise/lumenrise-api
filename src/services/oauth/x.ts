@@ -1,9 +1,7 @@
 import { createHash } from 'node:crypto';
 
-import { issueSession } from '../auth/session';
 import OAuthState from '../../models/OAuthState';
 import { enqueueXSync } from '../integration/syncQueue';
-import type { IssuedSession } from '../../types/auth/model';
 import type { CompletedXOAuth } from '../../types/integration/x';
 import { exchangeXCode } from '../../utils/services/oauth/x/exchangeXCode';
 import { storeProviderCredential } from '../integration/providerCredential';
@@ -24,7 +22,7 @@ import {
 const completeXAuthorization = async (
   code: string,
   state: string,
-): Promise<{ connection: CompletedXOAuth; session: IssuedSession }> => {
+): Promise<{ connection: CompletedXOAuth }> => {
   assertXConfiguration();
 
   const stateHash = createHash('sha256').update(state).digest('hex');
@@ -61,7 +59,6 @@ const completeXAuthorization = async (
   });
 
   const syncJob = await enqueueXSync(account.externalAccount);
-  const session = await issueSession(account.identityId);
 
   return {
     connection: {
@@ -69,7 +66,6 @@ const completeXAuthorization = async (
       username: user.username,
       syncJobId: syncJob._id.toString(),
     },
-    session,
   };
 };
 
