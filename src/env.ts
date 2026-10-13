@@ -76,6 +76,26 @@ const schema = defineConfig({
   STELLAR_PUBLIC_HOME_DOMAIN: {
     example: 'lumenrise.app',
   },
+  STELLAR_TESTNET_TOML_DIRNAME: {
+    default: './storage/testnet',
+  },
+  STELLAR_TESTNET_TOML_FILENAME: {
+    default: 'testnet_stellar.toml',
+  },
+  STELLAR_PUBLIC_TOML_DIRNAME: {
+    default: './storage/public',
+  },
+  STELLAR_PUBLIC_TOML_FILENAME: {
+    default: 'stellar.toml',
+  },
+  TESTNET_TOML: {
+    default: '',
+    required: false,
+  },
+  PUBLIC_TOML: {
+    default: '',
+    required: false,
+  },
   R2_ENDPOINT: {
     example: 'https://<account_id>.r2.cloudflarestorage.com',
   },
