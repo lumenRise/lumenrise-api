@@ -78,6 +78,7 @@ services:
 networks:
   default:
     name: lumenrise
+    external: true
 volumes:
   mongo-data:
     name: lumenrise-mongo-data
