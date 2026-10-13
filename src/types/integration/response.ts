@@ -17,6 +17,8 @@ interface ConnectionResult {
   lastSyncedAt: string | null;
   data: ConnectionDataState | null;
   sync: IntegrationSyncJobResult | null;
+  canUpdateScore?: boolean;
+  nextScoreUpdateAt?: string | null;
 }
 
 interface ConnectionsResult {

@@ -89,4 +89,25 @@ describe('ReputationSnapshot model', () => {
       }),
     });
   });
+  it.each([
+    ['social', 300, true],
+    ['social', 301, false],
+    ['developer', 101, false],
+  ] as const)('validates the %s score ceiling at %s', async (category, score, valid) => {
+    const snapshot = new ReputationSnapshot({
+      identity: new Types.ObjectId(),
+      category,
+      score,
+      status: 'complete',
+      algorithmVersion: `${category}-v2`,
+      calculatedAt: new Date(),
+    });
+    if (valid) {
+      await expect(snapshot.validate()).resolves.toBeUndefined();
+    } else {
+      await expect(snapshot.validate()).rejects.toMatchObject({
+        errors: { score: expect.anything() },
+      });
+    }
+  });
 });

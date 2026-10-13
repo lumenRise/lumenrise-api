@@ -6,6 +6,7 @@ const coverageSchema = new Schema(
   {
     profile: { type: Boolean, required: true },
     posts: { type: Boolean, required: true },
+    connections: { type: Boolean, default: false },
   },
   { _id: false, versionKey: false },
 );
@@ -35,9 +36,22 @@ const metricsSchema = new Schema(
   { _id: false, versionKey: false },
 );
 
+const connectionSchema = new Schema(
+  {
+    username: { type: String, required: true },
+    connectionStatus: { type: [String], default: null },
+  },
+  { _id: false, versionKey: false },
+);
+
 const xDataSnapshotSchema = new Schema<XDataSnapshotRecord>(
   {
-    identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },
+    identity: {
+      type: Schema.Types.ObjectId,
+      ref: 'Identity',
+      required: true,
+      immutable: true,
+    },
     externalAccount: {
       type: Schema.Types.ObjectId,
       ref: 'ExternalAccount',
@@ -46,10 +60,16 @@ const xDataSnapshotSchema = new Schema<XDataSnapshotRecord>(
     },
     providerAccountId: { type: String, required: true, immutable: true },
     username: { type: String, required: true },
-    status: { type: String, enum: ['complete', 'partial'], required: true, immutable: true },
+    status: {
+      type: String,
+      enum: ['complete', 'partial'],
+      required: true,
+      immutable: true,
+    },
     dataVersion: { type: String, required: true, immutable: true },
     coverage: { type: coverageSchema, required: true, immutable: true },
     metrics: { type: metricsSchema, required: true, immutable: true },
+    connections: { type: [connectionSchema], default: [], immutable: true },
     activityFrom: { type: Date, default: null, immutable: true },
     activityTo: { type: Date, required: true, immutable: true },
     collectedAt: { type: Date, required: true, immutable: true },

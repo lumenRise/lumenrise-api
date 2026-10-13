@@ -27,7 +27,7 @@ const reputationSignalSchema = new Schema<ReputationSignalRecord>(
     },
     normalization: {
       type: String,
-      enum: ['diminishing_returns'],
+      enum: ['diminishing_returns', 'linear'],
       required: true,
     },
     scale: {
@@ -128,7 +128,7 @@ const reputationSnapshotSchema = new Schema<ReputationSnapshotRecord>(
     score: {
       type: Number,
       min: 0,
-      max: 100,
+      max: 300,
       default: null,
       immutable: true,
     },
@@ -155,6 +155,10 @@ const reputationSnapshotSchema = new Schema<ReputationSnapshotRecord>(
 );
 
 reputationSnapshotSchema.pre('validate', function validateScoreStatus() {
+  if (this.category === 'developer' && this.score !== null && this.score > 100) {
+    this.invalidate('score', 'Developer reputation cannot exceed 100');
+  }
+
   if (this.status === 'complete' && this.score === null) {
     this.invalidate('score', 'Complete reputation snapshots require a score');
   }

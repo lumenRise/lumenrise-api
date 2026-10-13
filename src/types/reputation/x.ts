@@ -42,6 +42,19 @@ interface XTimelineResponse {
 interface XDataCoverage {
   profile: boolean;
   posts: boolean;
+  connections?: boolean;
+}
+
+interface XAccountConnection {
+  username: string;
+  connectionStatus: string[] | null;
+}
+
+interface XConnectionResponse {
+  data?: Array<{ username: string; connection_status?: string[] }>;
+  title?: string;
+  detail?: string;
+  errors?: Array<{ detail?: string; title?: string }>;
 }
 
 interface XDataMetrics {
@@ -75,6 +88,7 @@ interface XDataSnapshotRecord {
   dataVersion: string;
   coverage: XDataCoverage;
   metrics: XDataMetrics;
+  connections?: XAccountConnection[];
   activityFrom: Date | null;
   activityTo: Date;
   collectedAt: Date;
@@ -88,6 +102,7 @@ interface XDataSnapshotResult {
   username: string;
   coverage: XDataCoverage;
   metrics: XDataMetrics;
+  connections?: XAccountConnection[];
   activityFrom: string | null;
   activityTo: string;
   collectedAt: string;
@@ -96,6 +111,8 @@ interface XDataSnapshotResult {
 type XDataSnapshotDocument = HydratedDocument<XDataSnapshotRecord>;
 
 export type {
+  XAccountConnection,
+  XConnectionResponse,
   XDataCoverage,
   XDataMetrics,
   XDataSnapshotDocument,

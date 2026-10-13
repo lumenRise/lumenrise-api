@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 
 import OAuthState from '../../models/OAuthState';
-import { enqueueXSync } from '../integration/syncQueue';
 import type { CompletedXOAuth } from '../../types/integration/x';
 import { exchangeXCode } from '../../utils/services/oauth/x/exchangeXCode';
 import { storeProviderCredential } from '../integration/providerCredential';
@@ -58,13 +57,10 @@ const completeXAuthorization = async (
     refreshTokenExpiresAt: null,
   });
 
-  const syncJob = await enqueueXSync(account.externalAccount);
-
   return {
     connection: {
       identityId: account.identityId.toString(),
       username: user.username,
-      syncJobId: syncJob._id.toString(),
     },
   };
 };

@@ -55,7 +55,6 @@ interface XUserResponse {
 interface CompletedXOAuth {
   identityId: string;
   username: string;
-  syncJobId: string;
 }
 
 interface ConnectedXAccount {

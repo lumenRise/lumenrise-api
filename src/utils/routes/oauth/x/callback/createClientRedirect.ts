@@ -1,11 +1,7 @@
 import env from '../../../../../env';
 import type { XOAuthResultStatus } from '../../../../../types/integration/x';
 
-const createClientRedirect = (
-  status: XOAuthResultStatus,
-  username?: string,
-  syncJobId?: string,
-): string => {
+const createClientRedirect = (status: XOAuthResultStatus, username?: string): string => {
   const redirectUrl = new URL('/onboarding', env.CLIENT_ORIGIN);
 
   redirectUrl.searchParams.set('provider', 'x');
@@ -13,10 +9,6 @@ const createClientRedirect = (
 
   if (username) {
     redirectUrl.searchParams.set('username', username);
-  }
-
-  if (syncJobId) {
-    redirectUrl.searchParams.set('syncJobId', syncJobId);
   }
 
   return redirectUrl.toString();

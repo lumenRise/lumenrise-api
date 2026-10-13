@@ -80,6 +80,52 @@ describe('runtime configuration validation', () => {
     ).not.toThrow();
   });
 
+  it.each(['localhost', '127.0.0.1', '[::1]'])(
+    'accepts HTTP R2 URLs on %s in development',
+    (host) => {
+      expect(() =>
+        validateRuntimeConfiguration({
+          ...validConfiguration,
+          R2_ENDPOINT: `http://${host}:9000`,
+          R2_ACCESS_KEY_ID: 'key',
+          R2_SECRET_ACCESS_KEY: 'secret',
+          R2_BUCKET_NAME: 'lumenrise-profiles',
+          R2_PUBLIC_BASE_URL: `http://${host}:5000/images`,
+        }),
+      ).not.toThrow();
+    },
+  );
+
+  it.each([
+    { NODE_ENV: 'development' as const, url: 'http://images.example.com' },
+    { NODE_ENV: 'development' as const, url: 'http://localhost.example.com' },
+    { NODE_ENV: 'development' as const, url: 'ftp://localhost:5000' },
+    { NODE_ENV: 'development' as const, url: 'http://user:pass@localhost:5000' },
+    { NODE_ENV: 'development' as const, url: 'http://localhost:5000?key=value' },
+    { NODE_ENV: 'development' as const, url: 'http://localhost:5000#image' },
+    { NODE_ENV: 'test' as const, url: 'http://localhost:5000' },
+    { NODE_ENV: 'production' as const, url: 'http://localhost:5000' },
+  ])('rejects invalid R2 URLs: $NODE_ENV $url', ({ NODE_ENV, url }) => {
+    const configuration = {
+      ...validConfiguration,
+      NODE_ENV,
+      CLIENT_ORIGIN: 'https://app.lumenrise.app',
+      GITHUB_CALLBACK_URL: 'https://api.lumenrise.app/v1/oauth/github/callback',
+      X_CALLBACK_URL: 'https://api.lumenrise.app/v1/oauth/x/callback',
+      R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
+      R2_ACCESS_KEY_ID: 'key',
+      R2_SECRET_ACCESS_KEY: 'secret',
+      R2_BUCKET_NAME: 'lumenrise-profiles',
+      R2_PUBLIC_BASE_URL: 'https://images.lumenrise.app',
+    };
+
+    for (const field of ['R2_ENDPOINT', 'R2_PUBLIC_BASE_URL']) {
+      expect(() => validateRuntimeConfiguration({ ...configuration, [field]: url })).toThrow(
+        'must be clean HTTPS URLs',
+      );
+    }
+  });
+
   it('rejects the S3 API endpoint as the public image URL', () => {
     expect(() =>
       validateRuntimeConfiguration({
