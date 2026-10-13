@@ -13,13 +13,13 @@ services:
       DB_NAME: ${DB_NAME:-lumenrise}
       RABBITMQ_URL: amqp://lumenrise:${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}@rabbitmq:5672
     ports:
-      - 5000:5000
+      - 127.0.0.1:3002:5000
     healthcheck:
       test:
         - CMD
         - node
         - -e
-        - "fetch('http://127.0.0.1:5000/v1/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+        - "fetch('http://127.0.0.1:3002/v1/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
       interval: 10s
       timeout: 5s
       retries: 12
