@@ -99,10 +99,15 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   if (r2Values.every(Boolean)) {
     const endpoint = parseUrl(configuration.R2_ENDPOINT, 'R2_ENDPOINT');
     const publicBase = parseUrl(configuration.R2_PUBLIC_BASE_URL, 'R2_PUBLIC_BASE_URL');
+    const hasAllowedProtocol = (url: URL): boolean =>
+      url.protocol === 'https:' ||
+      (configuration.NODE_ENV === 'development' &&
+        url.protocol === 'http:' &&
+        ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname));
 
     if (
-      endpoint.protocol !== 'https:' ||
-      publicBase.protocol !== 'https:' ||
+      !hasAllowedProtocol(endpoint) ||
+      !hasAllowedProtocol(publicBase) ||
       endpoint.username ||
       endpoint.password ||
       publicBase.username ||
@@ -112,7 +117,9 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
       publicBase.search ||
       publicBase.hash
     ) {
-      throw new Error('R2 endpoint and public image URL must be clean HTTPS URLs');
+      throw new Error(
+        'R2 endpoint and public image URL must be clean HTTPS URLs (HTTP loopback URLs are allowed in development)',
+      );
     }
 
     if (endpoint.origin === publicBase.origin) {
