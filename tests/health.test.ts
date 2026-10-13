@@ -30,4 +30,11 @@ describe('health routes', () => {
       result: {},
     });
   });
+
+  it('leaves stellar.toml serving to nginx', async () => {
+    const response = await request(app).get('/.well-known/stellar.toml');
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('Route not found');
+  });
 });
