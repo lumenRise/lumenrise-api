@@ -10,13 +10,19 @@ import getLaunchRpc from '../src/services/launch/getLaunchRpc';
 import LaunchPriceSample from '../src/models/LaunchPriceSample';
 import readLaunchContract from '../src/services/launch/readLaunchContract';
 import decodeTradeTransaction from '../src/utils/launch/decodeTradeTransaction';
+import enqueueLaunchHolderRefresh from '../src/services/launch/enqueueLaunchHolderRefresh';
 
-vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet', LOG_LEVEL: 'silent', NODE_ENV: 'test' } }));
+vi.mock('../src/env', () => ({
+  default: { STELLAR_AUTH_NETWORK: 'testnet', LOG_LEVEL: 'silent', NODE_ENV: 'test' },
+}));
 
 vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn(), updateOne: vi.fn() } }));
 vi.mock('../src/models/LaunchTrade', () => ({ default: { findOne: vi.fn(), updateOne: vi.fn() } }));
-vi.mock('../src/models/LaunchPriceSample', () => ({ default: { updateOne: vi.fn() } }));
+vi.mock('../src/models/LaunchPriceSample', () => ({
+  default: { findOne: vi.fn(), updateOne: vi.fn(), exists: vi.fn() },
+}));
 vi.mock('../src/utils/launch/decodeTradeTransaction', () => ({ default: vi.fn() }));
+vi.mock('../src/services/launch/enqueueLaunchHolderRefresh', () => ({ default: vi.fn() }));
 vi.mock('../src/services/launch/getLaunchRpc', () => ({ default: vi.fn() }));
 vi.mock('../src/services/launch/readLaunchContract', () => ({ default: vi.fn() }));
 const hash = 'a'.repeat(64);
@@ -34,6 +40,9 @@ const submit = (body: unknown = { transactionHash: hash }) => ({ ...request(), b
 describe('client hash submission', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(LaunchPriceSample.findOne).mockReturnValue({
+      sort: () => ({ lean: async () => null }),
+    } as never);
     vi.mocked(Launch.findOne).mockReturnValue({
       lean: async () => ({ asset: 'token', pair: 'pair', config: { params: { ends_at: '1' } } }),
     } as never);
@@ -57,7 +66,12 @@ describe('client hash submission', () => {
     const res = response();
     await postTrade(submit(), res as unknown as Response, vi.fn());
     expect(server.getTransaction).toHaveBeenCalledWith(hash);
-    expect(LaunchTrade.updateOne).toHaveBeenCalledWith(expect.anything(), { $setOnInsert: trade }, { upsert: true });
+    expect(enqueueLaunchHolderRefresh).toHaveBeenCalledWith(expect.anything(), 'token', 'wallet');
+    expect(LaunchTrade.updateOne).toHaveBeenCalledWith(
+      expect.anything(),
+      { $setOnInsert: trade },
+      { upsert: true },
+    );
     expect(LaunchPriceSample.updateOne).toHaveBeenCalledWith(
       expect.anything(),
       { $setOnInsert: expect.objectContaining({ ledger: 102, price: '10112044' }) },
@@ -71,17 +85,23 @@ describe('client hash submission', () => {
       assetAmount: '100000000',
       executionPrice: '10055866',
     });
-    expect(Launch.updateOne).toHaveBeenCalledWith(expect.objectContaining({ stateAsOfLedger: { $lte: 101 } }), {
-      $set: expect.objectContaining({ nextStatePollAt: expect.any(Date) }),
-    });
+    expect(Launch.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({ stateAsOfLedger: { $lte: 101 } }),
+      {
+        $set: expect.objectContaining({ nextStatePollAt: expect.any(Date) }),
+      },
+    );
   });
-  it('does not re-read an already completed hash', async () => {
+  it('queues the holder refresh for a completed hash without re-reading the transaction or price', async () => {
     vi.mocked(LaunchTrade.findOne).mockReturnValue({
       lean: async () => ({ ...trade, priceRecordedAt: new Date() }),
     } as never);
     const res = response();
     await postTrade(submit(), res as unknown as Response, vi.fn());
+    expect(enqueueLaunchHolderRefresh).toHaveBeenCalledWith(expect.anything(), 'token', 'wallet');
     expect(getLaunchRpc).not.toHaveBeenCalled();
+    expect(server.getTransaction).not.toHaveBeenCalled();
+    expect(readLaunchContract).not.toHaveBeenCalled();
     expect(res.json.mock.calls[0]![0].status).toBe('success');
   });
   it('asks the client to retry a pending transaction and rejects a non-trade', async () => {
@@ -95,6 +115,22 @@ describe('client hash submission', () => {
     await postTrade(submit(), rejected as unknown as Response, vi.fn());
     expect(rejected.status).toHaveBeenCalledWith(400);
     expect(LaunchTrade.updateOne).not.toHaveBeenCalled();
+    expect(enqueueLaunchHolderRefresh).not.toHaveBeenCalled();
+  });
+  it('retries a failed holder job persistence without losing or refetching the verified trade', async () => {
+    vi.mocked(enqueueLaunchHolderRefresh).mockRejectedValueOnce(
+      new Error('job storage unavailable'),
+    );
+    const failed = response();
+    await postTrade(submit(), failed as unknown as Response, vi.fn());
+    expect(failed.status).toHaveBeenCalledWith(503);
+    expect(readLaunchContract).not.toHaveBeenCalled();
+    vi.mocked(LaunchTrade.findOne).mockReturnValue({ lean: async () => trade } as never);
+    const retried = response();
+    await postTrade(submit(), retried as unknown as Response, vi.fn());
+    expect(server.getTransaction).toHaveBeenCalledTimes(1);
+    expect(enqueueLaunchHolderRefresh).toHaveBeenCalledTimes(2);
+    expect(retried.json.mock.calls[0]![0].status).toBe('success');
   });
   it('retries a failed price read without losing or refetching the verified trade', async () => {
     vi.mocked(readLaunchContract).mockRejectedValueOnce(new Error('RPC down'));

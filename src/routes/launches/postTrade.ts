@@ -7,11 +7,12 @@ import LaunchTrade from '../../models/LaunchTrade';
 import type { TradeRecord } from '../../types/launch/market';
 import toTradeResult from '../../utils/launch/toTradeResult';
 import getLaunchRpc from '../../services/launch/getLaunchRpc';
-import LaunchPriceSample from '../../models/LaunchPriceSample';
 import parseTradeInteger from '../../utils/launch/parseTradeInteger';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
+import recordLaunchPrice from '../../services/launch/recordLaunchPrice';
 import readLaunchContract from '../../services/launch/readLaunchContract';
 import decodeTradeTransaction from '../../utils/launch/decodeTradeTransaction';
+import enqueueLaunchHolderRefresh from '../../services/launch/enqueueLaunchHolderRefresh';
 
 const postTrade: RequestHandler = async (req, res) => {
   const identity = parseMarketRequest(req);
@@ -54,6 +55,7 @@ const postTrade: RequestHandler = async (req, res) => {
       });
 
     if (trade?.priceRecordedAt) {
+      await enqueueLaunchHolderRefresh(identity, launch.asset, trade.trader);
       return respond();
     }
 
@@ -95,6 +97,8 @@ const postTrade: RequestHandler = async (req, res) => {
       }
     }
 
+    await enqueueLaunchHolderRefresh(identity, launch.asset, trade.trader);
+
     const stateRead = await readLaunchContract(server, identity.contractId, 'get_state');
     const priceRead = await readLaunchContract(server, identity.contractId, 'current_price');
 
@@ -117,18 +121,7 @@ const postTrade: RequestHandler = async (req, res) => {
 
     const sampledAt = new Date();
 
-    await LaunchPriceSample.updateOne(
-      { ...identity, bucket: sampledAt },
-      {
-        $setOnInsert: {
-          sampledAt,
-          ledger: priceRead.ledger,
-          price: price.toString(),
-          priceSort: price.toString().padStart(39, '0'),
-        },
-      },
-      { upsert: true },
-    );
+    await recordLaunchPrice(identity, priceRead, sampledAt);
 
     const params = launch.config.params as { ends_at: string };
 

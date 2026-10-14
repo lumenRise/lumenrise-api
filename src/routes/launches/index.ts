@@ -5,6 +5,7 @@ import getTrades from './getTrades';
 import postTrade from './postTrade';
 import getMarket from './getMarket';
 import getLaunchesRoute from './get';
+import getHolders from './getHolders';
 import getLaunchImageRoute from './getImage';
 import postLaunchImageRoute from './postImage';
 import getLaunchByContractIdRoute from './getByContractId';
@@ -18,6 +19,7 @@ launchRoutes.get('/images/:imageId', requireSession, getLaunchImageRoute);
 launchRoutes.post('/images', requireSession, tokenImageUpload, postLaunchImageRoute);
 
 launchRoutes.get('/:contractId/trades', getTrades);
+launchRoutes.get('/:contractId/holders', getHolders);
 launchRoutes.post('/:contractId/trades', requireSession, postTrade);
 launchRoutes.get('/:contractId/market', getMarket);
 launchRoutes.get('/:contractId/chart', getChart);

@@ -55,54 +55,17 @@ const scanSummary = {
 
 const openApiComponents = {
   securitySchemes: {
-    bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-    sessionCookie: { type: 'apiKey', in: 'cookie', name: 'lumenrise_session' },
+    userIdHeader: {
+      type: 'apiKey',
+      in: 'header',
+      name: 'x-user-id',
+      description:
+        'Auth provider user ID for an active registered identity. This API accepts this header; it does not consume bearer tokens or a session cookie.',
+    },
     developerApiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' },
   },
   schemas: {
     ...marketSchemas,
-    LaunchDraft: {
-      type: 'object',
-      required: [
-        'draftId',
-        'schemaVersion',
-        'network',
-        'ownerAddress',
-        'method',
-        'status',
-        'data',
-        'imageId',
-        'assetContractId',
-        'transactionHash',
-        'verifiedContractId',
-        'launchContractId',
-        'submittedAt',
-        'confirmedAt',
-        'createdAt',
-        'updatedAt',
-      ],
-      properties: {
-        draftId: objectId,
-        schemaVersion: { type: 'integer', const: 1 },
-        network: { type: 'string', enum: ['testnet', 'public'] },
-        ownerAddress: stellarAddress,
-        method: { type: 'string', const: 'bonding' },
-        status: {
-          type: 'string',
-          enum: ['editing', 'submitted', 'confirmed', 'unmatched', 'failed'],
-        },
-        data: { type: 'object', description: 'Private form snapshot; editable before submission.' },
-        imageId: { oneOf: [objectId, { type: 'null' }] },
-        assetContractId: nullableString,
-        transactionHash: nullableString,
-        verifiedContractId: nullableString,
-        launchContractId: nullableString,
-        submittedAt: nullableDateTime,
-        confirmedAt: nullableDateTime,
-        createdAt: dateTime,
-        updatedAt: dateTime,
-      },
-    },
     MyProfile: {
       type: 'object',
       required: ['identityId', 'name', 'avatarUrl'],
@@ -492,38 +455,69 @@ const openApiComponents = {
         uptime: { type: 'number', minimum: 0 },
       },
     },
-    WalletChallengeResult: {
+    ExternalUserId: {
+      type: 'string',
+      pattern: '^[1-9]\\d*$',
+      example: '42',
+      description:
+        'Positive Auth provider user ID, at most 9007199254740991. Returned as a string.',
+    },
+    RegistrationRequest: {
       type: 'object',
-      required: ['challengeId', 'address', 'purpose', 'message', 'networkPassphrase', 'expiresAt'],
+      required: ['userId', 'name'],
       properties: {
-        challengeId: objectId,
-        address: stellarAddress,
-        purpose: { type: 'string', enum: ['register', 'login'] },
-        message: {
-          type: 'string',
-          description:
-            'Single-line text to sign exactly with the wallet signMessage method. Do not submit a transaction.',
+        userId: {
+          oneOf: [
+            { $ref: '#/components/schemas/ExternalUserId' },
+            { type: 'integer', minimum: 1, maximum: 9007199254740991 },
+          ],
         },
-        networkPassphrase: { type: 'string' },
-        expiresAt: dateTime,
+        name: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 80,
+          description: 'Trimmed, nonempty display name.',
+        },
       },
     },
-    WalletAuthResult: {
+    RegistrationResult: {
       type: 'object',
-      required: ['identityId', 'address', 'name', 'accessToken', 'tokenType', 'expiresAt'],
+      required: ['userId', 'identityId', 'name', 'avatarUrl', 'addresses'],
       properties: {
+        userId: { $ref: '#/components/schemas/ExternalUserId' },
         identityId: objectId,
-        address: stellarAddress,
-        name: nullableString,
-        accessToken: { type: 'string', description: 'Bearer JWT. Keep it private.' },
-        tokenType: { type: 'string', const: 'Bearer' },
-        expiresAt: dateTime,
+        name: { type: 'string' },
+        avatarUrl: { type: ['string', 'null'], format: 'uri' },
+        addresses: { type: 'array', minItems: 1, items: stellarAddress },
       },
+    },
+    RegistrationStatus: {
+      oneOf: [
+        {
+          type: 'object',
+          required: ['registered', 'userId'],
+          properties: {
+            registered: { const: false },
+            userId: { $ref: '#/components/schemas/ExternalUserId' },
+          },
+        },
+        {
+          type: 'object',
+          required: ['registered', 'userId', 'identityId', 'name', 'avatarUrl'],
+          properties: {
+            registered: { const: true },
+            userId: { $ref: '#/components/schemas/ExternalUserId' },
+            identityId: objectId,
+            name: { type: 'string' },
+            avatarUrl: { type: ['string', 'null'], format: 'uri' },
+          },
+        },
+      ],
     },
     SessionResult: {
       type: 'object',
-      required: ['identityId', 'expiresAt'],
-      properties: { identityId: objectId, expiresAt: dateTime },
+      required: ['identityId', 'userId'],
+      properties: { identityId: objectId, userId: { $ref: '#/components/schemas/ExternalUserId' } },
     },
     IntegrationSyncJob: {
       type: 'object',
@@ -729,6 +723,10 @@ const openApiComponents = {
               pullRequestReviewContributions: { type: 'integer' },
               repositoryContributions: { type: 'integer' },
               restrictedContributions: { type: 'integer' },
+              repositoriesWithCommitContributions: { type: 'integer' },
+              repositoriesWithIssueContributions: { type: 'integer' },
+              repositoriesWithPullRequestContributions: { type: 'integer' },
+              repositoriesWithPullRequestReviewContributions: { type: 'integer' },
             },
             additionalProperties: { type: 'integer' },
           },
@@ -1186,7 +1184,7 @@ const openApiComponents = {
       content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
     },
     Forbidden: {
-      description: 'The connected wallet is not authorized for this resource.',
+      description: 'The identity is inactive or not authorized for this resource.',
       content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
     },
     NotFound: {
@@ -1201,6 +1199,31 @@ const openApiComponents = {
       description: 'The request exceeded a cooldown or quota. Retry-After is in seconds.',
       headers: { 'Retry-After': { schema: { type: 'integer', minimum: 1 } } },
       content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
+    },
+    InternalServerError: {
+      description:
+        'Unexpected request failure, including database or upstream errors not handled by the route.',
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } },
+    },
+    UploadLimitExceeded: {
+      description: 'Image exceeds the configured upload limit.',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['status', 'message', 'result'],
+            properties: {
+              status: { const: 'error' },
+              message: { type: 'string' },
+              result: {
+                type: 'object',
+                required: ['maxBytes'],
+                properties: { maxBytes: { type: 'integer', minimum: 1 } },
+              },
+            },
+          },
+        },
+      },
     },
     BadGateway: {
       description: 'The upstream service is unavailable.',
