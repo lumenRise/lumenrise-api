@@ -9,14 +9,18 @@ const readChartTimeframe = async (
   timeframe: ChartTimeframe,
   request: ChartRequest,
   firstTime: Date | null,
+  launchStart: Date | null = null,
 ) => {
   const { identity, from, to, limit } = request;
   const spec = chartTimeframes[timeframe];
   const starts: Date[] = [];
 
-  const beginning = firstTime
-    ? new Date(Math.max(firstTime.getTime(), from?.getTime() ?? firstTime.getTime()))
-    : null;
+  const historyStart = launchStart ?? firstTime;
+
+  const beginning =
+    historyStart && historyStart < to
+      ? new Date(Math.max(historyStart.getTime(), from?.getTime() ?? historyStart.getTime()))
+      : null;
 
   const earliest = beginning ? candleStart(beginning, timeframe) : null;
   let cursor = candleStart(new Date(to.getTime() - 1), timeframe);
@@ -79,7 +83,14 @@ const readChartTimeframe = async (
   return {
     timeframe,
     timezone: 'UTC',
-    items: buildChartCandles(timeframe, starts, rows, previous?.price ?? null, to),
+    items: buildChartCandles(
+      timeframe,
+      starts,
+      rows,
+      previous?.price ?? null,
+      to,
+      launchStart ? '10000000' : null,
+    ),
     hasMore,
     nextBefore: hasMore ? start.toISOString() : null,
   };

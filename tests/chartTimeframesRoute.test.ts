@@ -35,6 +35,89 @@ describe('multiple chart timeframes', () => {
 
   afterEach(() => vi.useRealTimers());
 
+  it('starts at launch even when the first price is received four hours later', async () => {
+    vi.setSystemTime(new Date('2026-10-14T17:00:00Z'));
+    const start = new Date('2026-10-14T12:00:00Z');
+    const first = new Date('2026-10-14T16:00:00Z');
+    vi.mocked(Launch.findOne).mockReturnValue({
+      lean: async () => ({
+        asset: 'token',
+        pair: 'pair',
+        config: { params: { starts_at: String(start.getTime() / 1000) } },
+      }),
+    } as never);
+    const observation = { price: '25000000', sampledAt: first };
+    vi.mocked(LaunchPriceSample.findOne)
+      .mockReturnValueOnce({ sort: () => ({ lean: async () => observation }) } as never)
+      .mockReturnValueOnce({ sort: () => ({ lean: async () => observation }) } as never);
+    vi.mocked(LaunchPriceSample.aggregate).mockResolvedValue([
+      {
+        timestamp: first,
+        open: '25000000',
+        close: '25000000',
+        high: '25000000',
+        low: '25000000',
+        count: 1,
+        firstObservedAt: first,
+        lastObservedAt: first,
+      },
+    ]);
+    const res = response();
+    await getChart(request({ timeframes: '1h' }), res as unknown as Response, vi.fn());
+    const result = res.json.mock.calls[0]![0].result;
+    expect(result.firstObservationAt).toBe(first.toISOString());
+    const items = result.timeframes[0].items;
+    expect(items).toHaveLength(5);
+    expect(items[0].timestamp).toBe(start.toISOString());
+    expect(
+      items
+        .slice(0, 4)
+        .every(
+          (item: { close: string; count: number; partial: boolean; firstObservedAt: null }) =>
+            item.close === '10000000' &&
+            item.count === 0 &&
+            item.partial &&
+            item.firstObservedAt === null,
+        ),
+    ).toBe(true);
+    expect(items[4]).toMatchObject({
+      open: '25000000',
+      close: '25000000',
+      count: 1,
+      partial: false,
+    });
+  });
+
+  it('fills a launch with no observations, including pages before the first observed price', async () => {
+    const start = new Date('2026-10-14T10:15:00Z');
+    vi.mocked(Launch.findOne).mockReturnValue({
+      lean: async () => ({ config: { params: { starts_at: String(start.getTime() / 1000) } } }),
+    } as never);
+    const res = response();
+    await getChart(
+      request({ timeframes: '1h', to: '2026-10-14T12:00:00Z' }),
+      res as unknown as Response,
+      vi.fn(),
+    );
+    const result = res.json.mock.calls[0]![0].result;
+    expect(result.firstObservationAt).toBeNull();
+    expect(result.timeframes[0].items.map((item: { timestamp: string }) => item.timestamp)).toEqual(
+      ['2026-10-14T10:00:00.000Z', '2026-10-14T11:00:00.000Z'],
+    );
+    expect(result.timeframes[0].items[0]).toMatchObject({ close: '10000000', count: 0 });
+    const parsed = parseChartRequest(request({ timeframes: '1h', limit: '1' }))!;
+    const page = await readChartTimeframe('1h', parsed, null, start);
+    expect(page.hasMore).toBe(true);
+    expect(page.nextBefore).toBe('2026-10-14T12:00:00.000Z');
+    expect(page.items[0]).toMatchObject({ open: '10000000', close: null });
+  });
+
+  it('does not create a candle for a launch that has not started, even in the same hour', async () => {
+    const parsed = parseChartRequest(request({ timeframes: '1h' }))!;
+    const result = await readChartTimeframe('1h', parsed, null, new Date('2026-10-14T12:55:00Z'));
+    expect(result.items).toEqual([]);
+  });
+
   it('returns exactly the requested series, including repeated parameter syntax', async () => {
     for (const timeframes of ['1m,1h', ['1m', '1h', '1m']]) {
       const res = response();

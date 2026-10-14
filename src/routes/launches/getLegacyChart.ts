@@ -4,6 +4,7 @@ import log from '../../logger';
 import Launch from '../../models/Launch';
 import type { ChartRange } from '../../types/launch/market';
 import LaunchPriceSample from '../../models/LaunchPriceSample';
+import chartLaunchStart from '../../utils/launch/chartLaunchStart';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 
 const ranges = { '1D': 1, '1W': 7, '1M': 30, '3M': 90, ALL: 0 };
@@ -43,10 +44,12 @@ const getLegacyChart: RequestHandler = async (req, res) => {
 
     const firstTime = first?.sampledAt ?? null;
     const lastTime = last?.sampledAt ?? null;
+    const launchStart = chartLaunchStart(launch.config);
+    const historyStart = launchStart ?? firstTime;
     // Keep every response below 1000 buckets, including ALL for old launches.
     const intervalSeconds = Math.max(
       intervals[range as ChartRange],
-      days || !firstTime ? 0 : Math.ceil((now.getTime() - firstTime.getTime()) / 998_000),
+      days || !historyStart ? 0 : Math.ceil((now.getTime() - historyStart.getTime()) / 998_000),
     );
 
     const candles = await LaunchPriceSample.aggregate([
@@ -93,7 +96,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
       },
     ]);
 
-    const items = candles.map((row) => ({
+    const observedItems = candles.map((row) => ({
       ...row,
       timestamp: (row.timestamp as Date).toISOString(),
       firstObservedAt: (row.firstObservedAt as Date).toISOString(),
@@ -101,6 +104,35 @@ const getLegacyChart: RequestHandler = async (req, res) => {
       high: BigInt(row.high).toString(),
       low: BigInt(row.low).toString(),
     }));
+
+    const items = [];
+    const step = intervalSeconds * 1000;
+    // Preserve the legacy response while filling every interval since opening.
+    if (launchStart && launchStart <= now) {
+      const rows = new Map(observedItems.map((row) => [row.timestamp, row]));
+      let carried = previous?.price ?? '10000000';
+      const beginning = Math.max(since.getTime(), launchStart.getTime());
+
+      for (let time = Math.floor(beginning / step) * step; time <= now.getTime(); time += step) {
+        const timestamp = new Date(time).toISOString();
+        const row = rows.get(timestamp);
+        const open = row?.firstObservedAt === timestamp ? row.open : carried;
+        const close = row?.close ?? open;
+        items.push({
+          timestamp,
+          open,
+          close,
+          high: row && BigInt(row.high) > BigInt(open) ? row.high : open,
+          low: row && BigInt(row.low) < BigInt(open) ? row.low : open,
+          count: row?.count ?? 0,
+          firstObservedAt: row?.firstObservedAt ?? null,
+          lastObservedAt: row?.lastObservedAt ?? null,
+        });
+        carried = close;
+      }
+    } else if (!launchStart) {
+      items.push(...observedItems);
+    }
 
     res.set('Cache-Control', 'public, max-age=15');
 
@@ -119,7 +151,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
         firstObservationAt: firstTime?.toISOString() ?? null,
         lastObservationAt: lastTime?.toISOString() ?? null,
         items,
-        previousPrice: previous?.price ?? null,
+        previousPrice: previous?.price ?? (launchStart && launchStart < since ? '10000000' : null),
         interpolation: 'step',
       },
     });
