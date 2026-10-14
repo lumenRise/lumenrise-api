@@ -47,7 +47,10 @@ const launchMarketPaths = {
       summary: 'Verify a submitted trade hash and record the current contract price',
       description:
         'Requires the existing x-user-id session header. Only successful direct buy/sell calls on this launch are accepted. Retry the same hash on 202 or 503; completed submissions are idempotent. The sampled price is observed at read time and may include subsequent trades.',
-      parameters: [...identity, { in: 'header', name: 'x-user-id', required: true, schema: { type: 'string' } }],
+      parameters: [
+        ...identity,
+        { in: 'header', name: 'x-user-id', required: true, schema: { type: 'string' } },
+      ],
       requestBody: {
         required: true,
         content: {
@@ -61,8 +64,13 @@ const launchMarketPaths = {
         },
       },
       responses: {
-        '200': jsonResponse('Trade recorded.', { $ref: '#/components/schemas/LaunchTradeSubmission' }),
-        '202': { description: 'Transaction not available yet; retry the same hash after Retry-After seconds.' },
+        '200': jsonResponse('Trade recorded.', {
+          $ref: '#/components/schemas/LaunchTradeSubmission',
+        }),
+        '202': {
+          description:
+            'Transaction not available yet; retry the same hash after Retry-After seconds.',
+        },
         '401': { description: 'Authentication required.' },
         '403': { description: 'Identity is not active.' },
         ...errors,
@@ -91,17 +99,57 @@ const launchMarketPaths = {
       operationId: 'getLaunchChart',
       summary: 'Read curve price chart candles',
       description:
-        'Candles use direct current_price observations after verified trades and every 10 minutes while polling is active. OHLC reflects observed samples. Empty buckets are omitted; carry the previous close forward using step interpolation. previousPrice supplies the price before the range. Prices are in the pair asset. At most 1000 candles.',
+        'Without range, returns requested timeframes (default: 1h,1d,1w,1M,3M,6M,1y). Prices are seeded once after opening and updated after verified client-submitted trades; unchanged prices are not normally stored. Empty intervals carry the last known price forward. OHLC includes the price at the interval start. Current or query-truncated candles have close=null and latestPrice holds the last known value. No history is invented before the first observation; partial marks a candle with an unknown opening history. UTC calendar months/years and Monday weeks. Up to limit latest candles per timeframe; when hasMore=true, request to=nextBefore for older candles of that timeframe. Explicit range retains the legacy sparse chart response.',
       parameters: [
         ...identity,
         {
           in: 'query',
+          name: 'timeframes',
+          style: 'form',
+          explode: false,
+          schema: {
+            type: 'array',
+            minItems: 1,
+            maxItems: 12,
+            items: {
+              type: 'string',
+              enum: ['1m', '5m', '15m', '45m', '1h', '4h', '1d', '1w', '1M', '3M', '6M', '1y'],
+            },
+            default: ['1h', '1d', '1w', '1M', '3M', '6M', '1y'],
+          },
+        },
+        {
+          in: 'query',
+          name: 'from',
+          schema: { type: 'string', format: 'date-time' },
+          description: 'Optional lower bound. Returns whole UTC candles intersecting the bound.',
+        },
+        {
+          in: 'query',
+          name: 'to',
+          schema: { type: 'string', format: 'date-time' },
+          description: 'Exclusive upper bound; defaults to now, cannot be in the future.',
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 1000, default: 1000 },
+          description: 'Maximum latest candles per timeframe.',
+        },
+        {
+          in: 'query',
           name: 'range',
-          schema: { type: 'string', enum: ['1D', '1W', '1M', '3M', 'ALL'], default: '1D' },
+          description: 'Legacy response mode, cannot be combined with timeframes/from/to/limit.',
+          schema: { type: 'string', enum: ['1D', '1W', '1M', '3M', 'ALL'] },
         },
       ],
       responses: {
-        '200': jsonResponse('Chart retrieved.', { $ref: '#/components/schemas/LaunchChart' }),
+        '200': jsonResponse('Chart retrieved.', {
+          oneOf: [
+            { $ref: '#/components/schemas/LaunchTimeframeChart' },
+            { $ref: '#/components/schemas/LaunchChart' },
+          ],
+        }),
         ...errors,
       },
     },

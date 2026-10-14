@@ -21,7 +21,8 @@ const trade = {
     assetAmount: amount,
     executionPrice: {
       ...amount,
-      description: 'Average execution price before creator fees, rounded up to 7 decimals, in the pair asset.',
+      description:
+        'Average execution price before creator fees, rounded up to 7 decimals, in the pair asset.',
     },
   },
 };
@@ -74,6 +75,94 @@ const marketSchemas = {
       },
     },
   },
+  LaunchTimeframeChart: {
+    type: 'object',
+    required: [
+      'network',
+      'contractId',
+      'asset',
+      'pair',
+      'priceScale',
+      'amountScale',
+      'priceType',
+      'asOf',
+      'firstObservationAt',
+      'lastObservationAt',
+      'timeframes',
+    ],
+    properties: {
+      network,
+      contractId: contract,
+      asset: contract,
+      pair: contract,
+      amountScale: { const: 7 },
+      priceScale: { const: 7 },
+      priceType: { const: 'marginal_before_fee' },
+      asOf: date,
+      firstObservationAt: nullableDate,
+      lastObservationAt: nullableDate,
+      timeframes: {
+        type: 'array',
+        maxItems: 12,
+        items: {
+          type: 'object',
+          required: ['timeframe', 'timezone', 'items', 'hasMore', 'nextBefore'],
+          properties: {
+            timeframe: {
+              type: 'string',
+              enum: ['1m', '5m', '15m', '45m', '1h', '4h', '1d', '1w', '1M', '3M', '6M', '1y'],
+            },
+            timezone: { const: 'UTC' },
+            hasMore: { type: 'boolean' },
+            nextBefore: nullableDate,
+            items: {
+              type: 'array',
+              maxItems: 1000,
+              items: {
+                type: 'object',
+                required: [
+                  'timestamp',
+                  'endsAt',
+                  'open',
+                  'high',
+                  'low',
+                  'close',
+                  'latestPrice',
+                  'complete',
+                  'partial',
+                  'count',
+                  'firstObservedAt',
+                  'lastObservedAt',
+                ],
+                properties: {
+                  timestamp: date,
+                  endsAt: date,
+                  open: amount,
+                  high: amount,
+                  low: amount,
+                  close: nullableAmount,
+                  latestPrice: amount,
+                  complete: { type: 'boolean' },
+                  partial: {
+                    type: 'boolean',
+                    description:
+                      'The first known observation is after the candle start; earlier prices are unknown.',
+                  },
+                  count: {
+                    ...count,
+                    description:
+                      'Number of stored price observations in this candle, not trade count.',
+                  },
+                  firstObservedAt: nullableDate,
+                  lastObservedAt: nullableDate,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   LaunchChart: {
     type: 'object',
     required: [
@@ -103,7 +192,8 @@ const marketSchemas = {
       lastObservationAt: nullableDate,
       previousPrice: {
         ...nullableAmount,
-        description: 'Last observed price before the requested range; carry it into empty intervals.',
+        description:
+          'Last observed price before the requested range; carry it into empty intervals.',
       },
       interpolation: { const: 'step' },
       items: {
@@ -111,7 +201,16 @@ const marketSchemas = {
         maxItems: 1000,
         items: {
           type: 'object',
-          required: ['timestamp', 'open', 'high', 'low', 'close', 'count', 'firstObservedAt', 'lastObservedAt'],
+          required: [
+            'timestamp',
+            'open',
+            'high',
+            'low',
+            'close',
+            'count',
+            'firstObservedAt',
+            'lastObservedAt',
+          ],
           properties: {
             timestamp: date,
             open: amount,
