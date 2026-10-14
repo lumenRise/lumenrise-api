@@ -184,7 +184,7 @@ const marketSchemas = {
                   partial: {
                     type: 'boolean',
                     description:
-                      'The first known observation is after the candle start; earlier prices are unknown.',
+                      'The opening history has no observed price; a placeholder of 1 pair unit is used from launch until the first observation.',
                   },
                   count: {
                     ...count,
@@ -256,8 +256,8 @@ const marketSchemas = {
             low: amount,
             close: amount,
             count,
-            firstObservedAt: date,
-            lastObservedAt: date,
+            firstObservedAt: nullableDate,
+            lastObservedAt: nullableDate,
           },
         },
       },
