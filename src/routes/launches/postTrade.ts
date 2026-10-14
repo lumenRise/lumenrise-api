@@ -12,6 +12,7 @@ import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 import recordLaunchPrice from '../../services/launch/recordLaunchPrice';
 import readLaunchContract from '../../services/launch/readLaunchContract';
 import decodeTradeTransaction from '../../utils/launch/decodeTradeTransaction';
+import enqueueLaunchHolderRefresh from '../../services/launch/enqueueLaunchHolderRefresh';
 
 const postTrade: RequestHandler = async (req, res) => {
   const identity = parseMarketRequest(req);
@@ -54,6 +55,7 @@ const postTrade: RequestHandler = async (req, res) => {
       });
 
     if (trade?.priceRecordedAt) {
+      await enqueueLaunchHolderRefresh(identity, launch.asset, trade.trader);
       return respond();
     }
 
@@ -94,6 +96,8 @@ const postTrade: RequestHandler = async (req, res) => {
         }
       }
     }
+
+    await enqueueLaunchHolderRefresh(identity, launch.asset, trade.trader);
 
     const stateRead = await readLaunchContract(server, identity.contractId, 'get_state');
     const priceRead = await readLaunchContract(server, identity.contractId, 'current_price');
