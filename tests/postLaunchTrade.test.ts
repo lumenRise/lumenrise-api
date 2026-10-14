@@ -11,11 +11,15 @@ import LaunchPriceSample from '../src/models/LaunchPriceSample';
 import readLaunchContract from '../src/services/launch/readLaunchContract';
 import decodeTradeTransaction from '../src/utils/launch/decodeTradeTransaction';
 
-vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet', LOG_LEVEL: 'silent', NODE_ENV: 'test' } }));
+vi.mock('../src/env', () => ({
+  default: { STELLAR_AUTH_NETWORK: 'testnet', LOG_LEVEL: 'silent', NODE_ENV: 'test' },
+}));
 
 vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn(), updateOne: vi.fn() } }));
 vi.mock('../src/models/LaunchTrade', () => ({ default: { findOne: vi.fn(), updateOne: vi.fn() } }));
-vi.mock('../src/models/LaunchPriceSample', () => ({ default: { updateOne: vi.fn() } }));
+vi.mock('../src/models/LaunchPriceSample', () => ({
+  default: { findOne: vi.fn(), updateOne: vi.fn(), exists: vi.fn() },
+}));
 vi.mock('../src/utils/launch/decodeTradeTransaction', () => ({ default: vi.fn() }));
 vi.mock('../src/services/launch/getLaunchRpc', () => ({ default: vi.fn() }));
 vi.mock('../src/services/launch/readLaunchContract', () => ({ default: vi.fn() }));
@@ -34,6 +38,9 @@ const submit = (body: unknown = { transactionHash: hash }) => ({ ...request(), b
 describe('client hash submission', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(LaunchPriceSample.findOne).mockReturnValue({
+      sort: () => ({ lean: async () => null }),
+    } as never);
     vi.mocked(Launch.findOne).mockReturnValue({
       lean: async () => ({ asset: 'token', pair: 'pair', config: { params: { ends_at: '1' } } }),
     } as never);
@@ -57,7 +64,11 @@ describe('client hash submission', () => {
     const res = response();
     await postTrade(submit(), res as unknown as Response, vi.fn());
     expect(server.getTransaction).toHaveBeenCalledWith(hash);
-    expect(LaunchTrade.updateOne).toHaveBeenCalledWith(expect.anything(), { $setOnInsert: trade }, { upsert: true });
+    expect(LaunchTrade.updateOne).toHaveBeenCalledWith(
+      expect.anything(),
+      { $setOnInsert: trade },
+      { upsert: true },
+    );
     expect(LaunchPriceSample.updateOne).toHaveBeenCalledWith(
       expect.anything(),
       { $setOnInsert: expect.objectContaining({ ledger: 102, price: '10112044' }) },
@@ -71,9 +82,12 @@ describe('client hash submission', () => {
       assetAmount: '100000000',
       executionPrice: '10055866',
     });
-    expect(Launch.updateOne).toHaveBeenCalledWith(expect.objectContaining({ stateAsOfLedger: { $lte: 101 } }), {
-      $set: expect.objectContaining({ nextStatePollAt: expect.any(Date) }),
-    });
+    expect(Launch.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({ stateAsOfLedger: { $lte: 101 } }),
+      {
+        $set: expect.objectContaining({ nextStatePollAt: expect.any(Date) }),
+      },
+    );
   });
   it('does not re-read an already completed hash', async () => {
     vi.mocked(LaunchTrade.findOne).mockReturnValue({

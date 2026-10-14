@@ -3,12 +3,14 @@ import DatabaseMigration from '../models/DatabaseMigration';
 import manualXReputation from './20261013ManualXReputation';
 import createCurrentIndexes from './20261012CreateCurrentIndexes';
 import type { MigrationDefinition } from '../types/database/migration';
+import priceObservationIndexes from './20261014PriceObservationIndexes';
 import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
 
 const migrations: readonly MigrationDefinition[] = [
   authProviderAndTokenImageIndexes,
   createCurrentIndexes,
   manualXReputation,
+  priceObservationIndexes,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {
