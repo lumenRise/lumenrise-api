@@ -7,7 +7,7 @@ const openApiDocument = {
     title: 'Lumenrise API',
     version: '0.1.0',
     description:
-      'Wallet identity, provider connections, reputation, Stellar activity, and indexed launches. Protected routes accept a bearer token or the session cookie.',
+      'Wallet identity, provider connections, reputation, Stellar activity, and indexed launches. Identity routes require the Auth provider user ID in x-user-id; the developer profile route uses X-API-Key. No wallet-signature login, bearer token or session cookie is issued by this API.',
   },
   servers: [{ url: '/', description: 'Current API origin' }],
   tags: [
@@ -21,7 +21,7 @@ const openApiDocument = {
     { name: 'Stellar' },
     { name: 'Launches' },
   ],
-  security: [{ bearerAuth: [] }, { sessionCookie: [] }],
+  security: [{ userIdHeader: [] }],
   paths: openApiPaths,
   components: openApiComponents,
 } as const;

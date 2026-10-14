@@ -9,6 +9,7 @@ const userPaths = {
       responses: {
         '200': jsonResponse('Profile retrieved.', { $ref: '#/components/schemas/MyProfile' }),
         '401': { $ref: '#/components/responses/Unauthorized' },
+        '404': { $ref: '#/components/responses/NotFound' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },
     },
@@ -20,17 +21,23 @@ const userPaths = {
       operationId: 'putMyAvatar',
       requestBody: {
         required: true,
-        content: { 'multipart/form-data': { schema: {
-          type: 'object', required: ['avatar'],
-          properties: { avatar: { type: 'string', format: 'binary' } },
-        } } },
+        content: {
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              required: ['avatar'],
+              properties: { avatar: { type: 'string', format: 'binary' } },
+            },
+          },
+        },
       },
       responses: {
         '200': jsonResponse('Avatar updated.', { $ref: '#/components/schemas/MyProfile' }),
         '400': { $ref: '#/components/responses/BadRequest' },
         '401': { $ref: '#/components/responses/Unauthorized' },
+        '404': { $ref: '#/components/responses/NotFound' },
         '409': { $ref: '#/components/responses/Conflict' },
-        '413': { description: 'Image exceeds the configured upload limit.' },
+        '413': { $ref: '#/components/responses/UploadLimitExceeded' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },
     },
@@ -41,6 +48,7 @@ const userPaths = {
       responses: {
         '200': jsonResponse('Avatar removed.', { $ref: '#/components/schemas/MyProfile' }),
         '401': { $ref: '#/components/responses/Unauthorized' },
+        '404': { $ref: '#/components/responses/NotFound' },
         '409': { $ref: '#/components/responses/Conflict' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },

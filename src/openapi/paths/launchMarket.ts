@@ -42,15 +42,11 @@ const launchMarketPaths = {
     },
     post: {
       tags: ['Launches'],
-      security: [],
       operationId: 'postLaunchTrade',
       summary: 'Verify a submitted trade hash and record the current contract price',
       description:
         'Requires the existing x-user-id session header. Only successful direct buy/sell calls on this launch are accepted. Retry the same hash on 202 or 503; completed submissions are idempotent. The sampled price is observed at read time and may include subsequent trades.',
-      parameters: [
-        ...identity,
-        { in: 'header', name: 'x-user-id', required: true, schema: { type: 'string' } },
-      ],
+      parameters: identity,
       requestBody: {
         required: true,
         content: {
@@ -70,9 +66,23 @@ const launchMarketPaths = {
         '202': {
           description:
             'Transaction not available yet; retry the same hash after Retry-After seconds.',
+          headers: { 'Retry-After': { schema: { type: 'integer', minimum: 1 } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['status', 'message', 'result'],
+                properties: {
+                  status: { const: 'pending' },
+                  message: { type: 'string' },
+                  result: { $ref: '#/components/schemas/EmptyResult' },
+                },
+              },
+            },
+          },
         },
-        '401': { description: 'Authentication required.' },
-        '403': { description: 'Identity is not active.' },
+        '401': { $ref: '#/components/responses/Unauthorized' },
+        '403': { $ref: '#/components/responses/Forbidden' },
         ...errors,
       },
     },

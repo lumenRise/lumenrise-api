@@ -6,7 +6,7 @@ const oauthProviderPaths = (provider: string, displayName: string) => ({
       tags: ['Connections'],
       summary: `Start ${displayName} account connection`,
       description:
-        'Requires an active wallet session. Use authorizationUrl in the same browser so the OAuth state cookie reaches the callback.',
+        'Requires an active registered identity selected by x-user-id. Use authorizationUrl in the same browser so the OAuth state cookie reaches the callback.',
       operationId: `connect${displayName}`,
       responses: {
         '200': jsonResponse(`${displayName} connection started.`, {
@@ -61,7 +61,7 @@ const oauthProviderPaths = (provider: string, displayName: string) => ({
       tags: ['Connections'],
       summary: `Deprecated ${displayName} registration route`,
       description:
-        'Secondary providers cannot register a Lumenrise identity. Register with a Stellar wallet first, then use /connect.',
+        'Secondary providers cannot register a Lumenrise identity. Register the Auth provider user through /v1/auth/register first, then use /connect.',
       operationId: `deprecated${displayName}Start`,
       security: [],
       deprecated: true,

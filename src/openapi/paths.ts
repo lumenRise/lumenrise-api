@@ -10,8 +10,9 @@ import developerPaths from './paths/developers';
 import reputationPaths from './paths/reputation';
 import connectionPaths from './paths/connections';
 import launchMarketPaths from './paths/launchMarket';
+import withCommonResponses from '../utils/openapi/withCommonResponses';
 
-const openApiPaths = {
+const openApiPaths = withCommonResponses({
   ...authPaths,
   ...userPaths,
   ...policyPaths,
@@ -24,6 +25,6 @@ const openApiPaths = {
   ...reputationPaths,
   ...launchPaths,
   ...launchMarketPaths,
-};
+});
 
 export default openApiPaths;

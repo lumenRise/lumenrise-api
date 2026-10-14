@@ -1,137 +1,76 @@
-import jsonBody from '../../utils/openapi/jsonBody';
 import jsonResponse from '../../utils/openapi/jsonResponse';
 
 const authPaths = {
-  '/v1/auth/wallet/status': {
+  '/v1/auth/status': {
     get: {
       tags: ['Authentication'],
-      summary: 'Check whether a wallet is already registered',
+      summary: 'Check registration for an Auth provider user',
       description:
-        'Call after connecting a wallet, before asking for a name or signing a challenge. Registered wallets should use login; unregistered wallets should use registration. This lookup does not prove ownership or create a session. A registered address remains reserved even if disconnected or its identity is inactive.',
-      operationId: 'getWalletStatus',
+        'Send the Auth provider user ID in x-user-id. This database lookup does not verify wallet ownership or issue credentials. A registered user has an active identity and a completed name.',
+      operationId: 'getRegistrationStatus',
       security: [],
       parameters: [
         {
-          in: 'query',
-          name: 'address',
+          in: 'header',
+          name: 'x-user-id',
           required: true,
-          schema: { $ref: '#/components/schemas/StellarAddress' },
+          schema: { $ref: '#/components/schemas/ExternalUserId' },
         },
       ],
       responses: {
-        '200': jsonResponse('Wallet registration status.', {
-          type: 'object',
-          required: ['registered'],
-          properties: { registered: { type: 'boolean' } },
+        '200': jsonResponse('Registration status.', {
+          $ref: '#/components/schemas/RegistrationStatus',
         }),
         '400': { $ref: '#/components/responses/BadRequest' },
+        '403': { $ref: '#/components/responses/Forbidden' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },
     },
   },
-  '/v1/auth/wallet/challenge': {
+  '/v1/auth/register': {
     post: {
       tags: ['Authentication'],
-      summary: 'Create a single-use wallet signing challenge',
+      summary: 'Register an Auth provider user and verified Stellar wallets',
       description:
-        'Sign the returned single-line message exactly as supplied. Challenges expire after five minutes and are consumed once. No Stellar transaction is submitted.',
-      operationId: 'createWalletChallenge',
+        'Verifies the supplied user ID and Stellar wallets with the configured Auth provider. Completes registration idempotently where applicable. Does not create a signing challenge, issue a JWT or set a session cookie. For an avatar use multipart/form-data; JPEG, PNG or WebP, at least 128x128 pixels, subject to the configured upload size limit.',
+      operationId: 'postRegistration',
       security: [],
-      requestBody: jsonBody({
-        oneOf: [
-          {
-            type: 'object',
-            required: ['address', 'purpose', 'name'],
-            additionalProperties: false,
-            properties: {
-              address: { $ref: '#/components/schemas/StellarAddress' },
-              purpose: { type: 'string', const: 'register' },
-              name: { type: 'string', minLength: 2, maxLength: 80 },
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': { schema: { $ref: '#/components/schemas/RegistrationRequest' } },
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              required: ['userId', 'name'],
+              properties: {
+                userId: { $ref: '#/components/schemas/ExternalUserId' },
+                name: {
+                  type: 'string',
+                  minLength: 1,
+                  maxLength: 80,
+                  description: 'Trimmed, nonempty display name.',
+                },
+                avatar: { type: 'string', format: 'binary' },
+              },
             },
-          },
-          {
-            type: 'object',
-            required: ['address', 'purpose'],
-            additionalProperties: false,
-            properties: {
-              address: { $ref: '#/components/schemas/StellarAddress' },
-              purpose: { type: 'string', const: 'login' },
-            },
-          },
-        ],
-      }),
-      responses: {
-        '201': jsonResponse('Challenge created.', {
-          $ref: '#/components/schemas/WalletChallengeResult',
-        }),
-        '400': { $ref: '#/components/responses/BadRequest' },
-        '503': { $ref: '#/components/responses/ServiceUnavailable' },
-      },
-    },
-  },
-  '/v1/auth/wallet/register': {
-    post: {
-      tags: ['Authentication'],
-      summary: 'Register a wallet identity',
-      description:
-        'Submit the Base64 signature of a register challenge message. Returns a 30-day bearer token and sets a session cookie.',
-      operationId: 'registerWallet',
-      security: [],
-      requestBody: jsonBody({
-        type: 'object',
-        required: ['address', 'name', 'challengeId', 'signature'],
-        properties: {
-          address: { $ref: '#/components/schemas/StellarAddress' },
-          name: { type: 'string', minLength: 2, maxLength: 80 },
-          challengeId: { $ref: '#/components/schemas/ObjectId' },
-          signature: {
-            type: 'string',
-            description:
-              'Base64-encoded Ed25519 signature of the exact challenge message, using SEP-53 or raw UTF-8 message bytes.',
-            maxLength: 200,
           },
         },
-      }),
+      },
       responses: {
-        '201': jsonResponse('Wallet registered.', {
-          $ref: '#/components/schemas/WalletAuthResult',
+        '200': jsonResponse('Auth provider user registered.', {
+          $ref: '#/components/schemas/RegistrationResult',
         }),
         '400': { $ref: '#/components/responses/BadRequest' },
         '401': { $ref: '#/components/responses/Unauthorized' },
         '409': { $ref: '#/components/responses/Conflict' },
-        '503': { $ref: '#/components/responses/ServiceUnavailable' },
-      },
-    },
-  },
-  '/v1/auth/wallet/login': {
-    post: {
-      tags: ['Authentication'],
-      summary: 'Log in with a wallet signature',
-      description:
-        'A valid existing bearer token can be reused until expiry; request a new login challenge only when needed.',
-      operationId: 'loginWallet',
-      security: [],
-      requestBody: jsonBody({
-        type: 'object',
-        required: ['address', 'challengeId', 'signature'],
-        properties: {
-          address: { $ref: '#/components/schemas/StellarAddress' },
-          challengeId: { $ref: '#/components/schemas/ObjectId' },
-          signature: {
-            type: 'string',
-            description:
-              'Base64-encoded Ed25519 signature of the exact challenge message, using SEP-53 or raw UTF-8 message bytes.',
-            maxLength: 200,
+        '413': { $ref: '#/components/responses/UploadLimitExceeded' },
+        '422': {
+          description: 'The verified Auth provider user has no Stellar wallet.',
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } },
           },
         },
-      }),
-      responses: {
-        '200': jsonResponse('Wallet login successful.', {
-          $ref: '#/components/schemas/WalletAuthResult',
-        }),
-        '400': { $ref: '#/components/responses/BadRequest' },
-        '401': { $ref: '#/components/responses/Unauthorized' },
-        '404': { $ref: '#/components/responses/NotFound' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },
     },
@@ -139,21 +78,12 @@ const authPaths = {
   '/v1/auth/session': {
     get: {
       tags: ['Authentication'],
-      summary: 'Inspect the current session',
+      summary: 'Inspect the identity selected by x-user-id',
       operationId: 'getSession',
       responses: {
-        '200': jsonResponse('Active session.', { $ref: '#/components/schemas/SessionResult' }),
+        '200': jsonResponse('User identified.', { $ref: '#/components/schemas/SessionResult' }),
         '401': { $ref: '#/components/responses/Unauthorized' },
-        '403': { $ref: '#/components/responses/Unauthorized' },
-      },
-    },
-    delete: {
-      tags: ['Authentication'],
-      summary: 'Revoke the current session',
-      operationId: 'deleteSession',
-      responses: {
-        '200': jsonResponse('Session ended.', { $ref: '#/components/schemas/EmptyResult' }),
-        '401': { $ref: '#/components/responses/Unauthorized' },
+        '403': { $ref: '#/components/responses/Forbidden' },
       },
     },
   },
