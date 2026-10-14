@@ -27,6 +27,44 @@ const trade = {
   },
 };
 const marketSchemas = {
+  LaunchHolderList: {
+    type: 'object',
+    required: [
+      'network',
+      'contractId',
+      'asset',
+      'amountScale',
+      'balanceSource',
+      'coverage',
+      'totalHolders',
+      'nextCursor',
+      'items',
+    ],
+    properties: {
+      network,
+      contractId: contract,
+      asset: contract,
+      amountScale: { const: 7 },
+      balanceSource: { const: 'token_contract' },
+      coverage: { const: 'trade_participants' },
+      totalHolders: count,
+      nextCursor: { type: ['string', 'null'] },
+      items: {
+        type: 'array',
+        maxItems: 100,
+        items: {
+          type: 'object',
+          required: ['address', 'balance', 'observedAt'],
+          additionalProperties: false,
+          properties: {
+            address: { type: 'string', pattern: '^[GC][A-Z2-7]{55}$' },
+            balance: amount,
+            observedAt: date,
+          },
+        },
+      },
+    },
+  },
   LaunchTrade: trade,
   LaunchTradeSubmission: {
     type: 'object',

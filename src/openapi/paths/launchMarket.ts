@@ -16,6 +16,31 @@ const errors = {
 };
 
 const launchMarketPaths = {
+  '/v1/launches/{contractId}/holders': {
+    get: {
+      tags: ['Launches'],
+      security: [],
+      operationId: 'getLaunchHolders',
+      summary: 'List known trading wallets holding the launch token',
+      description:
+        'Reads token-contract balance snapshots refreshed asynchronously by the launch worker after verified client-submitted trades, highest balance first (address breaks ties). Zero balances remove the wallet. Balances are replaced, never accumulated. This is not a complete on-chain holder index: transfer-only recipients, creator allocations and trades not submitted to the API are not discovered; transfers after the last refresh can make a stored snapshot outdated. Re-submit a previously verified trade hash to refresh its trader. Pagination follows current balances and can change while wallets trade.',
+      parameters: [
+        ...identity,
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+        },
+        { in: 'query', name: 'cursor', schema: { type: 'string', maxLength: 512 } },
+      ],
+      responses: {
+        '200': jsonResponse('Holders retrieved.', {
+          $ref: '#/components/schemas/LaunchHolderList',
+        }),
+        ...errors,
+      },
+    },
+  },
   '/v1/launches/{contractId}/trades': {
     get: {
       tags: ['Launches'],
@@ -45,7 +70,7 @@ const launchMarketPaths = {
       operationId: 'postLaunchTrade',
       summary: 'Verify a submitted trade hash and record the current contract price',
       description:
-        'Requires the existing x-user-id session header. Only successful direct buy/sell calls on this launch are accepted. Retry the same hash on 202 or 503; completed submissions are idempotent. The sampled price is observed at read time and may include subsequent trades.',
+        'Requires the existing x-user-id session header. Only successful direct buy/sell calls on this launch are accepted. Retry the same hash on 202 or 503; trade records are idempotent. Every verified submission, including a repeated hash, queues a holder refresh through RabbitMQ for the launch worker. The worker replaces the balance from the token contract and removes zero balances. Retrying a completed hash queues another holder refresh without re-reading its price. Holder processing is asynchronous; trade success does not mean the balance snapshot has finished updating. The sampled price is observed at read time and may include subsequent trades.',
       parameters: identity,
       requestBody: {
         required: true,
