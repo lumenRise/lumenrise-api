@@ -184,7 +184,7 @@ const marketSchemas = {
                   partial: {
                     type: 'boolean',
                     description:
-                      'The opening history has no observed price; a placeholder of 1 pair unit is used from launch until the first observation.',
+                      'The opening history has no observed price; the initial curve price is used from launch until the first observation.',
                   },
                   count: {
                     ...count,

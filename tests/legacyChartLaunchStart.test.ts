@@ -27,7 +27,12 @@ describe('legacy chart candles from launch', () => {
       lean: async () => ({
         asset: 'token',
         pair: 'pair',
-        config: { params: { starts_at: String(start.getTime() / 1000) } },
+        config: {
+          params: {
+            starts_at: String(start.getTime() / 1000),
+            curve: { virtual_base_reserve: '30000000', virtual_quote_reserve: '10000000' },
+          },
+        },
       }),
     } as never);
     vi.mocked(LaunchPriceSample.findOne).mockReturnValue({
@@ -44,8 +49,8 @@ describe('legacy chart candles from launch', () => {
     expect(result.items).toHaveLength(61);
     expect(result.items[0]).toMatchObject({
       timestamp: start.toISOString(),
-      open: '10000000',
-      close: '10000000',
+      open: '3333334',
+      close: '3333334',
       count: 0,
       firstObservedAt: null,
       lastObservedAt: null,
@@ -74,7 +79,7 @@ describe('legacy chart candles from launch', () => {
     const res = response();
     await getChart(request({ range: '1D' }), res as unknown as Response, vi.fn());
     const result = res.json.mock.calls[0]![0].result;
-    expect(result.items[47]).toMatchObject({ close: '10000000', count: 0 });
+    expect(result.items[47]).toMatchObject({ close: '3333334', count: 0 });
     expect(result.items[48]).toMatchObject({ open: '25000000', close: '25000000', count: 1 });
     expect(result.items[49]).toMatchObject({ open: '25000000', close: '25000000', count: 0 });
     expect(result.firstObservationAt).toBe(first.toISOString());

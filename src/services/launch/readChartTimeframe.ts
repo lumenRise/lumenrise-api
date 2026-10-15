@@ -10,6 +10,7 @@ const readChartTimeframe = async (
   request: ChartRequest,
   firstTime: Date | null,
   launchStart: Date | null = null,
+  initialPrice: string | null = null,
 ) => {
   const { identity, from, to, limit } = request;
   const spec = chartTimeframes[timeframe];
@@ -89,7 +90,7 @@ const readChartTimeframe = async (
       rows,
       previous?.price ?? null,
       to,
-      launchStart ? '10000000' : null,
+      launchStart ? initialPrice : null,
     ),
     hasMore,
     nextBefore: hasMore ? start.toISOString() : null,

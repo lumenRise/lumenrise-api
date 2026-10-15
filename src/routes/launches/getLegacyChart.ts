@@ -6,6 +6,7 @@ import type { ChartRange } from '../../types/launch/market';
 import LaunchPriceSample from '../../models/LaunchPriceSample';
 import chartLaunchStart from '../../utils/launch/chartLaunchStart';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
+import initialLaunchPrice from '../../utils/launch/initialLaunchPrice';
 
 const ranges = { '1D': 1, '1W': 7, '1M': 30, '3M': 90, ALL: 0 };
 const intervals = { '1D': 300, '1W': 900, '1M': 3600, '3M': 14_400, ALL: 86_400 };
@@ -45,6 +46,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
     const firstTime = first?.sampledAt ?? null;
     const lastTime = last?.sampledAt ?? null;
     const launchStart = chartLaunchStart(launch.config);
+    const initialPrice = initialLaunchPrice(launch.config);
     const historyStart = launchStart ?? firstTime;
     // Keep every response below 1000 buckets, including ALL for old launches.
     const intervalSeconds = Math.max(
@@ -108,9 +110,9 @@ const getLegacyChart: RequestHandler = async (req, res) => {
     const items = [];
     const step = intervalSeconds * 1000;
     // Preserve the legacy response while filling every interval since opening.
-    if (launchStart && launchStart <= now) {
+    if (launchStart && launchStart <= now && initialPrice !== null) {
       const rows = new Map(observedItems.map((row) => [row.timestamp, row]));
-      let carried = previous?.price ?? '10000000';
+      let carried = previous?.price ?? initialPrice;
       const beginning = Math.max(since.getTime(), launchStart.getTime());
 
       for (let time = Math.floor(beginning / step) * step; time <= now.getTime(); time += step) {
@@ -130,7 +132,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
         });
         carried = close;
       }
-    } else if (!launchStart) {
+    } else if (!launchStart || initialPrice === null) {
       items.push(...observedItems);
     }
 
@@ -151,7 +153,8 @@ const getLegacyChart: RequestHandler = async (req, res) => {
         firstObservationAt: firstTime?.toISOString() ?? null,
         lastObservationAt: lastTime?.toISOString() ?? null,
         items,
-        previousPrice: previous?.price ?? (launchStart && launchStart < since ? '10000000' : null),
+        previousPrice:
+          previous?.price ?? (launchStart && launchStart < since ? initialPrice : null),
         interpolation: 'step',
       },
     });
