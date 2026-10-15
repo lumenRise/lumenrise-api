@@ -43,7 +43,12 @@ describe('multiple chart timeframes', () => {
       lean: async () => ({
         asset: 'token',
         pair: 'pair',
-        config: { params: { starts_at: String(start.getTime() / 1000) } },
+        config: {
+          params: {
+            starts_at: String(start.getTime() / 1000),
+            curve: { virtual_base_reserve: '30000000', virtual_quote_reserve: '10000000' },
+          },
+        },
       }),
     } as never);
     const observation = { price: '25000000', sampledAt: first };
@@ -74,7 +79,7 @@ describe('multiple chart timeframes', () => {
         .slice(0, 4)
         .every(
           (item: { close: string; count: number; partial: boolean; firstObservedAt: null }) =>
-            item.close === '10000000' &&
+            item.close === '3333334' &&
             item.count === 0 &&
             item.partial &&
             item.firstObservedAt === null,
@@ -91,7 +96,14 @@ describe('multiple chart timeframes', () => {
   it('fills a launch with no observations, including pages before the first observed price', async () => {
     const start = new Date('2026-10-14T10:15:00Z');
     vi.mocked(Launch.findOne).mockReturnValue({
-      lean: async () => ({ config: { params: { starts_at: String(start.getTime() / 1000) } } }),
+      lean: async () => ({
+        config: {
+          params: {
+            starts_at: String(start.getTime() / 1000),
+            curve: { virtual_base_reserve: '30000000', virtual_quote_reserve: '10000000' },
+          },
+        },
+      }),
     } as never);
     const res = response();
     await getChart(
@@ -104,12 +116,12 @@ describe('multiple chart timeframes', () => {
     expect(result.timeframes[0].items.map((item: { timestamp: string }) => item.timestamp)).toEqual(
       ['2026-10-14T10:00:00.000Z', '2026-10-14T11:00:00.000Z'],
     );
-    expect(result.timeframes[0].items[0]).toMatchObject({ close: '10000000', count: 0 });
+    expect(result.timeframes[0].items[0]).toMatchObject({ close: '3333334', count: 0 });
     const parsed = parseChartRequest(request({ timeframes: '1h', limit: '1' }))!;
-    const page = await readChartTimeframe('1h', parsed, null, start);
+    const page = await readChartTimeframe('1h', parsed, null, start, '3333334');
     expect(page.hasMore).toBe(true);
     expect(page.nextBefore).toBe('2026-10-14T12:00:00.000Z');
-    expect(page.items[0]).toMatchObject({ open: '10000000', close: null });
+    expect(page.items[0]).toMatchObject({ open: '3333334', close: null });
   });
 
   it('does not create a candle for a launch that has not started, even in the same hour', async () => {
