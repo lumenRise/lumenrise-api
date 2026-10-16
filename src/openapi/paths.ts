@@ -8,6 +8,7 @@ import stellarPaths from './paths/stellar';
 import launchPaths from './paths/launches';
 import developerPaths from './paths/developers';
 import reputationPaths from './paths/reputation';
+import launchTeamPaths from './paths/launchTeam';
 import connectionPaths from './paths/connections';
 import launchMarketPaths from './paths/launchMarket';
 import withCommonResponses from '../utils/openapi/withCommonResponses';
@@ -25,6 +26,7 @@ const openApiPaths = withCommonResponses({
   ...reputationPaths,
   ...launchPaths,
   ...launchMarketPaths,
+  ...launchTeamPaths,
 });
 
 export default openApiPaths;
