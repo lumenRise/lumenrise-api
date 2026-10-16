@@ -1,4 +1,5 @@
 import log from '../logger';
+import launchTeamIndexes from './20261017LaunchTeamIndexes';
 import DatabaseMigration from '../models/DatabaseMigration';
 import manualXReputation from './20261013ManualXReputation';
 import launchHolderIndexes from './20261014LaunchHolderIndexes';
@@ -13,6 +14,7 @@ const migrations: readonly MigrationDefinition[] = [
   manualXReputation,
   priceObservationIndexes,
   launchHolderIndexes,
+  launchTeamIndexes,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {
