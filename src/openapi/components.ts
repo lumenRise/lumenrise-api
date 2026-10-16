@@ -112,6 +112,8 @@ const openApiComponents = {
             description: { type: 'string' },
             logo: { type: 'string' },
             symbol: { type: 'string' },
+            website: { type: 'string', format: 'uri' },
+            xAccount: { type: 'string', format: 'uri' },
           },
         },
         config: { type: 'object', additionalProperties: true },

@@ -3,6 +3,8 @@ interface LaunchMetadata {
   description: string;
   logo: string;
   symbol: string;
+  website?: string;
+  xAccount?: string;
 }
 
 interface LaunchRecord {

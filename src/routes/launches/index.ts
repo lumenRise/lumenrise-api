@@ -7,7 +7,7 @@ import getMarket from './getMarket';
 import getLaunchesRoute from './get';
 import getHolders from './getHolders';
 import getLaunchImageRoute from './getImage';
-import postLaunchImageRoute from './postImage';
+import postPrelaunchRoute from './postPrelaunch';
 import getLaunchByContractIdRoute from './getByContractId';
 import requireSession from '../../middleware/requireSession';
 import tokenImageUpload from '../../middleware/tokenImageUpload';
@@ -15,8 +15,8 @@ import tokenImageUpload from '../../middleware/tokenImageUpload';
 const launchRoutes = Router();
 
 launchRoutes.get('/', getLaunchesRoute);
-launchRoutes.get('/images/:imageId', requireSession, getLaunchImageRoute);
-launchRoutes.post('/images', requireSession, tokenImageUpload, postLaunchImageRoute);
+launchRoutes.get('/prelaunch/:imageId', requireSession, getLaunchImageRoute);
+launchRoutes.post('/prelaunch', requireSession, tokenImageUpload, postPrelaunchRoute);
 
 launchRoutes.get('/:contractId/trades', getTrades);
 launchRoutes.get('/:contractId/holders', getHolders);
