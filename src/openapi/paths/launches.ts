@@ -37,11 +37,11 @@ const launchPaths = {
       },
     },
   },
-  '/v1/launches/images': {
+  '/v1/launches/prelaunch': {
     post: {
       tags: ['Launches'],
-      summary: 'Upload a token image before signing a launch transaction',
-      operationId: 'postLaunchImage',
+      summary: 'Save a token image and optional project links before signing a launch transaction',
+      operationId: 'postPrelaunch',
       requestBody: {
         required: true,
         content: {
@@ -53,6 +53,8 @@ const launchPaths = {
                 network: { type: 'string', enum: ['testnet', 'public'] },
                 ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
                 image: { type: 'string', format: 'binary' },
+                website: { type: 'string', maxLength: 2048 },
+                xAccount: { type: 'string', maxLength: 2048 },
               },
             },
           },
@@ -76,7 +78,7 @@ const launchPaths = {
       },
     },
   },
-  '/v1/launches/images/{imageId}': {
+  '/v1/launches/prelaunch/{imageId}': {
     get: {
       tags: ['Launches'],
       summary: 'Read the current token image state for its owner',
@@ -108,6 +110,8 @@ const launchPaths = {
             network: { type: 'string', enum: ['testnet', 'public'] },
             ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
             publicUrl: { type: 'string', format: 'uri' },
+            website: { type: 'string', format: 'uri' },
+            xAccount: { type: 'string', format: 'uri' },
             status: {
               type: 'string',
               enum: ['pending', 'cleanup_ready', 'deleting', 'finalized', 'expired'],

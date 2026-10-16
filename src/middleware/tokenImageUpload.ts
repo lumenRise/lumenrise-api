@@ -5,7 +5,7 @@ import env from '../env';
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: env.R2_MAX_TOKEN_IMAGE_BYTES, files: 1, fields: 2, parts: 3 },
+  limits: { fileSize: env.R2_MAX_TOKEN_IMAGE_BYTES, files: 1, fields: 4, parts: 5, fieldSize: 2048 },
 });
 
 const tokenImageUpload: RequestHandler = (req, res, next) => {

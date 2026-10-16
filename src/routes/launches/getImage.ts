@@ -32,6 +32,8 @@ const getLaunchImageRoute: RequestHandler = async (req, res) => {
         ownerAddress: image.ownerAddress,
         publicUrl: image.publicUrl,
         status: image.status,
+        website: image.website,
+        xAccount: image.xAccount,
         launchContractId: image.launchContractId,
         assetContractId: image.assetContractId,
         cleanupReadyAt: image.cleanupReadyAt?.toISOString() ?? null,

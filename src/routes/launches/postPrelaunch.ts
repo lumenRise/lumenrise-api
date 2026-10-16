@@ -9,8 +9,9 @@ import isR2Configured from '../../storage/isR2Configured';
 import uploadTokenImage from '../../services/tokenImage/uploadTokenImage';
 import processTokenImage from '../../services/tokenImage/processTokenImage';
 import deleteAvatarOrQueue from '../../services/avatar/deleteAvatarOrQueue';
+import parseOptionalProjectUrl from '../../utils/launch/parseOptionalProjectUrl';
 
-const postLaunchImageRoute: RequestHandler = async (req, res) => {
+const postPrelaunchRoute: RequestHandler = async (req, res) => {
   if (!isR2Configured()) {
     return res
       .status(503)
@@ -27,24 +28,35 @@ const postLaunchImageRoute: RequestHandler = async (req, res) => {
     !StrKey.isValidEd25519PublicKey(ownerAddress) ||
     !req.file
   ) {
-    return res
-      .status(400)
-      .json({
-        status: 'error',
-        message: 'Valid network, ownerAddress and image are required',
-        result: {},
-      });
+    return res.status(400).json({
+      status: 'error',
+      message: 'Valid network, ownerAddress and image are required',
+      result: {},
+    });
+  }
+
+  let website: string | undefined;
+  let xAccount: string | undefined;
+
+  try {
+    website = parseOptionalProjectUrl(req.body?.website);
+    xAccount = parseOptionalProjectUrl(req.body?.xAccount);
+  } catch {
+    return res.status(400).json({
+      status: 'error',
+      message: 'website and xAccount must be valid HTTPS links or left blank',
+      result: {},
+    });
   }
 
   const body = await processTokenImage(req.file.buffer);
+
   if (!body) {
-    return res
-      .status(400)
-      .json({
-        status: 'error',
-        message: 'Image must be a valid JPEG, PNG or WebP of at least 128x128 pixels',
-        result: {},
-      });
+    return res.status(400).json({
+      status: 'error',
+      message: 'Image must be a valid JPEG, PNG or WebP of at least 128x128 pixels',
+      result: {},
+    });
   }
 
   try {
@@ -53,29 +65,31 @@ const postLaunchImageRoute: RequestHandler = async (req, res) => {
       address: ownerAddress,
       disconnectedAt: null,
     });
+
     if (!account) {
-      return res
-        .status(403)
-        .json({
-          status: 'error',
-          message: 'Owner wallet is not connected to this user',
-          result: {},
-        });
+      return res.status(403).json({
+        status: 'error',
+        message: 'Owner wallet is not connected to this user',
+        result: {},
+      });
     }
 
     const stored = await uploadTokenImage(network, body);
+
     try {
       const image = await TokenImage.create({
         ownerIdentityId: req.auth!.identityId,
         ownerAddress,
         network,
         ...stored,
+        website,
+        xAccount,
         status: 'pending',
       });
 
       return res.status(201).json({
         status: 'success',
-        message: 'Token image uploaded',
+        message: 'Prelaunch data saved',
         result: {
           imageId: image._id.toString(),
           publicUrl: stored.publicUrl,
@@ -94,4 +108,4 @@ const postLaunchImageRoute: RequestHandler = async (req, res) => {
   }
 };
 
-export default postLaunchImageRoute;
+export default postPrelaunchRoute;

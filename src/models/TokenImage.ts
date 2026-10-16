@@ -8,6 +8,8 @@ const schema = new Schema<TokenImageRecord>(
     ownerAddress: { type: String, required: true, immutable: true },
     network: { type: String, enum: ['testnet', 'public'], required: true, immutable: true },
     objectKey: { type: String, required: true, unique: true, immutable: true },
+    website: { type: String },
+    xAccount: { type: String },
     publicUrl: { type: String, required: true, unique: true, immutable: true },
     status: {
       type: String,
