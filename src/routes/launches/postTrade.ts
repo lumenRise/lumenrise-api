@@ -156,7 +156,7 @@ const postTrade: RequestHandler = async (req, res) => {
           state,
           stateAsOfLedger: stateRead.ledger,
           stateObservedAt: sampledAt,
-          nextStatePollAt: stopped ? null : new Date(sampledAt.getTime() + 600_000),
+          nextStatePollAt: stopped ? null : new Date(sampledAt.getTime() + 900_000),
         },
       },
     );
