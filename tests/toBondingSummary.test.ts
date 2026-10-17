@@ -67,9 +67,15 @@ describe('Bonding launch summary', () => {
   it('caps overshoot and marks an old state observation without requesting RPC', () => {
     const result = toBondingSummary(
       { ...launch, state: { ...launch.state, quote_reserve: '50000000' } },
-      new Date(1791000061 * 1000),
+      new Date(1791000961 * 1000),
     );
     expect(result).toMatchObject({ progressBps: 10000, stateStale: true });
+  });
+
+  it('keeps state fresh through the polling interval and its one-minute grace period', () => {
+    expect(toBondingSummary(launch, new Date(1791000900 * 1000))?.stateStale).toBe(false);
+    expect(toBondingSummary(launch, new Date(1791000960 * 1000))?.stateStale).toBe(false);
+    expect(toBondingSummary(launch, new Date(1791000961 * 1000))?.stateStale).toBe(true);
   });
 
   it('accepts the enum shape returned as a Soroban variant tuple', () => {
