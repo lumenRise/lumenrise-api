@@ -145,7 +145,50 @@ const launchPaths = {
         { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
       ],
       responses: {
-        '200': jsonResponse('Launch retrieved.', { $ref: '#/components/schemas/Launch' }),
+        '200': jsonResponse('Launch retrieved.', {
+          allOf: [
+            { $ref: '#/components/schemas/Launch' },
+            {
+              type: 'object',
+              required: ['team'],
+              properties: {
+                team: {
+                  type: 'array',
+                  minItems: 1,
+                  description:
+                    'Public team, with the indexed owner first and role owner. The owner is included even without other members or an available profile. Duplicate owner membership is omitted. Inactive registered profiles are excluded.',
+                  items: {
+                    type: 'object',
+                    required: [
+                      'memberId',
+                      'kind',
+                      'identityId',
+                      'address',
+                      'name',
+                      'avatarUrl',
+                      'xAccount',
+                      'role',
+                    ],
+                    properties: {
+                      memberId: { type: ['string', 'null'] },
+                      kind: { type: 'string', enum: ['owner', 'registered', 'external'] },
+                      identityId: { type: ['string', 'null'] },
+                      address: {
+                        type: ['string', 'null'],
+                        description:
+                          'Indexed wallet or contract address for the owner; null for other members.',
+                      },
+                      name: { type: ['string', 'null'] },
+                      avatarUrl: { type: ['string', 'null'] },
+                      xAccount: { type: ['string', 'null'] },
+                      role: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        }),
         '400': { $ref: '#/components/responses/BadRequest' },
         '404': { $ref: '#/components/responses/NotFound' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
