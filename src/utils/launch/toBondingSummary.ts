@@ -1,6 +1,6 @@
 import type { LaunchRecord } from '../../types/launch/model';
 
-const STALE_AFTER_MS = 60_000;
+const STALE_AFTER_MS = 16 * 60_000;
 const BPS = 10_000n;
 
 const toBondingSummary = (launch: LaunchRecord, now = new Date()) => {

@@ -102,7 +102,38 @@ describe('client hash submission', () => {
     expect(getLaunchRpc).not.toHaveBeenCalled();
     expect(server.getTransaction).not.toHaveBeenCalled();
     expect(readLaunchContract).not.toHaveBeenCalled();
+    expect(Launch.updateOne).not.toHaveBeenCalled();
     expect(res.json.mock.calls[0]![0].status).toBe('success');
+  });
+  it('resets the next poll to 15 minutes after each fresh trade price observation', async () => {
+    const observedAt = new Date('2026-10-17T12:00:00Z');
+
+    vi.useFakeTimers();
+    vi.setSystemTime(observedAt);
+
+    try {
+      await postTrade(submit(), response() as unknown as Response, vi.fn());
+
+      expect(Launch.updateOne).toHaveBeenLastCalledWith(expect.anything(), {
+        $set: expect.objectContaining({
+          stateObservedAt: observedAt,
+          nextStatePollAt: new Date('2026-10-17T12:15:00Z'),
+        }),
+      });
+
+      vi.setSystemTime(new Date('2026-10-17T12:07:00Z'));
+
+      await postTrade(submit(), response() as unknown as Response, vi.fn());
+
+      expect(Launch.updateOne).toHaveBeenLastCalledWith(expect.anything(), {
+        $set: expect.objectContaining({
+          stateObservedAt: new Date('2026-10-17T12:07:00Z'),
+          nextStatePollAt: new Date('2026-10-17T12:22:00Z'),
+        }),
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it('asks the client to retry a pending transaction and rejects a non-trade', async () => {
     server.getTransaction.mockResolvedValueOnce({ status: 'NOT_FOUND' });

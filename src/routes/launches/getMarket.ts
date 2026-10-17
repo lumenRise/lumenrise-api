@@ -65,7 +65,7 @@ const getMarket: RequestHandler = async (req, res) => {
         priceType: 'marginal_before_fee',
         stateAsOfLedger: launch.stateAsOfLedger,
         stateObservedAt: launch.stateObservedAt.toISOString(),
-        stateStale: now.getTime() - launch.stateObservedAt.getTime() > 660_000,
+        stateStale: now.getTime() - launch.stateObservedAt.getTime() > 960_000,
         curveReserve: launch.state.quote_reserve,
         netTokensSold: launch.state.sold,
         distinctBuyers: launch.state.buyer_count,

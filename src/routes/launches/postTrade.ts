@@ -89,7 +89,27 @@ const postTrade: RequestHandler = async (req, res) => {
       }
 
       try {
-        await LaunchTrade.updateOne(key, { $setOnInsert: trade }, { upsert: true });
+        const result = await LaunchTrade.updateOne(key, { $setOnInsert: trade }, { upsert: true });
+
+        if (result?.upsertedCount === 1) {
+          log.info(
+            {
+              ...identity,
+              transactionHash,
+              ledger: trade.ledger,
+              trader: trade.trader,
+              asset: launch.asset,
+              pair: launch.pair,
+              side: trade.side,
+              assetAmount: trade.assetAmount,
+              grossAmount: trade.grossAmount,
+              executionPrice: trade.executionPrice,
+              amountScale: 7,
+              priceScale: 7,
+            },
+            'Launch trade recorded',
+          );
+        }
       } catch (error) {
         if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 11000) {
           throw error;
@@ -136,7 +156,7 @@ const postTrade: RequestHandler = async (req, res) => {
           state,
           stateAsOfLedger: stateRead.ledger,
           stateObservedAt: sampledAt,
-          nextStatePollAt: stopped ? null : new Date(sampledAt.getTime() + 600_000),
+          nextStatePollAt: stopped ? null : new Date(sampledAt.getTime() + 900_000),
         },
       },
     );
@@ -145,7 +165,7 @@ const postTrade: RequestHandler = async (req, res) => {
 
     return respond();
   } catch (error) {
-    log.warn({ error }, 'Trade submission deferred');
+    log.warn({ err: error, ...identity, transactionHash }, 'Trade submission deferred');
 
     res.set('Retry-After', '5');
 
