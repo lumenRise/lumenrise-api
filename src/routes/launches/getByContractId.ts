@@ -5,6 +5,7 @@ import env from '../../env';
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import toLaunchResult from '../../utils/launch/toLaunchResult';
+import getPublicLaunchTeam from '../../services/launch/getPublicLaunchTeam';
 
 const getLaunchByContractIdRoute: RequestHandler = async (req, res) => {
   const network = req.query.network ?? env.STELLAR_AUTH_NETWORK;
@@ -25,10 +26,12 @@ const getLaunchByContractIdRoute: RequestHandler = async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'Launch not found', result: {} });
     }
 
+    const team = await getPublicLaunchTeam(launch);
+
     return res.status(200).json({
       status: 'success',
       message: 'Launch retrieved',
-      result: toLaunchResult(launch),
+      result: { ...toLaunchResult(launch), team },
     });
   } catch (error) {
     log.error({ error, contractId }, 'Launch lookup failed');

@@ -4,11 +4,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import Launch from '../src/models/Launch';
 import getLaunchesRoute from '../src/routes/launches/get';
+import getPublicLaunchTeam from '../src/services/launch/getPublicLaunchTeam';
 import getLaunchByContractIdRoute from '../src/routes/launches/getByContractId';
+
+vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet' } }));
+vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
 
 vi.mock('../src/models/Launch', () => ({
   default: { find: vi.fn(), countDocuments: vi.fn(), findOne: vi.fn() },
 }));
+
+vi.mock('../src/services/launch/getPublicLaunchTeam', () => ({ default: vi.fn() }));
 
 const contractId = StrKey.encodeContract(Buffer.alloc(32, 1));
 const factoryContractId = StrKey.encodeContract(Buffer.alloc(32, 2));
@@ -50,6 +56,10 @@ const response = () => ({ status: vi.fn().mockReturnThis(), json: vi.fn().mockRe
 describe('public launch handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getPublicLaunchTeam).mockResolvedValue([{
+      memberId: null, kind: 'owner', identityId: null, address: owner,
+      name: null, avatarUrl: null, xAccount: null, role: 'owner',
+    }]);
   });
   it('lists only the requested network and returns chain-backed data', async () => {
     const lean = vi.fn().mockResolvedValue([launch]);
@@ -89,6 +99,10 @@ describe('public launch handlers', () => {
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(Launch.findOne).toHaveBeenCalledWith({ network: 'testnet', contractId });
+    expect(getPublicLaunchTeam).toHaveBeenCalledWith(launch);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      result: expect.objectContaining({ team: [expect.objectContaining({ address: owner, role: 'owner' })] }),
+    }));
   });
 
   it('rejects invalid contract IDs before querying storage', async () => {

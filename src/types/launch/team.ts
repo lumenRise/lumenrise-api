@@ -30,6 +30,12 @@ interface TeamMemberProfile {
   xAccount?: string | null;
 }
 
+interface PublicLaunchTeamMemberResult extends Omit<LaunchTeamMemberResult, 'memberId' | 'kind'> {
+  memberId: string | null;
+  kind: 'owner' | 'registered' | 'external';
+  address: string | null;
+}
+
 interface TeamMemberUserProfile extends TeamMemberProfile {
   _id: Types.ObjectId;
 }
@@ -41,6 +47,7 @@ interface ExternalTeamInput {
 }
 
 export type {
+  PublicLaunchTeamMemberResult,
   ExternalTeamInput,
   TeamMemberProfile,
   TeamMemberUserProfile,
