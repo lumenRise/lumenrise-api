@@ -62,7 +62,7 @@ const toBondingSummary = (launch: LaunchRecord, now = new Date()) => {
   if (
     totalSupply === null ||
     startsAt === null ||
-    endsAt === null ||
+    (params?.ends_at !== undefined && endsAt === null) ||
     target === null ||
     sold === null ||
     quoteReserve === null ||
@@ -95,7 +95,7 @@ const toBondingSummary = (launch: LaunchRecord, now = new Date()) => {
     ? 'Graduated'
     : nowSeconds < BigInt(startsAt)
       ? 'Scheduled'
-      : nowSeconds >= BigInt(endsAt)
+      : endsAt !== null && nowSeconds >= BigInt(endsAt)
         ? 'Failed'
         : 'Open';
 
