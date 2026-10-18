@@ -20,9 +20,16 @@ interface LaunchRecord {
   state: Record<string, unknown>;
   asOfLedger: number;
   observedAt: Date;
+  createdAt?: Date | null;
+  creationLedger?: number | null;
+  creationTransactionHash?: string | null;
   stateAsOfLedger: number;
   stateObservedAt: Date;
   nextStatePollAt?: Date | null;
 }
 
-export type { LaunchMetadata, LaunchRecord };
+interface LaunchSchedule {
+  ends_at?: string;
+}
+
+export type { LaunchMetadata, LaunchRecord, LaunchSchedule };

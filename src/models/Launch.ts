@@ -28,6 +28,9 @@ const launchSchema = new Schema<LaunchRecord>(
     state: { type: Schema.Types.Mixed, required: true },
     asOfLedger: { type: Number, required: true, min: 1 },
     observedAt: { type: Date, required: true },
+    createdAt: { type: Date, default: null },
+    creationLedger: { type: Number, min: 1, default: null },
+    creationTransactionHash: { type: String, default: null },
     stateAsOfLedger: { type: Number, required: true, min: 1 },
     stateObservedAt: { type: Date, required: true },
     nextStatePollAt: { type: Date },
@@ -46,6 +49,11 @@ launchSchema.index(
 );
 
 launchSchema.index({ network: 1, owner: 1, factoryIndex: -1 }, { name: 'launches_owner_list' });
+
+launchSchema.index(
+  { network: 1, createdAt: -1, contractId: 1 },
+  { name: 'launches_creation_list' },
+);
 
 const Launch = model<LaunchRecord>('Launch', launchSchema);
 
