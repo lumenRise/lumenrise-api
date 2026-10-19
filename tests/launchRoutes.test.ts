@@ -11,7 +11,7 @@ vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet' } }));
 vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
 
 vi.mock('../src/models/Launch', () => ({
-  default: { find: vi.fn(), countDocuments: vi.fn(), findOne: vi.fn() },
+  default: { aggregate: vi.fn(), findOne: vi.fn() },
 }));
 
 vi.mock('../src/services/launch/getPublicLaunchTeam', () => ({ default: vi.fn() }));
@@ -29,21 +29,30 @@ const launch = {
   pair: StrKey.encodeContract(Buffer.alloc(32, 4)),
   metadata: { name: 'Launch', description: '', logo: '', symbol: 'LAUNCH' },
   config: {
-    total_supply: '10000000', platform_fee_bps: 100,
+    total_supply: '10000000',
+    platform_fee_bps: 100,
     buckets: { pool: '2000000', curve: '7000000', team: '1000000' },
     params: {
-      starts_at: '1791000000', ends_at: '1792000000',
+      starts_at: '1791000000',
+      ends_at: '1792000000',
       allocations: { pool_bps: 2000, curve_bps: 7000, team_bps: 1000 },
       vesting: { cliff_seconds: '0', duration_seconds: '2592000', schedule: { tag: 'Weekly' } },
       curve: {
-        graduation_target: '4000000', virtual_base_reserve: '21000000',
-        virtual_quote_reserve: '21000000', creator_fee_bps: 10, creator_payout_bps: 1000,
+        graduation_target: '4000000',
+        virtual_base_reserve: '21000000',
+        virtual_quote_reserve: '21000000',
+        creator_fee_bps: 10,
+        creator_payout_bps: 1000,
       },
     },
   },
   state: {
-    sold: '0', quote_reserve: '0', creator_fees: '0', team_claimed: '0',
-    buyer_count: 0, graduated: false,
+    sold: '0',
+    quote_reserve: '0',
+    creator_fees: '0',
+    team_claimed: '0',
+    buyer_count: 0,
+    graduated: false,
   },
   asOfLedger: 123,
   observedAt: new Date('2026-10-03T00:00:00.000Z'),
@@ -56,18 +65,37 @@ const response = () => ({ status: vi.fn().mockReturnThis(), json: vi.fn().mockRe
 describe('public launch handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getPublicLaunchTeam).mockResolvedValue([{
-      memberId: null, kind: 'owner', identityId: null, address: owner,
-      name: null, avatarUrl: null, xAccount: null, role: 'owner',
-    }]);
+    vi.mocked(getPublicLaunchTeam).mockResolvedValue([
+      {
+        memberId: null,
+        kind: 'owner',
+        identityId: null,
+        address: owner,
+        name: null,
+        avatarUrl: null,
+        xAccount: null,
+        role: 'owner',
+      },
+    ]);
   });
   it('lists only the requested network and returns chain-backed data', async () => {
-    const lean = vi.fn().mockResolvedValue([launch]);
-    const limit = vi.fn().mockReturnValue({ lean });
-    const skip = vi.fn().mockReturnValue({ limit });
-    const sort = vi.fn().mockReturnValue({ skip });
-    vi.mocked(Launch.find).mockReturnValue({ sort } as never);
-    vi.mocked(Launch.countDocuments).mockResolvedValue(1 as never);
+    vi.mocked(Launch.aggregate).mockResolvedValue([
+      {
+        launches: [
+          {
+            ...launch,
+            volume24h: {
+              grossPairAmount: '0',
+              assetAmount: '0',
+              tradeCount: 0,
+              buyCount: 0,
+              sellCount: 0,
+            },
+          },
+        ],
+        total: [{ count: 1 }],
+      },
+    ]);
 
     const res = response();
 
@@ -78,12 +106,22 @@ describe('public launch handlers', () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(Launch.find).toHaveBeenCalledWith({ network: 'testnet' });
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      result: expect.objectContaining({
-        launches: [expect.objectContaining({ contractId, asOfLedger: 123, bonding: expect.objectContaining({ version: 1, progressBps: 0 }) })],
+    expect(Launch.aggregate).toHaveBeenCalledWith(
+      expect.arrayContaining([{ $match: { network: 'testnet' } }]),
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        result: expect.objectContaining({
+          launches: [
+            expect.objectContaining({
+              contractId,
+              asOfLedger: 123,
+              bonding: expect.objectContaining({ version: 1, progressBps: 0 }),
+            }),
+          ],
+        }),
       }),
-    }));
+    );
   });
 
   it('returns one confirmed launch by contract ID', async () => {
@@ -100,16 +138,23 @@ describe('public launch handlers', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(Launch.findOne).toHaveBeenCalledWith({ network: 'testnet', contractId });
     expect(getPublicLaunchTeam).toHaveBeenCalledWith(launch);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      result: expect.objectContaining({ team: [expect.objectContaining({ address: owner, role: 'owner' })] }),
-    }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        result: expect.objectContaining({
+          team: [expect.objectContaining({ address: owner, role: 'owner' })],
+        }),
+      }),
+    );
   });
 
   it('rejects invalid contract IDs before querying storage', async () => {
     const res = response();
 
     await getLaunchByContractIdRoute(
-      { query: { network: 'public' }, params: { contractId: 'not-a-contract' } } as unknown as Request,
+      {
+        query: { network: 'public' },
+        params: { contractId: 'not-a-contract' },
+      } as unknown as Request,
       res as unknown as Response,
       vi.fn(),
     );

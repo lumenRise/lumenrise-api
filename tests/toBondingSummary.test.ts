@@ -96,6 +96,19 @@ describe('Bonding launch summary', () => {
     expect(summary?.vesting.schedule).toBe('Weekly');
   });
 
+  it('keeps current contracts without expiry open until graduation', () => {
+    const params = { ...(launch.config.params as Record<string, unknown>) };
+
+    delete params.ends_at;
+
+    const result = toBondingSummary(
+      { ...launch, config: { ...launch.config, params } },
+      new Date(1892000000 * 1000),
+    );
+
+    expect(result).toMatchObject({ status: 'Open', endsAt: null });
+  });
+
   it('keeps older incomplete records readable with a null summary', () => {
     expect(toBondingSummary({ ...launch, config: { total_supply: '100000000' } })).toBeNull();
   });

@@ -7,6 +7,7 @@ import LaunchTrade from '../../models/LaunchTrade';
 import type { TradeRecord } from '../../types/launch/market';
 import toTradeResult from '../../utils/launch/toTradeResult';
 import getLaunchRpc from '../../services/launch/getLaunchRpc';
+import type { LaunchSchedule } from '../../types/launch/model';
 import parseTradeInteger from '../../utils/launch/parseTradeInteger';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 import recordLaunchPrice from '../../services/launch/recordLaunchPrice';
@@ -143,11 +144,13 @@ const postTrade: RequestHandler = async (req, res) => {
 
     await recordLaunchPrice(identity, priceRead, sampledAt);
 
-    const params = launch.config.params as { ends_at: string };
+    const params = launch.config.params as LaunchSchedule;
 
     const stopped =
       state.graduated === true ||
-      (BigInt(Math.floor(sampledAt.getTime() / 1000)) >= BigInt(params.ends_at) && sold === 0n);
+      (params.ends_at !== undefined &&
+        BigInt(Math.floor(sampledAt.getTime() / 1000)) >= BigInt(params.ends_at) &&
+        sold === 0n);
 
     await Launch.updateOne(
       { ...identity, stateAsOfLedger: { $lte: stateRead.ledger } },
