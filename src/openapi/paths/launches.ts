@@ -4,11 +4,68 @@ const launchPaths = {
   '/v1/launches': {
     get: {
       tags: ['Launches'],
-      summary: 'List confirmed bonding-curve launches indexed from the factory',
+      summary: 'Search, filter and rank confirmed launches before pagination',
+      description:
+        'All filters and sorting apply globally before pagination. Newest/date use verified contract creation time, never startsAt or observedAt; unknown dates sort last in both directions. Categories currently contain only bonding-curve launches; auction and pre-sale return empty results. Trending counts verified client-submitted trades in the rolling 24-hour window. Top volume requires pair (payment asset contract ID). Almost graduated includes only open, ungraduated curves with valid positive targets, ordered by net reserve / target; no minimum progress threshold. Equal sort values use contractId ascending. 24-hour statistics cover verified client-submitted trades, not all chain activity.',
       operationId: 'getLaunches',
       security: [],
       parameters: [
         { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
+        {
+          in: 'query',
+          name: 'search',
+          description:
+            'Literal, case-insensitive substring of project name or token symbol; q is an alias.',
+          schema: { type: 'string', maxLength: 100 },
+        },
+        { in: 'query', name: 'q', schema: { type: 'string', maxLength: 100 } },
+        {
+          in: 'query',
+          name: 'category',
+          description: 'Case-insensitive; Bonding Curve is also accepted.',
+          schema: {
+            type: 'string',
+            enum: ['all', 'bonding-curve', 'auction', 'pre-sale'],
+            default: 'all',
+          },
+        },
+        {
+          in: 'query',
+          name: 'sort',
+          description:
+            'date aliases newest; figure is net curve reserve and requires pair; phase orders Scheduled, Open, Graduated, Failed.',
+          schema: {
+            type: 'string',
+            enum: [
+              'newest',
+              'name',
+              'symbol',
+              'trending',
+              'topVolume',
+              'almostGraduated',
+              'participants',
+              'figure',
+              'date',
+              'phase',
+              'category',
+            ],
+            default: 'newest',
+          },
+        },
+        {
+          in: 'query',
+          name: 'direction',
+          description: 'dir is an alias.',
+          schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' },
+        },
+        { in: 'query', name: 'dir', schema: { type: 'string', enum: ['asc', 'desc'] } },
+        {
+          in: 'query',
+          name: 'pair',
+          description:
+            'Payment asset contract ID. Required for topVolume and figure to avoid comparing different currencies.',
+          schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+        },
         {
           in: 'query',
           name: 'owner',

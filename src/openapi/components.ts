@@ -119,7 +119,18 @@ const openApiComponents = {
         config: { type: 'object', additionalProperties: true },
         state: { type: 'object', additionalProperties: true },
         asOfLedger: { type: 'integer', minimum: 1 },
-        observedAt: dateTime,
+        observedAt: {
+          ...dateTime,
+          description: 'Time first indexed by the worker; not contract creation time.',
+        },
+        createdAt: {
+          type: ['string', 'null'],
+          format: 'date-time',
+          description:
+            'Verified contract creation transaction time, distinct from the scheduled trading start. Null when unavailable.',
+        },
+        creationLedger: { type: ['integer', 'null'], minimum: 1 },
+        creationTransactionHash: { type: ['string', 'null'] },
         stateAsOfLedger: { type: 'integer', minimum: 1 },
         stateObservedAt: dateTime,
         bonding: { oneOf: [{ $ref: '#/components/schemas/BondingSummary' }, { type: 'null' }] },
@@ -158,7 +169,10 @@ const openApiComponents = {
           description: 'True when the latest state observation is older than 60 seconds.',
         },
         startsAt: unsignedAmount,
-        endsAt: unsignedAmount,
+        endsAt: {
+          oneOf: [unsignedAmount, { type: 'null' }],
+          description: 'Trading end, or null for contracts without an expiry.',
+        },
         totalSupply: unsignedAmount,
         allocations: {
           type: 'object',
@@ -234,7 +248,45 @@ const openApiComponents = {
       type: 'object',
       required: ['launches', 'page', 'limit', 'total'],
       properties: {
-        launches: { type: 'array', items: { $ref: '#/components/schemas/Launch' } },
+        launches: {
+          type: 'array',
+          items: {
+            allOf: [
+              { $ref: '#/components/schemas/Launch' },
+              {
+                type: 'object',
+                required: ['category', 'amountScale', 'volume24h'],
+                properties: {
+                  category: { type: 'string', const: 'bonding-curve' },
+                  amountScale: { type: 'integer', const: 7 },
+                  volume24h: {
+                    type: 'object',
+                    required: [
+                      'grossPairAmount',
+                      'assetAmount',
+                      'tradeCount',
+                      'buyCount',
+                      'sellCount',
+                    ],
+                    properties: {
+                      grossPairAmount: unsignedAmount,
+                      assetAmount: unsignedAmount,
+                      tradeCount: { type: 'integer', minimum: 0 },
+                      buyCount: { type: 'integer', minimum: 0 },
+                      sellCount: { type: 'integer', minimum: 0 },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+        sort: { type: 'string' },
+        direction: { type: 'string', enum: ['asc', 'desc'] },
+        dateMeaning: { type: 'string', const: 'contract_creation' },
+        statsAsOf: dateTime,
+        statsSince: dateTime,
+        statsCoverage: { type: 'string', const: 'verified_client_submitted_trades' },
         page: { type: 'integer', minimum: 1 },
         limit: { type: 'integer', minimum: 1, maximum: 100 },
         total: { type: 'integer', minimum: 0 },
