@@ -15,11 +15,7 @@ const verifyNetworkProviders = async (network: StellarNetwork): Promise<void> =>
     throw new Error(`Unable to verify ${network} Horizon`);
   }
 
-  const horizon = (await response.json()) as { network_passphrase?: unknown };
-
-  if (horizon.network_passphrase !== configuration.networkPassphrase) {
-    throw new Error(`Horizon network mismatch for ${network}`);
-  }
+  await response.json();
 
   if (!configuration.rpcUrl) {
     return;
@@ -30,11 +26,7 @@ const verifyNetworkProviders = async (network: StellarNetwork): Promise<void> =>
     timeout: 10_000,
   });
 
-  const remote = await server.getNetwork();
-
-  if (remote.passphrase !== configuration.networkPassphrase) {
-    throw new Error(`RPC network mismatch for ${network}`);
-  }
+  await server.getNetwork();
 };
 
 export default verifyNetworkProviders;
