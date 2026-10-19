@@ -10,6 +10,7 @@ describe('StellarActivityScan model', () => {
     const scan = new StellarActivityScan({
       identity: new Types.ObjectId(),
       address,
+      network: 'testnet',
       sourceUrl: 'https://horizon-testnet.stellar.org',
       status: 'queued',
       active: true,
@@ -27,6 +28,7 @@ describe('StellarActivityScan model', () => {
     const scan = new StellarActivityScan({
       identity: new Types.ObjectId(),
       address,
+      network: 'testnet',
       sourceUrl: 'https://horizon-testnet.stellar.org',
       status: 'completed',
       active: true,
@@ -36,11 +38,11 @@ describe('StellarActivityScan model', () => {
     await expect(scan.validate()).rejects.toMatchObject({ errors: { active: expect.anything() } });
   });
 
-  it('allows one active scan per identity', () => {
+  it('allows one active scan per identity and network', () => {
     expect(StellarActivityScan.schema.indexes()).toEqual(
       expect.arrayContaining([
         [
-          { identity: 1, active: 1 },
+          { identity: 1, network: 1, active: 1 },
           expect.objectContaining({
             unique: true,
             partialFilterExpression: { active: true },

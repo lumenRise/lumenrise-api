@@ -50,7 +50,7 @@ describe('Stellar reputation route', () => {
     expect(StellarActivityScan.findOne).toHaveBeenCalledWith({
       identity: expect.any(Types.ObjectId),
       address,
-      sourceUrl: expect.any(String),
+      network: 'testnet',
     });
   });
 

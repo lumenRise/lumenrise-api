@@ -10,7 +10,7 @@ const pair = StrKey.encodeContract(Buffer.alloc(32, 90));
 describe('launch list queries', () => {
   it('accepts client category spelling and query aliases', () => {
     expect(
-      parseLaunchListQuery({ category: 'Bonding Curve', q: ' Token ', dir: 'asc' }),
+      parseLaunchListQuery({ category: 'Bonding Curve', q: ' Token ', dir: 'asc' }, 'testnet'),
     ).toMatchObject({
       category: 'bonding-curve',
       search: 'Token',
@@ -20,12 +20,11 @@ describe('launch list queries', () => {
   });
 
   it.each(['topVolume', 'figure'])('requires the payment asset for %s', (sort) => {
-    expect(parseLaunchListQuery({ sort })).toBeNull();
-    expect(parseLaunchListQuery({ sort, pair })).toMatchObject({ sort, pair });
+    expect(parseLaunchListQuery({ sort }, 'testnet')).toBeNull();
+    expect(parseLaunchListQuery({ sort, pair }, 'testnet')).toMatchObject({ sort, pair });
   });
 
   it.each([
-    { network: 'invalid' },
     { owner: 'bad' },
     { pair: 'XLM' },
     { sort: 'bad' },
@@ -37,6 +36,6 @@ describe('launch list queries', () => {
     { search: 'a'.repeat(101) },
     { search: ['a', 'b'] },
   ])('rejects invalid query %j', (query) => {
-    expect(parseLaunchListQuery(query)).toBeNull();
+    expect(parseLaunchListQuery(query, 'testnet')).toBeNull();
   });
 });

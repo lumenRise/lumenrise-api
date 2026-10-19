@@ -35,7 +35,7 @@ describe('API holder refresh dispatch', () => {
       },
       { upsert: true, runValidators: true, returnDocument: 'after' },
     );
-    expect(publishLaunchHolderJob).toHaveBeenCalledWith(job._id.toString());
+    expect(publishLaunchHolderJob).toHaveBeenCalledWith(job._id.toString(), 'testnet');
     expect(
       vi.mocked(LaunchHolderRefreshJob.findOneAndUpdate).mock.invocationCallOrder[0],
     ).toBeLessThan(vi.mocked(publishLaunchHolderJob).mock.invocationCallOrder[0]!);

@@ -43,7 +43,7 @@ describe('Sybil evidence route', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.result).toEqual(evidence);
-    expect(getSybilEvidence).toHaveBeenCalledWith(identityId);
+    expect(getSybilEvidence).toHaveBeenCalledWith(identityId, 'testnet');
   });
 
   it('returns 404 for a missing identity', async () => {

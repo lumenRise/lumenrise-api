@@ -81,11 +81,10 @@ describe('known launch token holders', () => {
     });
   });
 
-  it('rejects malformed pagination and unsupported networks before querying the database', async () => {
+  it('rejects malformed pagination before querying the database', async () => {
     for (const query of [
       { limit: '101' },
       { cursor: 'invalid' },
-      { network: 'other' },
       { cursor: ['bad'] },
     ]) {
       const res = response();

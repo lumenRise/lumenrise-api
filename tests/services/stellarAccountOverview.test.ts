@@ -40,7 +40,7 @@ describe('Stellar account overview', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await getStellarAccountOverview(address, checkedAt);
+    const result = await getStellarAccountOverview(address, 'testnet', checkedAt);
 
     expect(fetchMock.mock.calls[0]?.[0].toString()).toBe(
       `https://horizon-testnet.stellar.org/accounts/${address}`,
@@ -61,7 +61,7 @@ describe('Stellar account overview', () => {
   it('returns null when the address has no account on the configured network', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }));
 
-    expect(await getStellarAccountOverview(address)).toBeNull();
+    expect(await getStellarAccountOverview(address, 'testnet')).toBeNull();
   });
 
   it('rejects invalid addresses before contacting Horizon', async () => {
@@ -69,7 +69,7 @@ describe('Stellar account overview', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(getStellarAccountOverview('not-a-wallet')).rejects.toThrow(
+    await expect(getStellarAccountOverview('not-a-wallet', 'testnet')).rejects.toThrow(
       'Invalid Stellar account address',
     );
     expect(fetchMock).not.toHaveBeenCalled();
@@ -87,7 +87,7 @@ describe('Stellar account overview', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(getStellarAccountOverview(address)).rejects.toThrow('status 503');
-    await expect(getStellarAccountOverview(address)).rejects.toThrow('invalid account response');
+    await expect(getStellarAccountOverview(address, 'testnet')).rejects.toThrow('status 503');
+    await expect(getStellarAccountOverview(address, 'testnet')).rejects.toThrow('invalid account response');
   });
 });

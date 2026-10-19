@@ -9,6 +9,7 @@ import Launch from '../src/models/Launch';
 import Identity from '../src/models/Identity';
 import launchRoutes from '../src/routes/launches';
 import StellarAccount from '../src/models/StellarAccount';
+import resolveNetwork from '../src/middleware/resolveNetwork';
 import isR2Configured from '../src/storage/isR2Configured';
 import ExternalAccount from '../src/models/ExternalAccount';
 import LaunchTeamMember from '../src/models/LaunchTeamMember';
@@ -46,6 +47,8 @@ vi.mock('../src/middleware/requireSession', () => {
 });
 
 const app = express();
+
+app.use(resolveNetwork);
 const contractId = StrKey.encodeContract(Buffer.alloc(32, 7));
 const owner = Keypair.random().publicKey();
 const memberId = new Types.ObjectId('507f1f77bcf86cd799439012');
