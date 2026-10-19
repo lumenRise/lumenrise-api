@@ -10,7 +10,7 @@ services:
       PORT: 5000
       DB_URI: mongodb://mongo:27017/?replicaSet=rs0
       DB_NAME: ${DB_NAME:-lumenrise}
-      RABBITMQ_URL: amqp://lumenrise:${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}@rabbitmq:5672
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-lumenrise}:${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}@rabbitmq:5672
       TESTNET_TOML: /app/storage/testnet/${STELLAR_TESTNET_TOML_FILENAME:-testnet_stellar.toml}
       PUBLIC_TOML: /app/storage/public/${STELLAR_PUBLIC_TOML_FILENAME:-stellar.toml}
     volumes:
@@ -66,12 +66,12 @@ services:
     hostname: rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: lumenrise
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-lumenrise}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env (letters and digits)}
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     ports:
-      - 127.0.0.1:15672:15672
+      - 127.0.0.1:5672:5672
     healthcheck:
       test:
         - CMD
