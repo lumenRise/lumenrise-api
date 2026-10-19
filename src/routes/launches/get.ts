@@ -1,62 +1,60 @@
-import { StrKey } from '@stellar/stellar-sdk';
 import type { RequestHandler } from 'express';
 
-import env from '../../env';
 import log from '../../logger';
 import Launch from '../../models/Launch';
+import type { LaunchListPage } from '../../types/launch/list';
 import toLaunchResult from '../../utils/launch/toLaunchResult';
+import decimalInteger from '../../utils/launch/decimalInteger';
+import parseLaunchListQuery from '../../utils/launch/parseLaunchListQuery';
+import buildLaunchListPipeline from '../../utils/launch/buildLaunchListPipeline';
 
-const getLaunchesRoute: RequestHandler = async (req, res) => {
-  const network = req.query.network ?? env.STELLAR_AUTH_NETWORK;
-  const owner = req.query.owner;
-  const limitRaw = req.query.limit ?? '20';
-  const pageRaw = req.query.page ?? '1';
-  const limit = typeof limitRaw === 'string' ? Number(limitRaw) : NaN;
-  const page = typeof pageRaw === 'string' ? Number(pageRaw) : NaN;
+const getLaunchesRoute: RequestHandler = async (req, res): Promise<unknown> => {
+  const query = parseLaunchListQuery(req.query);
 
-  if (
-    (network !== 'testnet' && network !== 'public') ||
-    (owner !== undefined && (
-      typeof owner !== 'string' ||
-      (!StrKey.isValidEd25519PublicKey(owner) && !StrKey.isValidContract(owner))
-    )) ||
-    !Number.isInteger(limit) || limit < 1 || limit > 100 ||
-    !Number.isInteger(page) || page < 1 || page > 100_000
-  ) {
-    return res.status(400).json({ status: 'error', message: 'Invalid launch list query', result: {} });
+  if (!query) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Invalid launch list query; topVolume and figure require pair',
+      result: {},
+    });
   }
 
   try {
-    const filter = {
-      network: network as 'testnet' | 'public',
-      ...(owner ? { owner } : {}),
-    };
-
-    const [launches, total] = await Promise.all([
-      Launch.find(filter).sort({ _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
-      Launch.countDocuments(filter),
-    ]);
-
     const now = new Date();
+    const pipeline = buildLaunchListPipeline(query, now);
+    const [result] = await Launch.aggregate<LaunchListPage>(pipeline);
 
     return res.status(200).json({
       status: 'success',
       message: 'Launches retrieved',
       result: {
-        launches: launches.map((launch) => toLaunchResult(launch, now)),
-        page,
-        limit,
-        total,
+        launches: (result?.launches ?? []).map((launch) => ({
+          ...toLaunchResult(launch, now),
+          category: 'bonding-curve',
+          amountScale: 7,
+          volume24h: {
+            ...launch.volume24h,
+            grossPairAmount: decimalInteger(launch.volume24h.grossPairAmount),
+            assetAmount: decimalInteger(launch.volume24h.assetAmount),
+          },
+        })),
+        page: query.page,
+        limit: query.limit,
+        total: result?.total[0]?.count ?? 0,
+        sort: query.sort,
+        direction: query.direction,
+        dateMeaning: 'contract_creation',
+        statsAsOf: now.toISOString(),
+        statsSince: new Date(now.getTime() - 86_400_000).toISOString(),
+        statsCoverage: 'verified_client_submitted_trades',
       },
     });
   } catch (error) {
     log.error({ error }, 'Launch list failed');
 
-    return res.status(503).json({
-      status: 'error',
-      message: 'Launches are temporarily unavailable',
-      result: {},
-    });
+    return res
+      .status(503)
+      .json({ status: 'error', message: 'Launches are temporarily unavailable', result: {} });
   }
 };
 
