@@ -5,6 +5,7 @@ import { createEmptyStellarActivityAggregate } from '../utils/services/stellar/m
 
 const stellarActivityScanSchema = new Schema<StellarActivityScanRecord>(
   {
+    network: { type: String, enum: ['testnet', 'public'], required: true, immutable: true },
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', required: true, immutable: true },
     address: { type: String, required: true, immutable: true },
     sourceUrl: { type: String, required: true, immutable: true },
@@ -44,22 +45,22 @@ stellarActivityScanSchema.pre('validate', function validateScanState() {
 });
 
 stellarActivityScanSchema.index(
-  { identity: 1, active: 1 },
+  { identity: 1, network: 1, active: 1 },
   {
     unique: true,
     partialFilterExpression: { active: true },
-    name: 'stellar_activity_one_active_per_identity',
+    name: 'stellar_activity_one_active_per_identity_network',
   },
 );
 
 stellarActivityScanSchema.index(
-  { status: 1, scheduledAt: 1, leaseUntil: 1 },
-  { name: 'stellar_activity_scan_claim' },
+  { network: 1, status: 1, scheduledAt: 1, leaseUntil: 1 },
+  { name: 'stellar_activity_scan_network_claim' },
 );
 
 stellarActivityScanSchema.index(
-  { identity: 1, address: 1, createdAt: -1 },
-  { name: 'stellar_activity_scan_identity_address' },
+  { identity: 1, network: 1, address: 1, createdAt: -1 },
+  { name: 'stellar_activity_scan_identity_network_address' },
 );
 
 const StellarActivityScan = model<StellarActivityScanRecord>(

@@ -7,7 +7,7 @@ import type { SybilEvidenceResult } from '../../types/sybil/evidence';
 
 const getSybilEvidenceRoute: RequestHandler = async (req, res) => {
   try {
-    const evidence = await getSybilEvidence(req.auth!.identityId);
+    const evidence = await getSybilEvidence(req.auth!.identityId, req.network);
 
     if (!evidence) {
       const response: ApiResponse<EmptyResult> = {

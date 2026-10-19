@@ -1,31 +1,40 @@
-import { Networks, rpc } from '@stellar/stellar-sdk';
+import { rpc } from '@stellar/stellar-sdk';
 
-import env from '../../env';
+import getNetworkConfig from '../network/getNetworkConfig';
+import type { StellarNetwork } from '../../types/network/configuration';
 
-let connection: Promise<rpc.Server> | undefined;
-const getLaunchRpc = (): Promise<rpc.Server> => {
-  if (!connection) {
-    connection = (async () => {
-      const server = new rpc.Server(env.STELLAR_RPC_URL, {
-        allowHttp:
-          env.STELLAR_AUTH_NETWORK === 'testnet' && env.STELLAR_RPC_URL.startsWith('http:'),
-        timeout: 15_000,
-      });
+const connections = new Map<StellarNetwork, Promise<rpc.Server>>();
 
-      const network = await server.getNetwork();
+const getLaunchRpc = (network: StellarNetwork): Promise<rpc.Server> => {
+  const existing = connections.get(network);
 
-      const expected = env.STELLAR_AUTH_NETWORK === 'testnet' ? Networks.TESTNET : Networks.PUBLIC;
-
-      if (network.passphrase !== expected) {
-        throw new Error('Launch RPC network mismatch');
-      }
-
-      return server;
-    })().catch((error: unknown) => {
-      connection = undefined;
-      throw error;
-    });
+  if (existing) {
+    return existing;
   }
+
+  const configuration = getNetworkConfig(network);
+
+  const connection = (async (): Promise<rpc.Server> => {
+    const server = new rpc.Server(configuration.rpcUrl, {
+      allowHttp: network === 'testnet' && configuration.rpcUrl.startsWith('http:'),
+      timeout: 15_000,
+    });
+
+    const remote = await server.getNetwork();
+
+    if (remote.passphrase !== configuration.networkPassphrase) {
+      throw new Error('Launch RPC network mismatch');
+    }
+
+    return server;
+  })().catch((error: unknown): never => {
+    connections.delete(network);
+
+    throw error;
+  });
+
+  connections.set(network, connection);
+
   return connection;
 };
 

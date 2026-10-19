@@ -1,17 +1,19 @@
 import type { Types } from 'mongoose';
 
-import env from '../../../../env';
 import { wakeStellarScan } from './wakeStellarScan';
 import StellarActivityScan from '../../../../models/StellarActivityScan';
 import type { StellarActivityScanEnqueueResult } from '../../../../types/stellar/scan';
 import { createEmptyStellarActivityAggregate } from '../mergeActivityPage/createEmptyStellarActivityAggregate';
+import getNetworkConfig from '../../../../services/network/getNetworkConfig';
+import type { StellarNetwork } from '../../../../types/network/configuration';
 
 const enqueueStellarActivityScan = async (
   identity: Types.ObjectId,
   address: string,
+  network: StellarNetwork,
 ): Promise<StellarActivityScanEnqueueResult> => {
-  const sourceUrl = env.STELLAR_HORIZON_URL;
-  const existing = await StellarActivityScan.findOne({ identity, active: true });
+  const sourceUrl = getNetworkConfig(network).horizonUrl;
+  const existing = await StellarActivityScan.findOne({ identity, network, active: true });
 
   if (existing) {
     if (existing.status === 'queued') {
@@ -19,13 +21,14 @@ const enqueueStellarActivityScan = async (
     }
     return {
       scan: existing,
-      conflict: existing.address !== address || existing.sourceUrl !== sourceUrl,
+      conflict: existing.address !== address,
     };
   }
 
   try {
     const scan = await StellarActivityScan.create({
       identity,
+      network,
       address,
       sourceUrl,
       status: 'queued',
@@ -44,7 +47,7 @@ const enqueueStellarActivityScan = async (
       throw error;
     }
 
-    const scan = await StellarActivityScan.findOne({ identity, active: true });
+    const scan = await StellarActivityScan.findOne({ identity, network, active: true });
 
     if (!scan) {
       throw error;
@@ -53,7 +56,7 @@ const enqueueStellarActivityScan = async (
     if (scan.status === 'queued') {
       await wakeStellarScan(scan._id.toString());
     }
-    return { scan, conflict: scan.address !== address || scan.sourceUrl !== sourceUrl };
+    return { scan, conflict: scan.address !== address };
   }
 };
 

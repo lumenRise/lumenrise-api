@@ -7,7 +7,7 @@ import type { ReputationProfileResult } from '../../types/reputation/profile';
 
 const getOwnDeveloperProfileRoute: RequestHandler = async (req, res) => {
   try {
-    const profile = await getReputationProfile(req.developerIdentityId!);
+    const profile = await getReputationProfile(req.developerIdentityId!, req.network);
 
     if (!profile) {
       return res.status(404).json({ status: 'error', message: 'Identity not found', result: {} });

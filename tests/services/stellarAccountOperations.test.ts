@@ -31,7 +31,7 @@ describe('Stellar account operations', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await getStellarAccountOperations(address, '101', 1, 'desc');
+    const result = await getStellarAccountOperations(address, 'testnet', '101', 1, 'desc');
     const url = fetchMock.mock.calls[0]?.[0] as URL;
 
     expect(url.pathname).toBe(`/accounts/${address}/operations`);
@@ -68,13 +68,13 @@ describe('Stellar account operations', () => {
       }),
     );
 
-    expect((await getStellarAccountOperations(address, null, 2))?.nextCursor).toBeNull();
+    expect((await getStellarAccountOperations(address, 'testnet', null, 2))?.nextCursor).toBeNull();
   });
 
   it('returns null for an account missing on the configured network', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }));
 
-    expect(await getStellarAccountOperations(address)).toBeNull();
+    expect(await getStellarAccountOperations(address, 'testnet')).toBeNull();
   });
 
   it('rejects invalid pagination before contacting Horizon', async () => {
@@ -82,10 +82,10 @@ describe('Stellar account operations', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(getStellarAccountOperations(address, 'bad-cursor')).rejects.toThrow(
+    await expect(getStellarAccountOperations(address, 'testnet', 'bad-cursor')).rejects.toThrow(
       'Invalid Stellar operations cursor',
     );
-    await expect(getStellarAccountOperations(address, null, 201)).rejects.toThrow(
+    await expect(getStellarAccountOperations(address, 'testnet', null, 201)).rejects.toThrow(
       'Invalid Stellar operations page limit',
     );
     expect(fetchMock).not.toHaveBeenCalled();
@@ -103,10 +103,10 @@ describe('Stellar account operations', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(getStellarAccountOperations(address)).rejects.toThrow(
+    await expect(getStellarAccountOperations(address, 'testnet')).rejects.toThrow(
       'invalid operations response',
     );
-    await expect(getStellarAccountOperations(address, '100', 1)).rejects.toThrow(
+    await expect(getStellarAccountOperations(address, 'testnet', '100', 1)).rejects.toThrow(
       'repeated operations cursor',
     );
   });

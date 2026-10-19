@@ -12,7 +12,8 @@ const validConfiguration: RuntimeConfiguration = {
   X_CLIENT_ID: 'x-client-id',
   X_CLIENT_SECRET: 'x-client-secret',
   X_CALLBACK_URL: 'http://localhost:5000/v1/oauth/x/callback',
-  STELLAR_HORIZON_URL: 'https://horizon-testnet.stellar.org',
+  STELLAR_PUBLIC_HORIZON_URL: 'https://horizon.stellar.org',
+  STELLAR_TESTNET_HORIZON_URL: 'https://horizon-testnet.stellar.org',
   STELLAR_TESTNET_HOME_DOMAIN: 'testnet.lumenrise.app',
   STELLAR_PUBLIC_HOME_DOMAIN: 'lumenrise.app',
   R2_ENDPOINT: '',
@@ -48,8 +49,9 @@ describe('runtime configuration validation', () => {
 
   it('rejects an invalid Stellar Horizon URL', () => {
     expect(() =>
-      validateRuntimeConfiguration({ ...validConfiguration, STELLAR_HORIZON_URL: 'not-a-url' }),
-    ).toThrow('STELLAR_HORIZON_URL must be a valid absolute URL');
+      validateRuntimeConfiguration({ ...validConfiguration,
+        STELLAR_TESTNET_HORIZON_URL: 'not-a-url' }),
+    ).toThrow('STELLAR_TESTNET_HORIZON_URL must be a valid absolute URL');
   });
 
   it('rejects an invalid credential encryption key', () => {

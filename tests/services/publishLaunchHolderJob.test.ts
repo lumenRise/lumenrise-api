@@ -22,13 +22,13 @@ describe('launch queue on the shared RabbitMQ broker', () => {
   });
 
   it('uses the configured shared broker and a separate durable persistent launch queue', async () => {
-    await publishLaunchHolderJob('job-id');
+    await publishLaunchHolderJob('job-id', 'testnet');
     expect(amqp.connect).toHaveBeenCalledWith('amqp://shared-broker', { timeout: 2000 });
-    expect(channel.assertQueue).toHaveBeenCalledWith('lumenrise.launch.holder-refresh.v1', {
+    expect(channel.assertQueue).toHaveBeenCalledWith('lumenrise.launch.holder-refresh.v2.testnet', {
       durable: true,
     });
     const [queue, payload, options] = channel.sendToQueue.mock.calls[0]!;
-    expect(queue).toBe('lumenrise.launch.holder-refresh.v1');
+    expect(queue).toBe('lumenrise.launch.holder-refresh.v2.testnet');
     expect(JSON.parse(payload.toString())).toEqual({ jobId: 'job-id' });
     expect(options).toMatchObject({ persistent: true, messageId: 'job-id' });
     expect(channel.waitForConfirms).toHaveBeenCalledOnce();
@@ -37,7 +37,7 @@ describe('launch queue on the shared RabbitMQ broker', () => {
 
   it('propagates failed confirmation and still closes the connection', async () => {
     channel.waitForConfirms.mockRejectedValue(new Error('not confirmed'));
-    await expect(publishLaunchHolderJob('job-id')).rejects.toThrow('not confirmed');
+    await expect(publishLaunchHolderJob('job-id', 'testnet')).rejects.toThrow('not confirmed');
     expect(connection.close).toHaveBeenCalledOnce();
   });
 });

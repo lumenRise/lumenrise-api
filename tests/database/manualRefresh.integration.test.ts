@@ -98,6 +98,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
     await StellarActivityScan.create({
       identity: identityId,
       address: wallet.publicKey(),
+      network: 'testnet',
       sourceUrl: 'https://horizon-testnet.stellar.org',
       status: 'queued',
       active: true,
@@ -112,7 +113,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
     expect(
       await ManualRefreshCooldown.countDocuments({
         identity: identityId,
-        target: 'stellar-activity-scan',
+        target: 'stellar-activity-scan:testnet',
       }),
     ).toBe(0);
 

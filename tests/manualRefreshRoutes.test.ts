@@ -60,7 +60,7 @@ describe('manual refresh routes', () => {
 
     expect(response.status).toBe(429);
     expect(Number(response.headers['retry-after'])).toBeGreaterThan(0);
-    expect(reserveManualRefresh).toHaveBeenCalledWith(identityId, 'stellar-activity-scan');
+    expect(reserveManualRefresh).toHaveBeenCalledWith(identityId, 'stellar-activity-scan:testnet');
   });
 
   it('releases the provider cooldown when queuing fails', async () => {
@@ -94,7 +94,7 @@ describe('manual refresh routes', () => {
     expect(response.status).toBe(409);
     expect(releaseManualRefresh).toHaveBeenCalledWith(
       identityId,
-      'stellar-activity-scan',
+      'stellar-activity-scan:testnet',
       reservedUntil,
     );
   });

@@ -29,17 +29,17 @@ const postStellarActivityScanRoute: RequestHandler = async (req, res) => {
   let reservedUntil: Date | null = null;
 
   try {
-    const reservation = await reserveManualRefresh(req.auth!.identityId, 'stellar-activity-scan');
+    const reservation = await reserveManualRefresh(req.auth!.identityId, `stellar-activity-scan:${req.network}`);
     if (!reservation.allowed) {
       return sendManualRefreshLimit(res, reservation.retryAt!);
     }
 
     reservedUntil = reservation.reservedUntil;
 
-    const queued = await enqueueStellarActivityScan(req.auth!.identityId, address);
+    const queued = await enqueueStellarActivityScan(req.auth!.identityId, address, req.network);
 
     if (queued.conflict) {
-      await releaseManualRefresh(req.auth!.identityId, 'stellar-activity-scan', reservedUntil!);
+      await releaseManualRefresh(req.auth!.identityId, `stellar-activity-scan:${req.network}`, reservedUntil!);
       reservedUntil = null;
 
       const response: ApiResponse<EmptyResult> = {
@@ -60,7 +60,7 @@ const postStellarActivityScanRoute: RequestHandler = async (req, res) => {
     return res.status(202).json(response);
   } catch (error) {
     if (reservedUntil) {
-      await releaseManualRefresh(req.auth!.identityId, 'stellar-activity-scan', reservedUntil);
+      await releaseManualRefresh(req.auth!.identityId, `stellar-activity-scan:${req.network}`, reservedUntil);
     }
 
     log.error({ error, address }, 'Stellar activity scan enqueue failed');

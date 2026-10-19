@@ -1,5 +1,7 @@
 import type { Types } from 'mongoose';
 
+import type { StellarNetwork } from '../network/configuration';
+
 interface SorobanEventEvidence {
   operationIndex: number;
   eventIndex: number;
@@ -41,6 +43,7 @@ interface SorobanEnvelopeEvidence {
 }
 
 interface SorobanTransactionEvidenceRecord {
+  network: StellarNetwork;
   scan: Types.ObjectId;
   requestedByIdentity: Types.ObjectId;
   address: string;

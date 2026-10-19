@@ -45,7 +45,7 @@ const enqueueLaunchHolderRefresh = async (
   }
 
   try {
-    await publishLaunchHolderJob(job._id.toString());
+    await publishLaunchHolderJob(job._id.toString(), identity.network);
   } catch (error) {
     log.warn(
       { error, jobId: job._id },

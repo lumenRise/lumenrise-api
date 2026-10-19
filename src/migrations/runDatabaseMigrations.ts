@@ -8,6 +8,7 @@ import createCurrentIndexes from './20261012CreateCurrentIndexes';
 import type { MigrationDefinition } from '../types/database/migration';
 import priceObservationIndexes from './20261014PriceObservationIndexes';
 import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
+import stellarNetworkIsolation from './20261019StellarNetworkIsolation';
 
 const migrations: readonly MigrationDefinition[] = [
   authProviderAndTokenImageIndexes,
@@ -17,6 +18,7 @@ const migrations: readonly MigrationDefinition[] = [
   launchHolderIndexes,
   launchTeamIndexes,
   launchListIndexes,
+  stellarNetworkIsolation,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {

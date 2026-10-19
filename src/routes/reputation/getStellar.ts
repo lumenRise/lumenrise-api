@@ -1,6 +1,5 @@
 import type { RequestHandler } from 'express';
 
-import env from '../../env';
 import log from '../../logger';
 import StellarAccount from '../../models/StellarAccount';
 import StellarActivityScan from '../../models/StellarActivityScan';
@@ -29,7 +28,7 @@ const getStellarReputationRoute: RequestHandler = async (req, res) => {
     const scan = await StellarActivityScan.findOne({
       identity: req.auth!.identityId,
       address: account.address,
-      sourceUrl: env.STELLAR_HORIZON_URL,
+      network: req.network,
     }).sort({ createdAt: -1 });
 
     const response: ApiResponse<StellarReputationResult> = {

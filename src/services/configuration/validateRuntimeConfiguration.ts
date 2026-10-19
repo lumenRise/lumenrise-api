@@ -52,22 +52,25 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   }
 
   const clientOrigin = parseUrl(configuration.CLIENT_ORIGIN, 'CLIENT_ORIGIN');
-  const stellarHorizonUrl = parseUrl(configuration.STELLAR_HORIZON_URL, 'STELLAR_HORIZON_URL');
+  const stellarHorizonUrls = [
+    parseUrl(configuration.STELLAR_TESTNET_HORIZON_URL, 'STELLAR_TESTNET_HORIZON_URL'),
+    parseUrl(configuration.STELLAR_PUBLIC_HORIZON_URL, 'STELLAR_PUBLIC_HORIZON_URL'),
+  ];
   const githubCallbackUrl = parseUrl(configuration.GITHUB_CALLBACK_URL, 'GITHUB_CALLBACK_URL');
   const xCallbackUrl = parseUrl(configuration.X_CALLBACK_URL, 'X_CALLBACK_URL');
 
   if (
     configuration.NODE_ENV === 'production' &&
     (clientOrigin.protocol !== 'https:' ||
-      stellarHorizonUrl.protocol !== 'https:' ||
+      stellarHorizonUrls.some((url: URL): boolean => url.protocol !== 'https:') ||
       githubCallbackUrl.protocol !== 'https:' ||
       xCallbackUrl.protocol !== 'https:')
   ) {
     throw new Error('Client, callback, and provider URLs must use HTTPS in production');
   }
 
-  if (!['http:', 'https:'].includes(stellarHorizonUrl.protocol)) {
-    throw new Error('STELLAR_HORIZON_URL must use HTTP or HTTPS');
+  if (stellarHorizonUrls.some((url: URL): boolean => !['http:', 'https:'].includes(url.protocol))) {
+    throw new Error('Stellar Horizon URLs must use HTTP or HTTPS');
   }
 
   const testnetDomain = configuration.STELLAR_TESTNET_HOME_DOMAIN;

@@ -1,7 +1,6 @@
 import { Types } from 'mongoose';
 import type { RequestHandler } from 'express';
 
-import env from '../../env';
 import log from '../../logger';
 import StellarActivityScan from '../../models/StellarActivityScan';
 import type { ApiResponse, EmptyResult } from '../../types/response';
@@ -34,7 +33,7 @@ const getSorobanEvidenceRoute: RequestHandler = async (req, res) => {
     const scan = await StellarActivityScan.findOne({
       identity: req.auth!.identityId,
       address,
-      sourceUrl: env.STELLAR_HORIZON_URL,
+      network: req.network,
     }).sort({ createdAt: -1 });
 
     if (!scan) {

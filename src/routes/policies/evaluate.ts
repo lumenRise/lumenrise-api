@@ -34,7 +34,7 @@ const evaluatePolicyRoute: RequestHandler = async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'Policy not found', result: {} });
     }
 
-    const profile = await getReputationProfile(req.auth!.identityId);
+    const profile = await getReputationProfile(req.auth!.identityId, req.network);
 
     if (!profile) {
       return res.status(404).json({ status: 'error', message: 'Identity not found', result: {} });
@@ -42,7 +42,7 @@ const evaluatePolicyRoute: RequestHandler = async (req, res) => {
 
     const reservation = await reserveManualRefresh(
       req.auth!.identityId,
-      `policy-evaluation:${key}`,
+      `policy-evaluation:${req.network}:${key}`,
     );
 
     if (!reservation.allowed) {
@@ -60,7 +60,7 @@ const evaluatePolicyRoute: RequestHandler = async (req, res) => {
     return res.status(200).json(response);
   } catch (error) {
     if (reservedUntil) {
-      await releaseManualRefresh(req.auth!.identityId, `policy-evaluation:${key}`, reservedUntil);
+      await releaseManualRefresh(req.auth!.identityId, `policy-evaluation:${req.network}:${key}`, reservedUntil);
     }
 
     log.error({ error, identityId: req.auth!.identityId, key }, 'Policy evaluation failed');

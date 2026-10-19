@@ -8,6 +8,7 @@ import env from './env';
 import router from './routes/index';
 import notFound from './middleware/notFound';
 import errorHandler from './middleware/errorHandler';
+import resolveNetwork from './middleware/resolveNetwork';
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use(helmet());
 app.use(compression());
 
 app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
+
+app.use(resolveNetwork);
 app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false }));

@@ -7,7 +7,8 @@ interface RuntimeConfiguration {
   X_CLIENT_ID: string;
   X_CLIENT_SECRET: string;
   X_CALLBACK_URL: string;
-  STELLAR_HORIZON_URL: string;
+  STELLAR_TESTNET_HORIZON_URL: string;
+  STELLAR_PUBLIC_HORIZON_URL: string;
   STELLAR_TESTNET_HOME_DOMAIN: string;
   STELLAR_PUBLIC_HOME_DOMAIN: string;
   R2_ENDPOINT: string;
@@ -17,7 +18,6 @@ interface RuntimeConfiguration {
   R2_PUBLIC_BASE_URL: string;
   R2_MAX_AVATAR_BYTES: number;
   R2_MAX_TOKEN_IMAGE_BYTES: number;
-  STELLAR_AUTH_NETWORK: 'testnet' | 'public';
   AUTH_PROVIDER_API_URL: string;
   AUTH_PROVIDER_APP_ID: string;
   AUTH_PROVIDER_APP_SECRET: string;

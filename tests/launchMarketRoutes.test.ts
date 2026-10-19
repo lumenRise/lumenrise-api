@@ -79,7 +79,6 @@ describe('submitted trades and observed price reads', () => {
     for (const [handler, query] of [
       [getChart, { kind: 'execution' }],
       [getChart, { range: 'bad' }],
-      [getMarket, { network: ['testnet'] }],
       [getTrades, { cursor: 'garbage' }],
       [getTrades, { limit: '1000' }],
     ] as const) {

@@ -1,7 +1,6 @@
 import { StrKey } from '@stellar/stellar-sdk';
 import type { RequestHandler } from 'express';
 
-import env from '../../env';
 import log from '../../logger';
 import TokenImage from '../../models/TokenImage';
 import StellarAccount from '../../models/StellarAccount';
@@ -18,12 +17,11 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
       .json({ status: 'error', message: 'Image storage is not configured', result: {} });
   }
 
-  const network: unknown = req.body?.network;
+  const network = req.network;
   const ownerAddress: unknown = req.body?.ownerAddress;
 
   if (
-    (network !== 'testnet' && network !== 'public') ||
-    network !== env.STELLAR_AUTH_NETWORK ||
+    (req.body?.network !== undefined && req.body.network !== network) ||
     typeof ownerAddress !== 'string' ||
     !StrKey.isValidEd25519PublicKey(ownerAddress) ||
     !req.file

@@ -105,7 +105,7 @@ const launchPaths = {
           'multipart/form-data': {
             schema: {
               type: 'object',
-              required: ['network', 'ownerAddress', 'image'],
+              required: ['ownerAddress', 'image'],
               properties: {
                 network: { type: 'string', enum: ['testnet', 'public'] },
                 ownerAddress: { $ref: '#/components/schemas/StellarAddress' },

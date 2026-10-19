@@ -2,8 +2,8 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { parse, stringify } from 'smol-toml';
 import { Keypair, Networks } from '@stellar/stellar-sdk';
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { rm, stat, utimes, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 
 import env from '../src/env';
 import Launch from '../src/models/Launch';
@@ -144,42 +144,65 @@ describe('managed stellar.toml files', () => {
     });
   });
 
-  it('keeps existing content intact and appends later verified launches only once', async () => {
+  it('removes stale and duplicate entries and restores missing database launches', async (): Promise<void> => {
+    await syncManagedStellarToml();
+
+    const document = parse(await readFile(testnetPath, 'utf8'));
+
+    await writeFile(testnetPath, stringify({
+      ...document,
+      CURRENCIES: [
+        { code: 'MANUAL', issuer: secondIssuer },
+        { code: 'MANUAL', issuer: secondIssuer },
+      ],
+    }));
+
+    await syncManagedStellarToml();
+
+    expect(parse(await readFile(testnetPath, 'utf8')).CURRENCIES).toEqual(document.CURRENCIES);
+
     mockLaunches([]);
     await syncManagedStellarToml();
-    const original = `${await readFile(testnetPath, 'utf8')}\n# Manually managed asset\n${stringify({
-      CURRENCIES: [{ code: 'MANUAL', issuer: secondIssuer, desc: 'Keep this entry' }],
-    })}`.trimEnd();
-    await writeFile(testnetPath, original);
 
-    mockLaunches([launch]);
-    vi.mocked(AssetIdentity.find).mockReturnValue({ lean: vi.fn().mockResolvedValue([]) } as never);
-    await syncManagedStellarToml();
-    expect(await readFile(testnetPath, 'utf8')).toBe(original);
-
-    vi.mocked(AssetIdentity.find).mockReturnValue({ lean: vi.fn().mockResolvedValue([
-      { assetContractId: 'CTEST', assetCode: 'TEST', issuer, status: 'verified' },
-    ]) } as never);
-    await syncManagedStellarToml();
-    const appended = await readFile(testnetPath, 'utf8');
-    expect(appended.startsWith(`${original}\n`)).toBe(true);
-    expect(parse(appended).CURRENCIES).toHaveLength(2);
-
-    await syncManagedStellarToml();
-    expect(await readFile(testnetPath, 'utf8')).toBe(appended);
+    expect(parse(await readFile(testnetPath, 'utf8')).CURRENCIES).toBeUndefined();
   });
 
-  it('deduplicates existing entries by asset code and issuer rather than metadata', async () => {
-    mockLaunches([]);
+  it('updates existing asset metadata from the database', async (): Promise<void> => {
     await syncManagedStellarToml();
-    const original = `${await readFile(testnetPath, 'utf8')}\n${stringify({
-      CURRENCIES: [{ code: 'TEST', issuer, name: 'Manually set name' }],
+
+    mockLaunches([{ ...launch, metadata: {
+      ...launch.metadata,
+      name: 'Updated name',
+      description: 'Updated description',
+    } }]);
+
+    await syncManagedStellarToml();
+
+    expect(parse(await readFile(testnetPath, 'utf8')).CURRENCIES).toEqual([
+      expect.objectContaining({ code: 'TEST', issuer, name: 'Updated name', desc: 'Updated description' }),
+    ]);
+  });
+
+  it('does not rewrite a correct file even with comments or different key ordering', async (): Promise<void> => {
+    await syncManagedStellarToml();
+
+    const document = parse(await readFile(testnetPath, 'utf8'));
+
+    const original = `# Keep formatting and comments\n${stringify({
+      CURRENCIES: document.CURRENCIES,
+      DOCUMENTATION: document.DOCUMENTATION,
+      NETWORK_PASSPHRASE: document.NETWORK_PASSPHRASE,
+      VERSION: document.VERSION,
     })}`;
+
+    const timestamp = new Date('2020-01-01T00:00:00Z');
+
     await writeFile(testnetPath, original);
-    mockLaunches([launch]);
+    await utimes(testnetPath, timestamp, timestamp);
     await syncManagedStellarToml();
 
     expect(await readFile(testnetPath, 'utf8')).toBe(original);
+    expect((await stat(testnetPath)).mtimeMs).toBe(timestamp.getTime());
   });
 
   it('queries each network separately and never mixes their currencies', async () => {
@@ -197,7 +220,7 @@ describe('managed stellar.toml files', () => {
     expect(Launch.find).toHaveBeenCalledWith({ network: 'public' });
   });
 
-  it('allows the same asset code with a different issuer', async () => {
+  it('replaces an outdated issuer with the current database identity', async () => {
     await syncManagedStellarToml();
     vi.mocked(AssetIdentity.find).mockReturnValue({ lean: vi.fn().mockResolvedValue([
       { assetContractId: 'CTEST', assetCode: 'TEST', issuer: secondIssuer, status: 'verified' },
@@ -205,7 +228,6 @@ describe('managed stellar.toml files', () => {
     await syncManagedStellarToml();
 
     expect(parse(await readFile(testnetPath, 'utf8')).CURRENCIES).toEqual([
-      expect.objectContaining({ code: 'TEST', issuer }),
       expect.objectContaining({ code: 'TEST', issuer: secondIssuer }),
     ]);
   });
@@ -239,33 +261,31 @@ describe('managed stellar.toml files', () => {
     expect(Launch.find).not.toHaveBeenCalled();
   });
 
-  it('does not modify an existing file for another network', async () => {
-    env.TESTNET_TOML = join(directory, 'stellar.toml');
-    const original = stringify({ NETWORK_PASSPHRASE: Networks.PUBLIC });
-    await writeFile(env.TESTNET_TOML, original);
-
-    await expect(syncManagedStellarToml()).rejects.toThrow('network mismatch');
-    expect(await readFile(env.TESTNET_TOML, 'utf8')).toBe(original);
-  });
-
-  it('does not overwrite a malformed existing file', async () => {
-    env.TESTNET_TOML = join(directory, 'stellar.toml');
-    await writeFile(env.TESTNET_TOML, 'invalid = [');
-
-    await expect(syncManagedStellarToml()).rejects.toThrow();
-    expect(await readFile(env.TESTNET_TOML, 'utf8')).toBe('invalid = [');
-  });
-
   it.each([
-    { CURRENCIES: { code: 'TEST', issuer } },
-    { CURRENCIES: [{ code: 'TEST' }] },
-  ])('does not append to invalid existing currency structures', async (currencies) => {
+    '',
+    'invalid = [',
+    stringify({ NETWORK_PASSPHRASE: Networks.PUBLIC }),
+    stringify({ VERSION: '1.0.0', DOCUMENTATION: { ORG_NAME: 'Wrong' } }),
+    stringify({ NETWORK_PASSPHRASE: Networks.TESTNET, CURRENCIES: { code: 'TEST', issuer } }),
+    stringify({ NETWORK_PASSPHRASE: Networks.TESTNET, CURRENCIES: [{ code: 'TEST' }] }),
+  ])('repairs invalid or incorrect existing content: %s', async (body: string): Promise<void> => {
     env.TESTNET_TOML = join(directory, 'stellar.toml');
-    const original = stringify({ NETWORK_PASSPHRASE: Networks.TESTNET, ...currencies });
-    await writeFile(env.TESTNET_TOML, original);
 
-    await expect(syncManagedStellarToml()).rejects.toThrow(/Invalid/);
-    expect(await readFile(env.TESTNET_TOML, 'utf8')).toBe(original);
+    await writeFile(env.TESTNET_TOML, body);
+    await syncManagedStellarToml();
+
+    const document = parse(await readFile(env.TESTNET_TOML, 'utf8'));
+
+    expect(document).toEqual({
+      VERSION: '2.3.0',
+      NETWORK_PASSPHRASE: Networks.TESTNET,
+      DOCUMENTATION: { ORG_NAME: 'Lumenrise', ORG_URL: 'https://testnet.lumenrise.app' },
+      CURRENCIES: [{
+        code: 'TEST', issuer, name: 'Test Token', desc: 'An indexed launch',
+        display_decimals: 7, is_asset_anchored: false,
+        image: 'https://images.lumenrise.app/tokens/test.png',
+      }],
+    });
   });
 
   it('does not publish an unlinked on-chain logo as the managed token image', async () => {
@@ -316,15 +336,34 @@ describe('managed stellar.toml files', () => {
     await expect(readFile(publicPath)).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
-  it('retries database failures without losing existing file content', async () => {
+  it('preserves existing content on database failure and retries successfully', async (): Promise<void> => {
+    await syncManagedStellarToml();
+
+    const original = await readFile(testnetPath, 'utf8');
+
+    mockLaunches([]);
     vi.mocked(Launch.find).mockImplementationOnce(() => {
       throw new Error('Database temporarily unavailable');
     });
+
     await expect(syncManagedStellarToml()).rejects.toThrow('Database temporarily unavailable');
-    const original = await readFile(testnetPath, 'utf8');
+    expect(await readFile(testnetPath, 'utf8')).toBe(original);
+
     await syncManagedStellarToml();
 
-    expect((await readFile(testnetPath, 'utf8')).startsWith(original)).toBe(true);
+    expect(parse(await readFile(testnetPath, 'utf8')).CURRENCIES).toBeUndefined();
+  });
+
+  it('does not create a partial file when the database is unavailable', async (): Promise<void> => {
+    vi.mocked(Launch.find).mockImplementationOnce(() => {
+      throw new Error('Database temporarily unavailable');
+    });
+
+    await expect(syncManagedStellarToml()).rejects.toThrow('Database temporarily unavailable');
+    await expect(readFile(testnetPath)).rejects.toMatchObject({ code: 'ENOENT' });
+
+    await syncManagedStellarToml();
+
     expect(parse(await readFile(testnetPath, 'utf8')).CURRENCIES).toHaveLength(1);
   });
 });

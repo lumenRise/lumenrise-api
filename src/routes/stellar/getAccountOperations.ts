@@ -47,6 +47,7 @@ const getStellarAccountOperationsRoute: RequestHandler = async (req, res) => {
   try {
     const page = await getStellarAccountOperations(
       address,
+      req.network,
       cursor ?? null,
       limit,
       (requestedOrder ?? 'desc') as StellarOperationOrder,

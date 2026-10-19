@@ -2,9 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DatabaseMigration from '../../src/models/DatabaseMigration';
 import runDatabaseMigrations from '../../src/migrations/runDatabaseMigrations';
-import launchListIndexes from '../../src/migrations/20261019LaunchListIndexes';
 import createCurrentIndexes from '../../src/migrations/20261012CreateCurrentIndexes';
 import upgradeIndexes from '../../src/migrations/20261012AuthProviderAndTokenImageIndexes';
+import stellarNetworkIsolation from '../../src/migrations/20261019StellarNetworkIsolation';
+
+vi.mock('../../src/migrations/20261019StellarNetworkIsolation', () => ({
+  default: { name: '20261019-stellar-network-isolation', up: vi.fn() },
+}));
 
 vi.mock('../../src/logger', () => ({ default: { info: vi.fn() } }));
 vi.mock('../../src/migrations/20261013ManualXReputation', () => ({
@@ -44,10 +48,10 @@ describe('consolidated database migrations', () => {
     expect(vi.mocked(upgradeIndexes.up).mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(createCurrentIndexes.up).mock.invocationCallOrder[0]!,
     );
-    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(7);
+    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(8);
     expect(DatabaseMigration.updateOne).toHaveBeenLastCalledWith(
-      { name: launchListIndexes.name },
-      { $setOnInsert: { name: launchListIndexes.name, appliedAt: expect.any(Date) } },
+      { name: stellarNetworkIsolation.name },
+      { $setOnInsert: { name: stellarNetworkIsolation.name, appliedAt: expect.any(Date) } },
       { upsert: true },
     );
   });
@@ -67,7 +71,7 @@ describe('consolidated database migrations', () => {
     await runDatabaseMigrations();
     expect(upgradeIndexes.up).not.toHaveBeenCalled();
     expect(createCurrentIndexes.up).toHaveBeenCalledTimes(1);
-    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(6);
+    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(7);
   });
 
   it('does not record an unsuccessful baseline as applied', async () => {

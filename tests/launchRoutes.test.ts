@@ -100,7 +100,7 @@ describe('public launch handlers', () => {
     const res = response();
 
     await getLaunchesRoute(
-      { query: { network: 'testnet', limit: '10' } } as unknown as Request,
+      { network: 'testnet', query: { network: 'testnet', limit: '10' } } as unknown as Request,
       res as unknown as Response,
       vi.fn(),
     );
@@ -130,7 +130,9 @@ describe('public launch handlers', () => {
     const res = response();
 
     await getLaunchByContractIdRoute(
-      { query: { network: 'testnet' }, params: { contractId } } as unknown as Request,
+      {
+        network: 'testnet',
+        query: { network: 'testnet' }, params: { contractId } } as unknown as Request,
       res as unknown as Response,
       vi.fn(),
     );

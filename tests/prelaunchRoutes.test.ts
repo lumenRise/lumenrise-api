@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import TokenImage from '../src/models/TokenImage';
 import launchRoutes from '../src/routes/launches';
 import StellarAccount from '../src/models/StellarAccount';
+import resolveNetwork from '../src/middleware/resolveNetwork';
 import uploadTokenImage from '../src/services/tokenImage/uploadTokenImage';
 
 vi.mock('../src/env', () => ({ default: {
@@ -23,6 +24,8 @@ vi.mock('../src/services/tokenImage/processTokenImage', () => ({ default: vi.fn(
 vi.mock('../src/services/tokenImage/uploadTokenImage', () => ({ default: vi.fn() }));
 
 const app = express();
+
+app.use(resolveNetwork);
 const owner = Keypair.random().publicKey();
 
 app.use('/v1/launches', launchRoutes);

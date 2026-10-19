@@ -69,7 +69,7 @@ describe('policy routes', () => {
 
     expect(response.status).toBe(429);
     expect(Number(response.headers['retry-after'])).toBeGreaterThan(0);
-    expect(getReputationProfile).toHaveBeenCalledWith(identityId);
+    expect(getReputationProfile).toHaveBeenCalledWith(identityId, 'testnet');
   });
 
   it('reads only the latest version owned by the current identity', async () => {
@@ -118,7 +118,7 @@ describe('policy routes', () => {
     });
     expect(reserveManualRefresh).toHaveBeenCalledWith(
       identityId,
-      'policy-evaluation:stellar-active',
+      'policy-evaluation:testnet:stellar-active',
     );
   });
 
@@ -143,7 +143,7 @@ describe('policy routes', () => {
     expect(response.status).toBe(503);
     expect(releaseManualRefresh).toHaveBeenCalledWith(
       identityId,
-      'policy-evaluation:stellar-active',
+      'policy-evaluation:testnet:stellar-active',
       reservedUntil,
     );
   });

@@ -1,6 +1,5 @@
 import type { RequestHandler } from 'express';
 
-import env from '../../env';
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import LaunchTrade from '../../models/LaunchTrade';
@@ -21,7 +20,7 @@ const postTrade: RequestHandler = async (req, res) => {
 
   if (
     !identity ||
-    identity.network !== env.STELLAR_AUTH_NETWORK ||
+    (req.body?.network !== undefined && req.body.network !== req.network) ||
     typeof hash !== 'string' ||
     !/^[a-fA-F0-9]{64}$/.test(hash)
   ) {
@@ -60,7 +59,7 @@ const postTrade: RequestHandler = async (req, res) => {
       return respond();
     }
 
-    const server = await getLaunchRpc();
+    const server = await getLaunchRpc(identity.network);
 
     if (!trade) {
       const transaction = await server.getTransaction(transactionHash);
@@ -120,8 +119,8 @@ const postTrade: RequestHandler = async (req, res) => {
 
     await enqueueLaunchHolderRefresh(identity, launch.asset, trade.trader);
 
-    const stateRead = await readLaunchContract(server, identity.contractId, 'get_state');
-    const priceRead = await readLaunchContract(server, identity.contractId, 'current_price');
+    const stateRead = await readLaunchContract(server, identity.contractId, 'get_state', identity.network);
+    const priceRead = await readLaunchContract(server, identity.contractId, 'current_price', identity.network);
 
     if (stateRead.ledger < trade.ledger || priceRead.ledger < stateRead.ledger) {
       throw new Error('RPC observation is behind the trade');
