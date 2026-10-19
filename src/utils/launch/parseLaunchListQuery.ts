@@ -1,11 +1,13 @@
 import type { Request } from 'express';
 import { StrKey } from '@stellar/stellar-sdk';
 
-import env from '../../env';
 import type { LaunchListQuery } from '../../types/launch/list';
+import type { StellarNetwork } from '../../types/network/configuration';
 
-const parseLaunchListQuery = (query: Request['query']): LaunchListQuery | null => {
-  const network = query.network ?? env.STELLAR_AUTH_NETWORK;
+const parseLaunchListQuery = (
+  query: Request['query'],
+  network: StellarNetwork,
+): LaunchListQuery | null => {
   const owner = query.owner;
   const search = query.search ?? query.q;
   const categoryRaw = query.category ?? 'all';
@@ -18,7 +20,6 @@ const parseLaunchListQuery = (query: Request['query']): LaunchListQuery | null =
   const limit = typeof limitRaw === 'string' ? Number(limitRaw) : NaN;
 
   if (
-    (network !== 'testnet' && network !== 'public') ||
     (owner !== undefined &&
       (typeof owner !== 'string' ||
         (!StrKey.isValidEd25519PublicKey(owner) && !StrKey.isValidContract(owner)))) ||

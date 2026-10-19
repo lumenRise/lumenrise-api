@@ -37,11 +37,6 @@ const schema = defineConfig({
     example: 'application-secret',
     secret: true,
   },
-  STELLAR_AUTH_NETWORK: {
-    type: 'enum',
-    values: ['testnet', 'public'],
-    default: 'testnet',
-  },
   GITHUB_CLIENT_ID: {
     example: 'gho_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7',
   },
@@ -60,41 +55,6 @@ const schema = defineConfig({
   X_CALLBACK_URL: {
     default: 'http://localhost:5000/v1/oauth/x/callback',
     description: 'X OAuth callback URL registered for the application.',
-  },
-  STELLAR_RPC_URL: {
-    default: 'https://soroban-testnet.stellar.org',
-  },
-  STELLAR_READ_ACCOUNT: {
-    example: 'G...',
-  },
-  STELLAR_HORIZON_URL: {
-    default: 'https://horizon-testnet.stellar.org',
-  },
-  STELLAR_TESTNET_HOME_DOMAIN: {
-    example: 'testnet.lumenrise.app',
-  },
-  STELLAR_PUBLIC_HOME_DOMAIN: {
-    example: 'lumenrise.app',
-  },
-  STELLAR_TESTNET_TOML_DIRNAME: {
-    default: './storage/testnet',
-  },
-  STELLAR_TESTNET_TOML_FILENAME: {
-    default: 'testnet_stellar.toml',
-  },
-  STELLAR_PUBLIC_TOML_DIRNAME: {
-    default: './storage/public',
-  },
-  STELLAR_PUBLIC_TOML_FILENAME: {
-    default: 'stellar.toml',
-  },
-  TESTNET_TOML: {
-    default: '',
-    required: false,
-  },
-  PUBLIC_TOML: {
-    default: '',
-    required: false,
   },
   R2_ENDPOINT: {
     example: 'https://<account_id>.r2.cloudflarestorage.com',
@@ -123,6 +83,53 @@ const schema = defineConfig({
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',
     example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
+  },
+  STELLAR_TESTNET_RPC_URL: {
+    default: 'https://soroban-testnet.stellar.org',
+  },
+  STELLAR_TESTNET_HORIZON_URL: {
+    default: 'https://horizon-testnet.stellar.org',
+  },
+  LAUNCH_TESTNET_FACTORY_CONTRACT_ID: {
+    default: '',
+  },
+  STELLAR_TESTNET_HOME_DOMAIN: {
+    default: '',
+  },
+  STELLAR_TESTNET_TOML_DIRNAME: {
+    default: './storage/testnet',
+  },
+  STELLAR_TESTNET_TOML_FILENAME: {
+    default: 'stellar.toml',
+  },
+  TESTNET_TOML: {
+    default: '',
+  },
+  STELLAR_PUBLIC_RPC_URL: {
+    default: '',
+  },
+  STELLAR_PUBLIC_HORIZON_URL: {
+    default: 'https://horizon.stellar.org',
+  },
+  LAUNCH_PUBLIC_FACTORY_CONTRACT_ID: {
+    default: '',
+  },
+  STELLAR_PUBLIC_HOME_DOMAIN: {
+    default: '',
+  },
+  STELLAR_PUBLIC_TOML_DIRNAME: {
+    default: './storage/public',
+  },
+  STELLAR_PUBLIC_TOML_FILENAME: {
+    default: 'stellar.toml',
+  },
+  PUBLIC_TOML: {
+    default: '',
+  },
+  STELLAR_LEGACY_NETWORK: {
+    type: 'enum',
+    values: ['testnet', 'public'],
+    required: false,
   },
 });
 

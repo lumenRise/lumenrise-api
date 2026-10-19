@@ -1,4 +1,3 @@
-import env from '../../env';
 import summarizeStellarActivityPage from './summarizeActivityPage';
 import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type {
@@ -7,6 +6,8 @@ import type {
   StellarOperationResult,
   StellarOperationsResult,
 } from '../../types/stellar/operations';
+import getNetworkConfig from '../network/getNetworkConfig';
+import type { StellarNetwork } from '../../types/network/configuration';
 
 const STELLAR_OPERATIONS_PAGE_LIMIT = 200;
 
@@ -24,10 +25,10 @@ const operationCommonFields = new Set([
 
 const getStellarAccountOperations = async (
   address: string,
+  network: StellarNetwork,
   cursor: string | null = null,
   limit = 50,
   order: StellarOperationOrder = 'desc',
-  sourceUrl = env.STELLAR_HORIZON_URL,
 ): Promise<StellarOperationsResult | null> => {
   if (!isValidStellarGAddress(address)) {
     throw new Error('Invalid Stellar account address');
@@ -45,7 +46,7 @@ const getStellarAccountOperations = async (
     throw new Error('Invalid Stellar operations order');
   }
 
-  const url = new URL(`/accounts/${address}/operations`, sourceUrl);
+  const url = new URL(`/accounts/${address}/operations`, getNetworkConfig(network).horizonUrl);
 
   url.searchParams.set('order', order);
   url.searchParams.set('limit', limit.toString());

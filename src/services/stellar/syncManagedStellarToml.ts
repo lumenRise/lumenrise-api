@@ -1,33 +1,21 @@
-import { resolve, dirname } from 'node:path';
+import { dirname } from 'node:path';
 import { parse, stringify } from 'smol-toml';
-import { Networks } from '@stellar/stellar-sdk';
 import { mkdir, readFile, writeFile, appendFile } from 'node:fs/promises';
 
-import env from '../../env';
 import parseDomain from './parseDomain';
 import getManagedTomlCurrencies from './getManagedTomlCurrencies';
+import getNetworkConfig from '../network/getNetworkConfig';
 
 const syncManagedStellarToml = async (): Promise<void> => {
-  const configurations = [
-    {
-      network: 'testnet' as const,
-      domain: parseDomain(env.STELLAR_TESTNET_HOME_DOMAIN),
-      passphrase: Networks.TESTNET,
-      path: resolve(
-        env.TESTNET_TOML ||
-          resolve(env.STELLAR_TESTNET_TOML_DIRNAME, env.STELLAR_TESTNET_TOML_FILENAME),
-      ),
-    },
-    {
-      network: 'public' as const,
-      domain: parseDomain(env.STELLAR_PUBLIC_HOME_DOMAIN),
-      passphrase: Networks.PUBLIC,
-      path: resolve(
-        env.PUBLIC_TOML ||
-          resolve(env.STELLAR_PUBLIC_TOML_DIRNAME, env.STELLAR_PUBLIC_TOML_FILENAME),
-      ),
-    },
-  ].filter((configuration) => configuration.domain);
+  const configurations = (['testnet', 'public'] as const)
+    .map((network) => getNetworkConfig(network))
+    .map((configuration) => ({
+      network: configuration.network,
+      domain: parseDomain(configuration.homeDomain),
+      passphrase: configuration.networkPassphrase,
+      path: configuration.tomlPath,
+    }))
+    .filter((configuration) => configuration.domain);
 
   if (configurations.length === 2 && configurations[0]?.path === configurations[1]?.path) {
     throw new Error('Testnet and public stellar.toml file paths must differ');

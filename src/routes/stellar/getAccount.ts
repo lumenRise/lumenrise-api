@@ -20,7 +20,7 @@ const getStellarAccountRoute: RequestHandler = async (req, res) => {
   }
 
   try {
-    const account = await getStellarAccountOverview(address);
+    const account = await getStellarAccountOverview(address, req.network);
 
     if (!account) {
       const response: ApiResponse<EmptyResult> = {

@@ -5,12 +5,14 @@ import ExternalAccount from '../../models/ExternalAccount';
 import type { SybilEvidenceResult } from '../../types/sybil/evidence';
 import buildSybilEvidence from '../../utils/sybil/buildSybilEvidence';
 import getProviderEvidence from '../../utils/sybil/getProviderEvidence';
+import type { StellarNetwork } from '../../types/network/configuration';
 
 const getSybilEvidence = async (
   identityId: Types.ObjectId,
+  network: StellarNetwork,
 ): Promise<SybilEvidenceResult | null> => {
   const [profile, accounts] = await Promise.all([
-    getReputationProfile(identityId),
+    getReputationProfile(identityId, network),
     ExternalAccount.find({ identity: identityId, status: 'connected', provider: { $in: ['github', 'x'] } }),
   ]);
 

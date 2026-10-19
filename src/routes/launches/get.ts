@@ -9,7 +9,7 @@ import parseLaunchListQuery from '../../utils/launch/parseLaunchListQuery';
 import buildLaunchListPipeline from '../../utils/launch/buildLaunchListPipeline';
 
 const getLaunchesRoute: RequestHandler = async (req, res): Promise<unknown> => {
-  const query = parseLaunchListQuery(req.query);
+  const query = parseLaunchListQuery(req.query, req.network);
 
   if (!query) {
     return res.status(400).json({

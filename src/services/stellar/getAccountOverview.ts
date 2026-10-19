@@ -1,19 +1,21 @@
-import env from '../../env';
 import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type {
   StellarAccountOverviewResult,
   StellarHorizonAccount,
 } from '../../types/stellar/account';
+import getNetworkConfig from '../network/getNetworkConfig';
+import type { StellarNetwork } from '../../types/network/configuration';
 
 const getStellarAccountOverview = async (
   address: string,
+  network: StellarNetwork,
   checkedAt = new Date(),
 ): Promise<StellarAccountOverviewResult | null> => {
   if (!isValidStellarGAddress(address)) {
     throw new Error('Invalid Stellar account address');
   }
 
-  const url = new URL(`/accounts/${address}`, env.STELLAR_HORIZON_URL);
+  const url = new URL(`/accounts/${address}`, getNetworkConfig(network).horizonUrl);
 
   const response = await fetch(url, {
     headers: { Accept: 'application/json' },

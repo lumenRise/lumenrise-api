@@ -15,6 +15,7 @@ const eventSchema = new Schema(
 
 const sorobanTransactionEvidenceSchema = new Schema<SorobanTransactionEvidenceRecord>(
   {
+    network: { type: String, enum: ['testnet', 'public'], required: true, immutable: true },
     scan: {
       type: Schema.Types.ObjectId,
       ref: 'StellarActivityScan',
@@ -61,8 +62,8 @@ sorobanTransactionEvidenceSchema.index(
 );
 
 sorobanTransactionEvidenceSchema.index(
-  { rpcStatus: 1, scheduledAt: 1, leaseUntil: 1 },
-  { name: 'soroban_evidence_worker_claim' },
+  { network: 1, rpcStatus: 1, scheduledAt: 1, leaseUntil: 1 },
+  { name: 'soroban_evidence_network_worker_claim' },
 );
 
 const SorobanTransactionEvidence = model<SorobanTransactionEvidenceRecord>(

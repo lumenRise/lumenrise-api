@@ -7,7 +7,7 @@ import type { ReputationProfileResult } from '../../types/reputation/profile';
 
 const getReputationProfileRoute: RequestHandler = async (req, res) => {
   try {
-    const profile = await getReputationProfile(req.auth!.identityId);
+    const profile = await getReputationProfile(req.auth!.identityId, req.network);
 
     if (!profile) {
       const response: ApiResponse<EmptyResult> = {

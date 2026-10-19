@@ -7,6 +7,7 @@ const toStellarActivityScanResult = (
   scan: StellarActivityScanDocument,
 ): StellarActivityScanResult => ({
   id: scan._id.toString(),
+  network: scan.network,
   address: scan.address,
   ownershipVerified: false,
   source: 'horizon',

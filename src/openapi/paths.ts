@@ -12,8 +12,9 @@ import launchTeamPaths from './paths/launchTeam';
 import connectionPaths from './paths/connections';
 import launchMarketPaths from './paths/launchMarket';
 import withCommonResponses from '../utils/openapi/withCommonResponses';
+import withNetworkHeader from '../utils/openapi/withNetworkHeader';
 
-const openApiPaths = withCommonResponses({
+const openApiPaths = withNetworkHeader(withCommonResponses({
   ...authPaths,
   ...userPaths,
   ...policyPaths,
@@ -27,6 +28,6 @@ const openApiPaths = withCommonResponses({
   ...launchPaths,
   ...launchMarketPaths,
   ...launchTeamPaths,
-});
+}));
 
 export default openApiPaths;

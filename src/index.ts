@@ -10,9 +10,18 @@ import syncManagedStellarToml from './services/stellar/syncManagedStellarToml';
 import refreshManagedStellarToml from './services/stellar/refreshManagedStellarToml';
 import refreshTokenImageCleanup from './services/tokenImage/refreshTokenImageCleanup';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration';
+import getNetworkConfig from './services/network/getNetworkConfig';
+import verifyNetworkProviders from './services/network/verifyNetworkProviders';
+import validateNetworkConfiguration from './services/network/validateNetworkConfiguration';
 
 const bootstrap = async (): Promise<void> => {
   validateRuntimeConfiguration(env);
+
+  for (const network of ['testnet', 'public'] as const) {
+    validateNetworkConfiguration(getNetworkConfig(network));
+  }
+
+  await Promise.all((['testnet', 'public'] as const).map(verifyNetworkProviders));
 
   await connectDatabase();
   await runDatabaseMigrations();

@@ -14,6 +14,7 @@ const getLaunchImageRoute: RequestHandler = async (req, res) => {
   try {
     const image = await TokenImage.findOne({
       _id: imageId,
+      network: req.network,
       ownerIdentityId: req.auth!.identityId,
     }).lean();
 

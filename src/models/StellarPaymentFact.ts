@@ -5,6 +5,7 @@ import isValidStellarGAddress from '../utils/stellar/isValidStellarGAddress';
 
 const stellarPaymentFactSchema = new Schema<StellarPaymentFactRecord>(
   {
+    network: { type: String, enum: ['testnet', 'public'], required: true, immutable: true },
     scan: {
       type: Schema.Types.ObjectId,
       ref: 'StellarActivityScan',
@@ -38,8 +39,8 @@ stellarPaymentFactSchema.index(
   { unique: true, name: 'stellar_payment_facts_scan_operation_unique' },
 );
 stellarPaymentFactSchema.index(
-  { address: 1, counterparty: 1, observedAt: -1 },
-  { name: 'stellar_payment_facts_address_counterparty_observed' },
+  { network: 1, address: 1, counterparty: 1, observedAt: -1 },
+  { name: 'stellar_payment_facts_network_address_counterparty_observed' },
 );
 
 const StellarPaymentFact = model<StellarPaymentFactRecord>(

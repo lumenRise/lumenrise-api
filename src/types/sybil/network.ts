@@ -1,8 +1,11 @@
 import type { HydratedDocument, Types } from 'mongoose';
 
+import type { StellarNetwork } from '../network/configuration';
+
 type StellarPaymentDirection = 'incoming' | 'outgoing';
 
 interface StellarPaymentFactRecord {
+  network: StellarNetwork;
   scan: Types.ObjectId;
   requestedByIdentity: Types.ObjectId;
   address: string;

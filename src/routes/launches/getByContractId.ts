@@ -1,18 +1,16 @@
 import { StrKey } from '@stellar/stellar-sdk';
 import type { RequestHandler } from 'express';
 
-import env from '../../env';
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import toLaunchResult from '../../utils/launch/toLaunchResult';
 import getPublicLaunchTeam from '../../services/launch/getPublicLaunchTeam';
 
 const getLaunchByContractIdRoute: RequestHandler = async (req, res) => {
-  const network = req.query.network ?? env.STELLAR_AUTH_NETWORK;
+  const network = req.network;
   const contractId = req.params.contractId;
 
   if (
-    (network !== 'testnet' && network !== 'public') ||
     typeof contractId !== 'string' ||
     !StrKey.isValidContract(contractId)
   ) {
