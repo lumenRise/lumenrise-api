@@ -2,6 +2,7 @@ import type { Request } from 'express';
 import { StrKey } from '@stellar/stellar-sdk';
 
 import type { LaunchListQuery } from '../../types/launch/list';
+import applicationRules from '../../constants/applicationRules';
 import type { StellarNetwork } from '../../types/network/configuration';
 
 const parseLaunchListQuery = (
@@ -10,12 +11,19 @@ const parseLaunchListQuery = (
 ): LaunchListQuery | null => {
   const owner = query.owner;
   const search = query.search ?? query.q;
-  const categoryRaw = query.category ?? 'all';
-  const sort = query.sort ?? 'newest';
-  const direction = query.direction ?? query.dir ?? 'desc';
+  const categoryRaw = query.category ?? applicationRules.launches.defaultCategory;
+  const sort = query.sort ?? applicationRules.launches.defaultSort;
+
+  const requestedDirection =
+    query.direction ?? query.dir ?? applicationRules.launches.defaultDirection;
+
+  const direction = applicationRules.launches.directions.find(
+    (value) => value === requestedDirection,
+  );
+
   const pair = query.pair;
-  const pageRaw = query.page ?? '1';
-  const limitRaw = query.limit ?? '20';
+  const pageRaw = query.page ?? String(applicationRules.launches.minPage);
+  const limitRaw = query.limit ?? String(applicationRules.launches.defaultLimit);
   const page = typeof pageRaw === 'string' ? Number(pageRaw) : NaN;
   const limit = typeof limitRaw === 'string' ? Number(limitRaw) : NaN;
 
@@ -23,38 +31,28 @@ const parseLaunchListQuery = (
     (owner !== undefined &&
       (typeof owner !== 'string' ||
         (!StrKey.isValidEd25519PublicKey(owner) && !StrKey.isValidContract(owner)))) ||
-    (search !== undefined && (typeof search !== 'string' || search.length > 100)) ||
+    (search !== undefined &&
+      (typeof search !== 'string' || search.length > applicationRules.launches.searchMaxLength)) ||
     typeof categoryRaw !== 'string' ||
     typeof sort !== 'string' ||
-    ![
-      'newest',
-      'name',
-      'symbol',
-      'trending',
-      'topVolume',
-      'almostGraduated',
-      'participants',
-      'figure',
-      'date',
-      'phase',
-      'category',
-    ].includes(sort) ||
-    (direction !== 'asc' && direction !== 'desc') ||
+    !applicationRules.launches.sorts.some((value) => value === sort) ||
+    !direction ||
     (pair !== undefined && (typeof pair !== 'string' || !StrKey.isValidContract(pair))) ||
-    ((sort === 'topVolume' || sort === 'figure') && pair === undefined) ||
+    (applicationRules.launches.pairRequiredSorts.some((value) => value === sort) &&
+      pair === undefined) ||
     !Number.isInteger(page) ||
-    page < 1 ||
-    page > 100_000 ||
+    page < applicationRules.launches.minPage ||
+    page > applicationRules.launches.maxPage ||
     !Number.isInteger(limit) ||
-    limit < 1 ||
-    limit > 100
+    limit < applicationRules.launches.minLimit ||
+    limit > applicationRules.launches.maxLimit
   ) {
     return null;
   }
 
   const category = categoryRaw.toLowerCase().replaceAll(' ', '-');
 
-  if (!['all', 'bonding-curve', 'auction', 'pre-sale'].includes(category)) {
+  if (!applicationRules.launches.categories.some((value) => value === category)) {
     return null;
   }
 

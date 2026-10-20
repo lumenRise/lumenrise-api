@@ -2,6 +2,7 @@ import type { Request } from 'express';
 
 import parseChartDate from './parseChartDate';
 import parseMarketRequest from './parseMarketRequest';
+import applicationRules from '../../constants/applicationRules';
 import type { ChartRequest, ChartTimeframe } from '../../types/launch/chart';
 import { chartTimeframes, defaultTimeframes } from '../../constants/launch/chart';
 
@@ -20,7 +21,7 @@ const parseChartRequest = (req: Request, now = new Date()): ChartRequest | null 
 
   const limit =
     req.query.limit === undefined
-      ? 1000
+      ? applicationRules.chart.defaultLimit
       : typeof req.query.limit === 'string'
         ? Number(req.query.limit)
         : NaN;
@@ -31,13 +32,13 @@ const parseChartRequest = (req: Request, now = new Date()): ChartRequest | null 
   if (
     !identity ||
     !requested.length ||
-    requested.length > 12 ||
+    requested.length > applicationRules.chart.maxTimeframes ||
     !requested.every(
       (frame) => typeof frame === 'string' && Object.hasOwn(chartTimeframes, frame),
     ) ||
     !Number.isInteger(limit) ||
-    limit < 1 ||
-    limit > 1000 ||
+    limit < applicationRules.chart.minLimit ||
+    limit > applicationRules.chart.maxLimit ||
     from === null ||
     !to ||
     to > now ||

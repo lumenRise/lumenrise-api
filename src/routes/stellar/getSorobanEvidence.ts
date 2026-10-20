@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import type { RequestHandler } from 'express';
 
 import log from '../../logger';
+import applicationRules from '../../constants/applicationRules';
 import StellarActivityScan from '../../models/StellarActivityScan';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { SorobanEvidenceResult } from '../../types/stellar/soroban';
@@ -11,14 +12,17 @@ import extractSorobanEnvelopeEvidence from '../../services/stellar/extractSoroba
 
 const getSorobanEvidenceRoute: RequestHandler = async (req, res) => {
   const address = typeof req.params.address === 'string' ? req.params.address.toUpperCase() : '';
-  const limit = req.query.limit === undefined ? 50 : Number(req.query.limit);
+  const limit =
+    req.query.limit === undefined
+      ? applicationRules.stellar.sorobanEvidence.defaultLimit
+      : Number(req.query.limit);
   const cursor = req.query.cursor;
 
   if (
     !isValidStellarGAddress(address) ||
     !Number.isInteger(limit) ||
-    limit < 1 ||
-    limit > 100 ||
+    limit < applicationRules.stellar.sorobanEvidence.minLimit ||
+    limit > applicationRules.stellar.sorobanEvidence.maxLimit ||
     (cursor !== undefined && (typeof cursor !== 'string' || !/^[a-f\d]{24}$/i.test(cursor)))
   ) {
     const response: ApiResponse<EmptyResult> = {

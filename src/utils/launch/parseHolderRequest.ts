@@ -2,25 +2,34 @@ import type { Request } from 'express';
 import { StrKey } from '@stellar/stellar-sdk';
 
 import parseMarketRequest from './parseMarketRequest';
+import applicationRules from '../../constants/applicationRules';
 import type { HolderPosition, HolderRequest } from '../../types/launch/holder';
 
 const parseHolderRequest = (req: Request): HolderRequest | null => {
   const identity = parseMarketRequest(req);
   const limit =
     req.query.limit === undefined
-      ? 20
+      ? applicationRules.holders.defaultLimit
       : typeof req.query.limit === 'string'
         ? Number(req.query.limit)
         : NaN;
 
   let after: HolderPosition | null = null;
 
-  if (!identity || !Number.isInteger(limit) || limit < 1 || limit > 100) {
+  if (
+    !identity ||
+    !Number.isInteger(limit) ||
+    limit < applicationRules.holders.minLimit ||
+    limit > applicationRules.holders.maxLimit
+  ) {
     return null;
   }
 
   if (req.query.cursor !== undefined) {
-    if (typeof req.query.cursor !== 'string' || req.query.cursor.length > 512) {
+    if (
+      typeof req.query.cursor !== 'string' ||
+      req.query.cursor.length > applicationRules.holders.cursorMaxLength
+    ) {
       return null;
     }
 
