@@ -30,8 +30,7 @@ vi.mock('../src/env', () => ({
     R2_SECRET_ACCESS_KEY: 'secret-storage-value',
     R2_BUCKET_NAME: 'private-bucket-name',
     R2_PUBLIC_BASE_URL: 'https://images.example',
-    R2_MAX_AVATAR_BYTES: 2_000_000,
-    R2_MAX_TOKEN_IMAGE_BYTES: 3_000_000,
+    R2_MAX_IMAGE_BYTES: 2_000_000,
     STELLAR_TESTNET_RPC_URL: 'https://rpc-testnet.example',
     STELLAR_TESTNET_HORIZON_URL: 'https://horizon-testnet.example',
     STELLAR_TESTNET_HOME_DOMAIN: 'testnet.example',
@@ -99,7 +98,7 @@ describe('public application configuration', () => {
       },
       uploads: {
         avatar: { maxBytes: 2_000_000 },
-        tokenImage: { maxBytes: 3_000_000 },
+        tokenImage: { maxBytes: 2_000_000 },
         teamImage: { maxBytes: 2_000_000 },
       },
       rules: {

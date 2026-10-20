@@ -131,19 +131,11 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   }
 
   if (
-    !Number.isInteger(configuration.R2_MAX_AVATAR_BYTES) ||
-    configuration.R2_MAX_AVATAR_BYTES < 1 ||
-    configuration.R2_MAX_AVATAR_BYTES > 10_485_760
+    !Number.isInteger(configuration.R2_MAX_IMAGE_BYTES) ||
+    configuration.R2_MAX_IMAGE_BYTES < 1 ||
+    configuration.R2_MAX_IMAGE_BYTES > 10_485_760
   ) {
-    throw new Error('R2_MAX_AVATAR_BYTES must be between 1 and 10485760');
-  }
-
-  if (
-    !Number.isInteger(configuration.R2_MAX_TOKEN_IMAGE_BYTES) ||
-    configuration.R2_MAX_TOKEN_IMAGE_BYTES < 1 ||
-    configuration.R2_MAX_TOKEN_IMAGE_BYTES > 10_485_760
-  ) {
-    throw new Error('R2_MAX_TOKEN_IMAGE_BYTES must be between 1 and 10485760');
+    throw new Error('R2_MAX_IMAGE_BYTES must be between 1 and 10485760');
   }
 };
 

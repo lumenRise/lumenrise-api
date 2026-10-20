@@ -5,7 +5,7 @@ import env from '../env';
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: env.R2_MAX_AVATAR_BYTES, files: 1, fields: 3, parts: 4, fieldSize: 2048 },
+  limits: { fileSize: env.R2_MAX_IMAGE_BYTES, files: 1, fields: 3, parts: 4, fieldSize: 2048 },
 });
 
 const teamImageUpload: RequestHandler = (req, res, next) => {
@@ -18,7 +18,7 @@ const teamImageUpload: RequestHandler = (req, res, next) => {
       return res.status(413).json({
         status: 'error',
         message: 'Team image exceeds upload limit',
-        result: { maxBytes: env.R2_MAX_AVATAR_BYTES },
+        result: { maxBytes: env.R2_MAX_IMAGE_BYTES },
       });
     }
 
