@@ -1,12 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
 
+import { stellarNetworks, defaultStellarNetwork, stellarNetworkHeader } from '../constants/network';
+
 const resolveNetwork = (req: Request, res: Response, next: NextFunction): void => {
-  const header = req.get('X-Stellar-Network');
+  const header = req.get(stellarNetworkHeader);
   const legacyNetwork = req.query.network;
   const network = header ?? legacyNetwork;
+  const resolvedNetwork = stellarNetworks.find((value) => value === network);
 
   if (
-    (network !== undefined && network !== 'testnet' && network !== 'public') ||
+    (network !== undefined && !resolvedNetwork) ||
     (header !== undefined && legacyNetwork !== undefined && header !== legacyNetwork)
   ) {
     res
@@ -17,11 +20,11 @@ const resolveNetwork = (req: Request, res: Response, next: NextFunction): void =
   }
 
   // TODO: Remove the testnet fallback once all clients send X-Stellar-Network.
-  req.network = network ?? 'testnet';
+  req.network = resolvedNetwork ?? defaultStellarNetwork;
 
-  res.set('X-Stellar-Network', req.network);
+  res.set(stellarNetworkHeader, req.network);
 
-  res.vary('X-Stellar-Network');
+  res.vary(stellarNetworkHeader);
 
   next();
 };
