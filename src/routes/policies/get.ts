@@ -4,13 +4,14 @@ import log from '../../logger';
 import Policy from '../../models/Policy';
 import type { PolicyListResult } from '../../types/policy/api';
 import toPolicyResult from '../../utils/policy/toPolicyResult';
+import applicationRules from '../../constants/applicationRules';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 
 const getPoliciesRoute: RequestHandler = async (req, res) => {
   try {
     const policies = await Policy.find({ ownerIdentity: req.auth!.identityId })
       .sort({ key: 1, version: -1 })
-      .limit(100);
+      .limit(applicationRules.policies.listLimit);
 
     const response: ApiResponse<PolicyListResult> = {
       status: 'success',
