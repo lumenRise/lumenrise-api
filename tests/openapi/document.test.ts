@@ -15,8 +15,7 @@ vi.mock('../../src/env', () => ({
     NODE_ENV: 'test',
     LOG_LEVEL: 'silent',
     CLIENT_ORIGIN: 'http://localhost:5173',
-    R2_MAX_AVATAR_BYTES: 5242880,
-    R2_MAX_TOKEN_IMAGE_BYTES: 5242880,
+    R2_MAX_IMAGE_BYTES: 5242880,
   },
 }));
 

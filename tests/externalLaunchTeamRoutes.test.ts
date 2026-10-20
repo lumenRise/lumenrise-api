@@ -17,7 +17,7 @@ import processAvatar from '../src/services/avatar/processAvatar';
 import uploadTeamImage from '../src/services/launch/uploadTeamImage';
 import deleteAvatarOrQueue from '../src/services/avatar/deleteAvatarOrQueue';
 
-vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet', R2_MAX_AVATAR_BYTES: 4096 } }));
+vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet', R2_MAX_IMAGE_BYTES: 4096 } }));
 vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
 vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn() } }));
 vi.mock('../src/models/ExternalAccount', () => ({ default: { find: vi.fn() } }));

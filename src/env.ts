@@ -72,13 +72,9 @@ const schema = defineConfig({
   R2_PUBLIC_BASE_URL: {
     example: 'https://images.lumenrise.app',
   },
-  R2_MAX_AVATAR_BYTES: {
+  R2_MAX_IMAGE_BYTES: {
     type: 'number',
-    default: 5_242_880,
-  },
-  R2_MAX_TOKEN_IMAGE_BYTES: {
-    type: 'number',
-    default: 5_242_880,
+    default: 2_097_152,
   },
   CREDENTIAL_ENCRYPTION_KEY: {
     default: '',

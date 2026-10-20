@@ -10,7 +10,7 @@ import resolveNetwork from '../src/middleware/resolveNetwork';
 import uploadTokenImage from '../src/services/tokenImage/uploadTokenImage';
 
 vi.mock('../src/env', () => ({ default: {
-  STELLAR_AUTH_NETWORK: 'testnet', R2_MAX_TOKEN_IMAGE_BYTES: 1048576,
+  STELLAR_AUTH_NETWORK: 'testnet', R2_MAX_IMAGE_BYTES: 1048576,
 } }));
 vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
 vi.mock('../src/middleware/requireSession', () => ({ default: (req, _res, next) => {

@@ -5,7 +5,7 @@ import env from '../env';
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: env.R2_MAX_TOKEN_IMAGE_BYTES, files: 1, fields: 4, parts: 5, fieldSize: 2048 },
+  limits: { fileSize: env.R2_MAX_IMAGE_BYTES, files: 1, fields: 4, parts: 5, fieldSize: 2048 },
 });
 
 const tokenImageUpload: RequestHandler = (req, res, next) => {
@@ -14,7 +14,7 @@ const tokenImageUpload: RequestHandler = (req, res, next) => {
       return next();
     }
     if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({ status: 'error', message: 'Token image exceeds upload limit', result: { maxBytes: env.R2_MAX_TOKEN_IMAGE_BYTES } });
+      return res.status(413).json({ status: 'error', message: 'Token image exceeds upload limit', result: { maxBytes: env.R2_MAX_IMAGE_BYTES } });
     }
     return res.status(400).json({ status: 'error', message: 'Invalid token image upload', result: {} });
   });

@@ -30,9 +30,9 @@ const getPublicConfiguration = (): PublicConfiguration => ({
     xConnection: Boolean(env.X_CLIENT_ID && env.X_CLIENT_SECRET),
   },
   uploads: {
-    avatar: { maxBytes: env.R2_MAX_AVATAR_BYTES },
-    tokenImage: { maxBytes: env.R2_MAX_TOKEN_IMAGE_BYTES },
-    teamImage: { maxBytes: env.R2_MAX_AVATAR_BYTES },
+    avatar: { maxBytes: env.R2_MAX_IMAGE_BYTES },
+    tokenImage: { maxBytes: env.R2_MAX_IMAGE_BYTES },
+    teamImage: { maxBytes: env.R2_MAX_IMAGE_BYTES },
   },
   rules: applicationRules,
 });

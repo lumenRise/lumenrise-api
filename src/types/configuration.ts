@@ -16,8 +16,7 @@ interface RuntimeConfiguration {
   R2_SECRET_ACCESS_KEY: string;
   R2_BUCKET_NAME: string;
   R2_PUBLIC_BASE_URL: string;
-  R2_MAX_AVATAR_BYTES: number;
-  R2_MAX_TOKEN_IMAGE_BYTES: number;
+  R2_MAX_IMAGE_BYTES: number;
   AUTH_PROVIDER_API_URL: string;
   AUTH_PROVIDER_APP_ID: string;
   AUTH_PROVIDER_APP_SECRET: string;

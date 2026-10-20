@@ -21,8 +21,7 @@ const validConfiguration: RuntimeConfiguration = {
   R2_SECRET_ACCESS_KEY: '',
   R2_BUCKET_NAME: '',
   R2_PUBLIC_BASE_URL: '',
-  R2_MAX_AVATAR_BYTES: 5_242_880,
-  R2_MAX_TOKEN_IMAGE_BYTES: 5_242_880,
+  R2_MAX_IMAGE_BYTES: 5_242_880,
   STELLAR_AUTH_NETWORK: 'testnet',
   AUTH_PROVIDER_API_URL: 'https://identity.example',
   AUTH_PROVIDER_APP_ID: 'app-id',
@@ -31,6 +30,15 @@ const validConfiguration: RuntimeConfiguration = {
 };
 
 describe('runtime configuration validation', () => {
+  it.each([0, -1, 1.5, NaN, Infinity, 10_485_761])(
+    'rejects an invalid shared image upload limit: %s',
+    (maxBytes) => {
+      expect(() =>
+        validateRuntimeConfiguration({ ...validConfiguration, R2_MAX_IMAGE_BYTES: maxBytes }),
+      ).toThrow('R2_MAX_IMAGE_BYTES must be between 1 and 10485760');
+    },
+  );
+
   it('accepts a valid development configuration', () => {
     expect(() => validateRuntimeConfiguration(validConfiguration)).not.toThrow();
   });

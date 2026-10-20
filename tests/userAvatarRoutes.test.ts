@@ -10,7 +10,7 @@ import replaceAvatar from '../src/services/avatar/replaceAvatar';
 
 const identityId = new Types.ObjectId();
 
-vi.mock('../src/env', () => ({ default: { NODE_ENV: 'test', LOG_LEVEL: 'silent', R2_MAX_AVATAR_BYTES: 1024 } }));
+vi.mock('../src/env', () => ({ default: { NODE_ENV: 'test', LOG_LEVEL: 'silent', R2_MAX_IMAGE_BYTES: 1024 } }));
 vi.mock('../src/middleware/requireSession', () => ({ default: (req: { auth?: unknown }, _res: unknown, next: () => void) => {
   req.auth = { identityId };
   next();
