@@ -6,6 +6,7 @@ import Launch from '../../models/Launch';
 import LaunchTrade from '../../models/LaunchTrade';
 import toTradeResult from '../../utils/launch/toTradeResult';
 import type { TradePosition } from '../../types/launch/market';
+import applicationRules from '../../constants/applicationRules';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 
 const getTrades: RequestHandler = async (req, res) => {
@@ -15,16 +16,20 @@ const getTrades: RequestHandler = async (req, res) => {
     typeof req.query.limit === 'string'
       ? Number(req.query.limit)
       : req.query.limit === undefined
-        ? 20
+        ? applicationRules.trades.defaultLimit
         : NaN;
 
   const trader = req.query.trader;
-  const side = req.query.side;
+  const requestedSide = req.query.side;
+  const side = applicationRules.trades.sides.find((value) => value === requestedSide);
   let after: TradePosition | null = null;
 
   try {
     if (req.query.cursor !== undefined) {
-      if (typeof req.query.cursor !== 'string' || req.query.cursor.length > 512) {
+      if (
+        typeof req.query.cursor !== 'string' ||
+        req.query.cursor.length > applicationRules.trades.cursorMaxLength
+      ) {
         throw new Error('Invalid cursor');
       }
 
@@ -61,11 +66,11 @@ const getTrades: RequestHandler = async (req, res) => {
   if (
     !identity ||
     !Number.isInteger(limit) ||
-    limit < 1 ||
-    limit > 100 ||
+    limit < applicationRules.trades.minLimit ||
+    limit > applicationRules.trades.maxLimit ||
     (trader !== undefined &&
       (typeof trader !== 'string' || !StrKey.isValidEd25519PublicKey(trader))) ||
-    (side !== undefined && side !== 'buy' && side !== 'sell')
+    (requestedSide !== undefined && !side)
   ) {
     return res.status(400).json({ status: 'error', message: 'Invalid trade query', result: {} });
   }

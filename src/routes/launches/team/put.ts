@@ -4,6 +4,7 @@ import type { RequestHandler } from 'express';
 import log from '../../../logger';
 import Identity from '../../../models/Identity';
 import LaunchTeamMember from '../../../models/LaunchTeamMember';
+import applicationRules from '../../../constants/applicationRules';
 import type { MarketIdentity } from '../../../types/launch/market';
 import getTeamProfiles from '../../../services/launch/getTeamProfiles';
 import toTeamMemberResult from '../../../utils/launch/toTeamMemberResult';
@@ -18,15 +19,13 @@ const putLaunchTeamMember: RequestHandler = async (req, res) => {
     !isValidObjectId(identityId) ||
     typeof role !== 'string' ||
     !role.trim() ||
-    role.trim().length > 80
+    role.trim().length > applicationRules.team.roleMaxLength
   ) {
-    return res
-      .status(400)
-      .json({
-        status: 'error',
-        message: 'A valid identity ID and role of 1 to 80 characters are required',
-        result: {},
-      });
+    return res.status(400).json({
+      status: 'error',
+      message: 'A valid identity ID and role of 1 to 80 characters are required',
+      result: {},
+    });
   }
 
   try {
@@ -66,13 +65,11 @@ const putLaunchTeamMember: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-      return res
-        .status(409)
-        .json({
-          status: 'error',
-          message: 'Team member changed concurrently; retry the request',
-          result: {},
-        });
+      return res.status(409).json({
+        status: 'error',
+        message: 'Team member changed concurrently; retry the request',
+        result: {},
+      });
     }
 
     log.error({ error }, 'Launch team member save failed');

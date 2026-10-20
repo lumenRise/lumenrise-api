@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express';
 
 import log from '../../logger';
 import DeveloperApiKey from '../../models/DeveloperApiKey';
+import applicationRules from '../../constants/applicationRules';
 import toApiKeyResult from '../../utils/developer/toApiKeyResult';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { DeveloperApiKeyListResult } from '../../types/developer/api';
@@ -10,7 +11,7 @@ const getDeveloperApiKeysRoute: RequestHandler = async (req, res) => {
   try {
     const keys = await DeveloperApiKey.find({ identity: req.auth!.identityId })
       .sort({ createdAt: -1 })
-      .limit(100);
+      .limit(applicationRules.developerApiKeys.listLimit);
     const response: ApiResponse<DeveloperApiKeyListResult> = {
       status: 'success',
       message: 'API keys retrieved',

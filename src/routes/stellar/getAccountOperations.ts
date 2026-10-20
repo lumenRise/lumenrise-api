@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 
 import log from '../../logger';
+import applicationRules from '../../constants/applicationRules';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type {
@@ -16,7 +17,11 @@ const getStellarAccountOperationsRoute: RequestHandler = async (req, res) => {
   const cursor = req.query.cursor;
   const requestedLimit = req.query.limit;
   const requestedOrder = req.query.order;
-  const limit = requestedLimit === undefined ? 50 : Number(requestedLimit);
+
+  const limit =
+    requestedLimit === undefined
+      ? applicationRules.stellar.operations.defaultLimit
+      : Number(requestedLimit);
 
   if (!isValidStellarGAddress(address)) {
     const response: ApiResponse<EmptyResult> = {
@@ -31,7 +36,7 @@ const getStellarAccountOperationsRoute: RequestHandler = async (req, res) => {
   if (
     (cursor !== undefined && (typeof cursor !== 'string' || !/^\d{1,40}$/.test(cursor))) ||
     !Number.isInteger(limit) ||
-    limit < 1 ||
+    limit < applicationRules.stellar.operations.minLimit ||
     limit > STELLAR_OPERATIONS_PAGE_LIMIT ||
     (requestedOrder !== undefined && requestedOrder !== 'asc' && requestedOrder !== 'desc')
   ) {

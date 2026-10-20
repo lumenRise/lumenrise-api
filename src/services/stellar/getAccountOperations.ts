@@ -1,4 +1,7 @@
+import getNetworkConfig from '../network/getNetworkConfig';
+import applicationRules from '../../constants/applicationRules';
 import summarizeStellarActivityPage from './summarizeActivityPage';
+import type { StellarNetwork } from '../../types/network/configuration';
 import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type {
   StellarHorizonOperationsPage,
@@ -6,10 +9,8 @@ import type {
   StellarOperationResult,
   StellarOperationsResult,
 } from '../../types/stellar/operations';
-import getNetworkConfig from '../network/getNetworkConfig';
-import type { StellarNetwork } from '../../types/network/configuration';
 
-const STELLAR_OPERATIONS_PAGE_LIMIT = 200;
+const STELLAR_OPERATIONS_PAGE_LIMIT = applicationRules.stellar.operations.maxLimit;
 
 const operationCommonFields = new Set([
   '_links',
@@ -27,7 +28,7 @@ const getStellarAccountOperations = async (
   address: string,
   network: StellarNetwork,
   cursor: string | null = null,
-  limit = 50,
+  limit: number = applicationRules.stellar.operations.defaultLimit,
   order: StellarOperationOrder = 'desc',
 ): Promise<StellarOperationsResult | null> => {
   if (!isValidStellarGAddress(address)) {
@@ -38,7 +39,11 @@ const getStellarAccountOperations = async (
     throw new Error('Invalid Stellar operations cursor');
   }
 
-  if (!Number.isInteger(limit) || limit < 1 || limit > STELLAR_OPERATIONS_PAGE_LIMIT) {
+  if (
+    !Number.isInteger(limit) ||
+    limit < applicationRules.stellar.operations.minLimit ||
+    limit > STELLAR_OPERATIONS_PAGE_LIMIT
+  ) {
     throw new Error('Invalid Stellar operations page limit');
   }
 

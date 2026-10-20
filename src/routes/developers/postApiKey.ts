@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 
 import log from '../../logger';
+import applicationRules from '../../constants/applicationRules';
 import createApiKey from '../../services/developer/createApiKey';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import type { DeveloperApiKeyCreatedResult } from '../../types/developer/api';
@@ -8,7 +9,11 @@ import type { DeveloperApiKeyCreatedResult } from '../../types/developer/api';
 const postDeveloperApiKeyRoute: RequestHandler = async (req, res) => {
   const label = req.body?.label;
 
-  if (typeof label !== 'string' || label.trim().length < 1 || label.trim().length > 80) {
+  if (
+    typeof label !== 'string' ||
+    label.trim().length < applicationRules.developerApiKeys.labelMinLength ||
+    label.trim().length > applicationRules.developerApiKeys.labelMaxLength
+  ) {
     return res.status(400).json({
       status: 'error',
       message: 'Invalid API key label',
