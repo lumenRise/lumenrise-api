@@ -1,3 +1,4 @@
+import applicationRules from '../../constants/applicationRules';
 import parseOptionalProjectUrl from './parseOptionalProjectUrl';
 import type { ExternalTeamInput } from '../../types/launch/team';
 
@@ -13,10 +14,10 @@ const parseExternalTeamInput = (body: unknown): ExternalTeamInput | null => {
   if (
     typeof name !== 'string' ||
     !name.trim() ||
-    name.trim().length > 80 ||
+    name.trim().length > applicationRules.team.nameMaxLength ||
     typeof role !== 'string' ||
     !role.trim() ||
-    role.trim().length > 80
+    role.trim().length > applicationRules.team.roleMaxLength
   ) {
     return null;
   }

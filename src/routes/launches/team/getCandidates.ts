@@ -4,11 +4,16 @@ import type { RequestHandler } from 'express';
 import log from '../../../logger';
 import Identity from '../../../models/Identity';
 import StellarAccount from '../../../models/StellarAccount';
+import applicationRules from '../../../constants/applicationRules';
 
 const getTeamCandidates: RequestHandler = async (req, res) => {
   const search = req.query.search;
 
-  if (typeof search !== 'string' || search.trim().length < 2 || search.trim().length > 80) {
+  if (
+    typeof search !== 'string' ||
+    search.trim().length < applicationRules.team.searchMinLength ||
+    search.trim().length > applicationRules.team.searchMaxLength
+  ) {
     return res
       .status(400)
       .json({ status: 'error', message: 'Search must contain 2 to 80 characters', result: {} });
@@ -35,7 +40,7 @@ const getTeamCandidates: RequestHandler = async (req, res) => {
     })
       .select('name avatarUrl')
       .sort({ name: 1, _id: 1 })
-      .limit(20)
+      .limit(applicationRules.team.searchLimit)
       .lean();
 
     return res.json({

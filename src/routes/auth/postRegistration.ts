@@ -8,6 +8,7 @@ import { withDatabaseTransaction } from '../../db';
 import type { StoredAvatar } from '../../types/avatar';
 import StellarAccount from '../../models/StellarAccount';
 import uploadAvatar from '../../services/avatar/uploadAvatar';
+import applicationRules from '../../constants/applicationRules';
 import processAvatar from '../../services/avatar/processAvatar';
 import deleteAvatarOrQueue from '../../services/avatar/deleteAvatarOrQueue';
 import isAvatarStorageConfigured from '../../services/avatar/isAvatarStorageConfigured';
@@ -17,7 +18,12 @@ const postRegistration: RequestHandler = async (req, res) => {
   const userId = parseExternalUserId(req.body?.userId);
   const name: unknown = req.body?.name;
 
-  if (!userId || typeof name !== 'string' || !name.trim() || name.trim().length > 80) {
+  if (
+    !userId ||
+    typeof name !== 'string' ||
+    !name.trim() ||
+    name.trim().length > applicationRules.profile.nameMaxLength
+  ) {
     return res
       .status(400)
       .json({ status: 'error', message: 'Invalid user ID or name', result: {} });

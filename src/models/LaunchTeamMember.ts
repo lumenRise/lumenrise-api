@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 
+import applicationRules from '../constants/applicationRules';
 import type { LaunchTeamMemberRecord } from '../types/launch/team';
 
 const schema = new Schema<LaunchTeamMemberRecord>(
@@ -14,11 +15,16 @@ const schema = new Schema<LaunchTeamMemberRecord>(
       immutable: true,
     },
     identity: { type: Schema.Types.ObjectId, ref: 'Identity', default: null, immutable: true },
-    name: { type: String, trim: true, maxlength: 80 },
+    name: { type: String, trim: true, maxlength: applicationRules.team.nameMaxLength },
     avatarUrl: { type: String },
     avatarObjectKey: { type: String, select: false },
-    xAccount: { type: String, maxlength: 2048 },
-    role: { type: String, required: true, trim: true, maxlength: 80 },
+    xAccount: { type: String, maxlength: applicationRules.projectLinks.maxLength },
+    role: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: applicationRules.team.roleMaxLength,
+    },
   },
   { collection: 'launch_team_members', timestamps: true, versionKey: false },
 );
