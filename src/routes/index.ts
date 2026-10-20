@@ -4,6 +4,7 @@ import authRoutes from './auth/index';
 import userRoutes from './user/index';
 import docsRoutes from './docs/index';
 import oauthRoutes from './oauth/index';
+import configRoutes from './config/index';
 import healthRoutes from './health/index';
 import policyRoutes from './policies/index';
 import stellarRoutes from './stellar/index';
@@ -15,6 +16,7 @@ import connectionRoutes from './connections/index';
 const router = Router();
 
 router.use('/v1/auth', authRoutes);
+router.use('/v1/config', configRoutes);
 router.use('/v1/user', userRoutes);
 router.use('/v1/policies', policyRoutes);
 router.use('/v1/developers', developerRoutes);
