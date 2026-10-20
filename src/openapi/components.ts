@@ -1,4 +1,5 @@
 import marketSchemas from './marketSchemas';
+import publicConfigurationSchemas from './publicConfigurationSchemas';
 
 const dateTime = { type: 'string', format: 'date-time' };
 const nullableDateTime = { oneOf: [dateTime, { type: 'null' }] };
@@ -66,6 +67,7 @@ const openApiComponents = {
   },
   schemas: {
     ...marketSchemas,
+    ...publicConfigurationSchemas,
     MyProfile: {
       type: 'object',
       required: ['identityId', 'name', 'avatarUrl'],
