@@ -7,6 +7,7 @@ import configPaths from './paths/config';
 import policyPaths from './paths/policies';
 import stellarPaths from './paths/stellar';
 import launchPaths from './paths/launches';
+import migrationPaths from './paths/migrations';
 import developerPaths from './paths/developers';
 import reputationPaths from './paths/reputation';
 import launchTeamPaths from './paths/launchTeam';
@@ -24,6 +25,7 @@ const openApiPaths = withNetworkHeader(
     ...docsPaths,
     ...oauthPaths,
     ...healthPaths,
+    ...migrationPaths,
     ...configPaths,
     ...stellarPaths,
     ...connectionPaths,
