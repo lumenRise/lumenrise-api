@@ -5,10 +5,11 @@ import DatabaseMigration from '../models/DatabaseMigration';
 import manualXReputation from './20261013ManualXReputation';
 import launchHolderIndexes from './20261014LaunchHolderIndexes';
 import createCurrentIndexes from './20261012CreateCurrentIndexes';
+import launchTeamInvitations from './20261022LaunchTeamInvitations';
 import type { MigrationDefinition } from '../types/database/migration';
 import priceObservationIndexes from './20261014PriceObservationIndexes';
-import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
 import stellarNetworkIsolation from './20261019StellarNetworkIsolation';
+import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
 
 const migrations: readonly MigrationDefinition[] = [
   authProviderAndTokenImageIndexes,
@@ -19,6 +20,7 @@ const migrations: readonly MigrationDefinition[] = [
   launchTeamIndexes,
   launchListIndexes,
   stellarNetworkIsolation,
+  launchTeamInvitations,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {

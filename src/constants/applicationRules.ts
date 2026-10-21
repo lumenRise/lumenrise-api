@@ -23,6 +23,7 @@ const applicationRules = {
   },
   profile: { nameMinLength: 1, nameMaxLength: 80, walletRequired: true },
   team: {
+    maxMembers: 6,
     nameMinLength: 1,
     nameMaxLength: 80,
     roleMinLength: 1,

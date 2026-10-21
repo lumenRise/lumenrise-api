@@ -12,7 +12,9 @@ import getLaunchImageRoute from './getImage';
 import postPrelaunchRoute from './postPrelaunch';
 import deleteLaunchTeamMember from './team/delete';
 import getTeamCandidates from './team/getCandidates';
+import getTeamInvitations from './team/getInvitations';
 import putExternalTeamMember from './team/putExternal';
+import patchTeamInvitation from './team/patchInvitation';
 import postExternalTeamMember from './team/postExternal';
 import getLaunchByContractIdRoute from './getByContractId';
 import deleteExternalTeamMember from './team/deleteExternal';
@@ -24,6 +26,9 @@ import requireLaunchOwner from '../../middleware/requireLaunchOwner';
 const launchRoutes = Router();
 
 launchRoutes.get('/', getLaunchesRoute);
+launchRoutes.get('/team/invitations', requireSession, getTeamInvitations);
+
+launchRoutes.patch('/:contractId/team/invitation', requireSession, patchTeamInvitation);
 launchRoutes.get('/prelaunch/:imageId', requireSession, getLaunchImageRoute);
 launchRoutes.post('/prelaunch', requireSession, tokenImageUpload, postPrelaunchRoute);
 

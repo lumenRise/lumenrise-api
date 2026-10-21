@@ -3,6 +3,7 @@ import type { RequestHandler } from 'express';
 
 import log from '../../../logger';
 import Identity from '../../../models/Identity';
+import getTeamSlot from '../../../services/launch/getTeamSlot';
 import LaunchTeamMember from '../../../models/LaunchTeamMember';
 import applicationRules from '../../../constants/applicationRules';
 import type { MarketIdentity } from '../../../types/launch/market';
@@ -28,6 +29,12 @@ const putLaunchTeamMember: RequestHandler = async (req, res) => {
     });
   }
 
+  if (identityId.toLowerCase() === req.auth!.identityId.toString()) {
+    return res
+      .status(400)
+      .json({ status: 'error', message: 'The owner is already an active team member', result: {} });
+  }
+
   try {
     const user = await Identity.findOne({
       _id: identityId,
@@ -44,16 +51,48 @@ const putLaunchTeamMember: RequestHandler = async (req, res) => {
         .json({ status: 'error', message: 'Registered active user not found', result: {} });
     }
 
+    const existing = await LaunchTeamMember.findOne({
+      ...identity,
+      kind: 'registered',
+      identity: user._id,
+    }).lean();
+
+    const slot =
+      existing && existing.status !== 'canceled' ? existing.slot : await getTeamSlot(identity);
+
+    if (!slot) {
+      return res.status(409).json({
+        status: 'error',
+        message: 'A launch can have at most six team members including its owner',
+        result: {},
+      });
+    }
+
     const profiles = await getTeamProfiles([user]);
 
     const member = await LaunchTeamMember.findOneAndUpdate(
-      { ...identity, kind: 'registered', identity: user._id },
-      { $set: { role: role.trim() } },
-      { upsert: true, runValidators: true, returnDocument: 'after' },
+      {
+        ...identity,
+        kind: 'registered',
+        identity: user._id,
+        status: existing?.status ?? 'pending',
+      },
+      {
+        $set: {
+          role: role.trim(),
+          slot,
+          status: existing?.status === 'active' ? 'active' : 'pending',
+        },
+      },
+      { upsert: !existing, runValidators: true, returnDocument: 'after' },
     );
 
     if (!member) {
-      throw new Error('Team member was not saved');
+      return res.status(409).json({
+        status: 'error',
+        message: 'Team member changed concurrently; retry the request',
+        result: {},
+      });
     }
 
     return res.json({
