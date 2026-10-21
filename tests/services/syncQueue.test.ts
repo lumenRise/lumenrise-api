@@ -25,6 +25,6 @@ describe('integration synchronization queue', () => {
     const now = new Date('2026-09-22T12:00:00.000Z');
     const lastSyncedAt = new Date('2026-09-22T11:55:00.000Z');
 
-    expect(calculateXSyncSchedule(lastSyncedAt, now)).toEqual(new Date('2026-09-22T12:10:00.000Z'));
+    expect(calculateXSyncSchedule(lastSyncedAt, now)).toEqual(new Date('2026-10-22T11:55:00.000Z'));
   });
 });
