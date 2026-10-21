@@ -197,6 +197,7 @@ const publicConfigurationSchemas = {
               'searchMaxLength',
               'searchLimit',
               'externalXAccountRequired',
+              'maxMembers',
             ],
             properties: {
               nameMinLength: integerSchema,
@@ -207,6 +208,7 @@ const publicConfigurationSchemas = {
               searchMaxLength: integerSchema,
               searchLimit: integerSchema,
               externalXAccountRequired: booleanSchema,
+              maxMembers: integerSchema,
             },
           },
           projectLinks: {

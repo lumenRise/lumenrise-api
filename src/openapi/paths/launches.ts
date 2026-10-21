@@ -213,10 +213,11 @@ const launchPaths = {
                   type: 'array',
                   minItems: 1,
                   description:
-                    'Public team, with the indexed owner first and role owner. The owner is included even without other members or an available profile. Duplicate owner membership is omitted. Inactive registered profiles are excluded.',
+                    'Only active members are public. Pending and canceled invitations are excluded. Public team, with the indexed owner first and role owner. The owner is included even without other members or an available profile. Duplicate owner membership is omitted. Inactive registered profiles are excluded.',
                   items: {
                     type: 'object',
                     required: [
+                      'status',
                       'memberId',
                       'kind',
                       'identityId',
@@ -227,6 +228,7 @@ const launchPaths = {
                       'role',
                     ],
                     properties: {
+                      status: { type: 'string', enum: ['active'] },
                       memberId: { type: ['string', 'null'] },
                       kind: { type: 'string', enum: ['owner', 'registered', 'external'] },
                       identityId: { type: ['string', 'null'] },
