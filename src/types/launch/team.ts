@@ -9,12 +9,15 @@ interface LaunchTeamMemberRecord {
   avatarUrl?: string | null;
   avatarObjectKey?: string | null;
   xAccount?: string | null;
+  status: 'active' | 'pending' | 'canceled';
+  slot?: number;
   role: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 interface LaunchTeamMemberResult {
+  status: 'active' | 'pending' | 'canceled';
   memberId: string;
   kind: 'registered' | 'external';
   identityId: string | null;

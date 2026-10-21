@@ -56,6 +56,7 @@ describe('public launch team', () => {
         avatarUrl: 'creator.png',
         xAccount: 'https://x.com/creator',
         role: 'owner',
+        status: 'active',
       },
     ]);
     expect(LaunchTeamMember.find).toHaveBeenCalledWith({
@@ -95,6 +96,7 @@ describe('public launch team', () => {
           avatarUrl: null,
           xAccount: null,
           role: 'owner',
+          status: 'active',
         },
       ]);
       expect(ExternalAccount.find).not.toHaveBeenCalled();
@@ -104,7 +106,7 @@ describe('public launch team', () => {
   it('includes registered and external members and deduplicates the creator', async () => {
     memberLean.mockResolvedValue([
       { _id: new Types.ObjectId(), kind: 'registered', identity: ownerId, role: 'Developer' },
-      { _id: userId, kind: 'registered', identity: userId, role: 'Designer' },
+      { _id: userId, kind: 'registered', identity: userId, role: 'Designer', status: 'active' },
       {
         _id: externalId,
         kind: 'external',
@@ -113,6 +115,7 @@ describe('public launch team', () => {
         avatarUrl: 'external.png',
         xAccount: 'https://x.com/external',
         role: 'Advisor',
+        status: 'active',
       },
       {
         _id: new Types.ObjectId(),
@@ -129,7 +132,11 @@ describe('public launch team', () => {
     const result = await getPublicLaunchTeam(launch);
 
     expect(result).toHaveLength(3);
-    expect(result[0]).toMatchObject({ role: 'owner', identityId: ownerId.toString() });
+    expect(result[0]).toMatchObject({
+      role: 'owner',
+      status: 'active',
+      identityId: ownerId.toString(),
+    });
     expect(result[1]).toEqual({
       memberId: userId.toString(),
       kind: 'registered',
@@ -139,6 +146,7 @@ describe('public launch team', () => {
       avatarUrl: 'designer.png',
       xAccount: null,
       role: 'Designer',
+      status: 'active',
     });
     expect(result[2]).toEqual({
       memberId: externalId.toString(),
@@ -149,6 +157,7 @@ describe('public launch team', () => {
       avatarUrl: 'external.png',
       xAccount: 'https://x.com/external',
       role: 'Advisor',
+      status: 'active',
     });
   });
 
@@ -156,5 +165,21 @@ describe('public launch team', () => {
     memberLean.mockRejectedValue(new Error('Database unavailable'));
 
     await expect(getPublicLaunchTeam(launch)).rejects.toThrow('Database unavailable');
+  });
+  it('hides pending, canceled and legacy registered members until accepted', async () => {
+    memberLean.mockResolvedValue([
+      { _id: userId, kind: 'registered', identity: userId, status: 'pending', role: 'Designer' },
+      { _id: userId, kind: 'registered', identity: userId, status: 'canceled', role: 'Designer' },
+      { _id: userId, kind: 'registered', identity: userId, role: 'Designer' },
+    ]);
+    usersLean.mockResolvedValue([
+      { _id: ownerId, name: 'Creator' },
+      { _id: userId, name: 'Designer' },
+    ]);
+
+    const result = await getPublicLaunchTeam(launch);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ kind: 'owner', status: 'active' });
   });
 });

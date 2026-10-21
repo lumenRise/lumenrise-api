@@ -53,6 +53,7 @@ const getPublicLaunchTeam = async (
     avatarUrl: ownerProfile?.avatarUrl ?? null,
     xAccount: ownerProfile?.xAccount ?? null,
     role: 'owner',
+    status: 'active',
   };
 
   return [
@@ -60,10 +61,11 @@ const getPublicLaunchTeam = async (
     ...members
       .filter(
         (member) =>
-          member.kind === 'external' ||
-          (member.identity &&
-            member.identity.toString() !== ownerId &&
-            profiles.has(member.identity.toString())),
+          (member.status === 'active' || (member.kind === 'external' && !member.status)) &&
+          (member.kind === 'external' ||
+            (member.identity &&
+              member.identity.toString() !== ownerId &&
+              profiles.has(member.identity.toString()))),
       )
       .map((member) => ({
         ...toTeamMemberResult(

@@ -17,6 +17,7 @@ const toTeamMemberResult = (
   avatarUrl: member.kind === 'external' ? (member.avatarUrl ?? null) : (profile?.avatarUrl ?? null),
   xAccount: member.kind === 'external' ? (member.xAccount ?? null) : (profile?.xAccount ?? null),
   role: member.role,
+  status: member.status ?? (member.kind === 'external' ? 'active' : 'pending'),
 });
 
 export default toTeamMemberResult;

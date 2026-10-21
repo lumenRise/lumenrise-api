@@ -19,6 +19,8 @@ const schema = new Schema<LaunchTeamMemberRecord>(
     avatarUrl: { type: String },
     avatarObjectKey: { type: String, select: false },
     xAccount: { type: String, maxlength: applicationRules.projectLinks.maxLength },
+    status: { type: String, enum: ['active', 'pending', 'canceled'], required: true },
+    slot: { type: Number, min: 1, max: applicationRules.team.maxMembers - 1 },
     role: {
       type: String,
       required: true,
@@ -37,6 +39,17 @@ schema.index(
     name: 'launch_team_member_unique',
   },
 );
+
+schema.index(
+  { network: 1, contractId: 1, slot: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { slot: { $type: 'number' } },
+    name: 'launch_team_slot_unique',
+  },
+);
+
+schema.index({ identity: 1, network: 1, status: 1 }, { name: 'launch_team_invitations' });
 
 const LaunchTeamMember = model<LaunchTeamMemberRecord>('LaunchTeamMember', schema);
 

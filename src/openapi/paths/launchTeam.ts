@@ -32,8 +32,9 @@ const profile = {
 
 const member = {
   type: 'object',
-  required: ['memberId', 'kind', 'identityId', 'name', 'avatarUrl', 'role', 'xAccount'],
+  required: ['memberId', 'kind', 'identityId', 'name', 'avatarUrl', 'role', 'xAccount', 'status'],
   properties: {
+    status: { type: 'string', enum: ['active', 'pending', 'canceled'] },
     memberId: { type: 'string' },
     kind: { type: 'string', enum: ['registered', 'external'] },
     identityId: { type: ['string', 'null'] },
@@ -80,6 +81,67 @@ const errors = {
 };
 
 const launchTeamPaths = {
+  '/v1/launches/team/invitations': {
+    get: {
+      tags: ['Launches'],
+      operationId: 'getTeamInvitations',
+      summary: 'List pending launch invitations for the authenticated user',
+      parameters: [parameters[1]],
+      responses: {
+        ...errors,
+        '200': jsonResponse('Pending invitations retrieved.', {
+          type: 'object',
+          required: ['invitations'],
+          properties: {
+            invitations: {
+              type: 'array',
+              items: {
+                type: 'object',
+                required: ['memberId', 'network', 'contractId', 'role', 'status'],
+                properties: {
+                  memberId: { type: 'string' },
+                  network: { type: 'string', enum: ['testnet', 'public'] },
+                  contractId: { type: 'string' },
+                  role: { type: 'string' },
+                  status: { type: 'string', enum: ['pending'] },
+                },
+              },
+            },
+          },
+        }),
+      },
+    },
+  },
+  '/v1/launches/{contractId}/team/invitation': {
+    patch: {
+      tags: ['Launches'],
+      operationId: 'patchTeamInvitation',
+      summary: 'Accept or decline your own pending launch invitation',
+      description:
+        'Only the invited user can respond. Accepting sets active; declining sets canceled and releases the reserved team slot. Only pending invitations can be changed.',
+      parameters,
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['status'],
+              properties: { status: { type: 'string', enum: ['active', 'canceled'] } },
+            },
+          },
+        },
+      },
+      responses: {
+        ...errors,
+        '200': jsonResponse('Invitation updated.', {
+          type: 'object',
+          required: ['status'],
+          properties: { status: { type: 'string', enum: ['active', 'canceled'] } },
+        }),
+      },
+    },
+  },
   '/v1/launches/{contractId}/team/candidates': {
     get: {
       tags: ['Launches'],
@@ -112,7 +174,7 @@ const launchTeamPaths = {
       operationId: 'getLaunchTeam',
       summary: 'Read the launch team as its owner',
       description:
-        'Requires a registered user with a currently connected wallet matching the indexed launch owner. Returns registered and external team members; inactive registered profiles are excluded. Registered member X links are read from their currently connected X accounts and are null when not connected. Roles describe project responsibilities and grant no permissions.',
+        'Requires a registered user with a currently connected wallet matching the indexed launch owner. Returns registered and external team members with active, pending or canceled status; inactive registered profiles are excluded. Registered member X links are read from their currently connected X accounts and are null when not connected. Roles describe project responsibilities and grant no permissions.',
       parameters,
       responses: {
         ...errors,
@@ -130,7 +192,7 @@ const launchTeamPaths = {
       operationId: 'postExternalLaunchTeamMember',
       summary: 'Add an external team member without creating a user account',
       description:
-        'Owner only. Name, role, image and X are required. Images accept JPEG, PNG and WebP of at least 128x128 pixels, within the configured avatar upload limit. External membership and X links do not imply a verified account or grant permissions.',
+        'Owner only. External members are active immediately. A launch has at most six members including its owner; pending invitations reserve a slot. Name, role, image and X are required. Images accept JPEG, PNG and WebP of at least 128x128 pixels, within the configured avatar upload limit. External membership and X links do not imply a verified account or grant permissions.',
       parameters,
       requestBody: {
         required: true,
@@ -147,6 +209,7 @@ const launchTeamPaths = {
           required: ['member'],
           properties: { member },
         }),
+        '409': { description: 'Team is full or changed concurrently; retry after refreshing.' },
         '413': { $ref: '#/components/responses/UploadLimitExceeded' },
       },
     },
@@ -164,7 +227,11 @@ const launchTeamPaths = {
         content: {
           'multipart/form-data': { schema: externalMultipart },
           'application/json': {
-            schema: { type: 'object', required: ['name', 'role', 'xAccount'], properties: externalFields },
+            schema: {
+              type: 'object',
+              required: ['name', 'role', 'xAccount'],
+              properties: externalFields,
+            },
           },
         },
       },
@@ -199,7 +266,7 @@ const launchTeamPaths = {
       operationId: 'putLaunchTeamMember',
       summary: 'Add a registered user to a launch team or update their role',
       description:
-        'Owner only. Idempotent per network, launch and identity. The target must be an active registered user. The role is trimmed and grants no management permissions.',
+        'Owner only. New and canceled registered members become pending and reserve one of five slots besides the owner. Active members remain active when their role changes. Only the invited user can accept or decline. The owner cannot invite themselves. The target must be an active registered user. The role is trimmed and grants no management permissions.',
       parameters: memberParameters,
       requestBody: {
         required: true,
@@ -220,7 +287,7 @@ const launchTeamPaths = {
           required: ['member'],
           properties: { member },
         }),
-        '409': { description: 'Concurrent team member creation; retry the same request.' },
+        '409': { description: 'Team is full or changed concurrently; refresh before retrying.' },
       },
     },
     delete: {

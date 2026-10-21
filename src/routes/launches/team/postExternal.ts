@@ -4,6 +4,7 @@ import type { RequestHandler } from 'express';
 import log from '../../../logger';
 import type { StoredAvatar } from '../../../types/avatar';
 import isR2Configured from '../../../storage/isR2Configured';
+import getTeamSlot from '../../../services/launch/getTeamSlot';
 import LaunchTeamMember from '../../../models/LaunchTeamMember';
 import type { MarketIdentity } from '../../../types/launch/market';
 import processAvatar from '../../../services/avatar/processAvatar';
@@ -17,13 +18,11 @@ const postExternalTeamMember: RequestHandler = async (req, res) => {
   const identity = res.locals.launchIdentity as MarketIdentity;
 
   if (!input || !req.file) {
-    return res
-      .status(400)
-      .json({
-        status: 'error',
-        message: 'Name, role, image and a valid HTTPS X link are required',
-        result: {},
-      });
+    return res.status(400).json({
+      status: 'error',
+      message: 'Name, role, image and a valid HTTPS X link are required',
+      result: {},
+    });
   }
 
   if (!isR2Configured()) {
@@ -35,16 +34,24 @@ const postExternalTeamMember: RequestHandler = async (req, res) => {
   let uploaded: StoredAvatar | null = null;
 
   try {
+    const slot = await getTeamSlot(identity);
+
+    if (!slot) {
+      return res.status(409).json({
+        status: 'error',
+        message: 'A launch can have at most six team members including its owner',
+        result: {},
+      });
+    }
+
     const image = await processAvatar(req.file.buffer);
 
     if (!image) {
-      return res
-        .status(400)
-        .json({
-          status: 'error',
-          message: 'Image must be a JPEG, PNG or WebP of at least 128x128 pixels',
-          result: {},
-        });
+      return res.status(400).json({
+        status: 'error',
+        message: 'Image must be a JPEG, PNG or WebP of at least 128x128 pixels',
+        result: {},
+      });
     }
 
     const memberId = new Types.ObjectId();
@@ -55,6 +62,8 @@ const postExternalTeamMember: RequestHandler = async (req, res) => {
       _id: memberId,
       ...identity,
       kind: 'external',
+      status: 'active',
+      slot,
       identity: null,
       ...input,
       avatarUrl: uploaded.publicUrl,
@@ -69,6 +78,14 @@ const postExternalTeamMember: RequestHandler = async (req, res) => {
   } catch (error) {
     if (uploaded) {
       await deleteAvatarOrQueue(uploaded.objectKey);
+    }
+
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
+      return res.status(409).json({
+        status: 'error',
+        message: 'Team changed concurrently; retry the request',
+        result: {},
+      });
     }
 
     log.error({ error }, 'External team member creation failed');
