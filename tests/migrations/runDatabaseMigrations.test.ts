@@ -3,11 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import DatabaseMigration from '../../src/models/DatabaseMigration';
 import runDatabaseMigrations from '../../src/migrations/runDatabaseMigrations';
 import createCurrentIndexes from '../../src/migrations/20261012CreateCurrentIndexes';
+import launchTeamInvitations from '../../src/migrations/20261022LaunchTeamInvitations';
 import upgradeIndexes from '../../src/migrations/20261012AuthProviderAndTokenImageIndexes';
-import stellarNetworkIsolation from '../../src/migrations/20261019StellarNetworkIsolation';
 
 vi.mock('../../src/migrations/20261019StellarNetworkIsolation', () => ({
   default: { name: '20261019-stellar-network-isolation', up: vi.fn() },
+}));
+
+vi.mock('../../src/migrations/20261022LaunchTeamInvitations', () => ({
+  default: { name: '20261022-launch-team-invitations', up: vi.fn() },
 }));
 
 vi.mock('../../src/logger', () => ({ default: { info: vi.fn() } }));
@@ -48,10 +52,10 @@ describe('consolidated database migrations', () => {
     expect(vi.mocked(upgradeIndexes.up).mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(createCurrentIndexes.up).mock.invocationCallOrder[0]!,
     );
-    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(8);
+    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(9);
     expect(DatabaseMigration.updateOne).toHaveBeenLastCalledWith(
-      { name: stellarNetworkIsolation.name },
-      { $setOnInsert: { name: stellarNetworkIsolation.name, appliedAt: expect.any(Date) } },
+      { name: launchTeamInvitations.name },
+      { $setOnInsert: { name: launchTeamInvitations.name, appliedAt: expect.any(Date) } },
       { upsert: true },
     );
   });
@@ -71,7 +75,7 @@ describe('consolidated database migrations', () => {
     await runDatabaseMigrations();
     expect(upgradeIndexes.up).not.toHaveBeenCalled();
     expect(createCurrentIndexes.up).toHaveBeenCalledTimes(1);
-    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(7);
+    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(8);
   });
 
   it('does not record an unsuccessful baseline as applied', async () => {
