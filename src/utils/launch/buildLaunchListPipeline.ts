@@ -18,6 +18,7 @@ const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineSta
     const escaped = query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     match.$or = [
+      { slug: { $regex: escaped, $options: 'i' } },
       { 'metadata.name': { $regex: escaped, $options: 'i' } },
       { 'metadata.symbol': { $regex: escaped, $options: 'i' } },
     ];
