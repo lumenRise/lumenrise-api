@@ -3,9 +3,9 @@ import jsonResponse from '../../utils/openapi/jsonResponse';
 const parameters = [
   {
     in: 'path',
-    name: 'contractId',
+    name: 'slug',
     required: true,
-    schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+    schema: { type: 'string', maxLength: 100, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' },
   },
   { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
 ];
@@ -101,6 +101,7 @@ const launchTeamPaths = {
                 properties: {
                   memberId: { type: 'string' },
                   network: { type: 'string', enum: ['testnet', 'public'] },
+                  slug: { type: ['string', 'null'] },
                   contractId: { type: 'string' },
                   role: { type: 'string' },
                   status: { type: 'string', enum: ['pending'] },
@@ -112,7 +113,7 @@ const launchTeamPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/team/invitation': {
+  '/v1/launches/{slug}/team/invitation': {
     patch: {
       tags: ['Launches'],
       operationId: 'patchTeamInvitation',
@@ -142,7 +143,7 @@ const launchTeamPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/team/candidates': {
+  '/v1/launches/{slug}/team/candidates': {
     get: {
       tags: ['Launches'],
       operationId: 'getLaunchTeamCandidates',
@@ -168,7 +169,7 @@ const launchTeamPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/team': {
+  '/v1/launches/{slug}/team': {
     get: {
       tags: ['Launches'],
       operationId: 'getLaunchTeam',
@@ -186,7 +187,7 @@ const launchTeamPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/team/external': {
+  '/v1/launches/{slug}/team/external': {
     post: {
       tags: ['Launches'],
       operationId: 'postExternalLaunchTeamMember',
@@ -214,7 +215,7 @@ const launchTeamPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/team/external/{memberId}': {
+  '/v1/launches/{slug}/team/external/{memberId}': {
     put: {
       tags: ['Launches'],
       operationId: 'putExternalLaunchTeamMember',
@@ -260,7 +261,7 @@ const launchTeamPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/team/{identityId}': {
+  '/v1/launches/{slug}/team/{identityId}': {
     put: {
       tags: ['Launches'],
       operationId: 'putLaunchTeamMember',

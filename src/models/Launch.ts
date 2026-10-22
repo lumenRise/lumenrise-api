@@ -20,6 +20,7 @@ const launchSchema = new Schema<LaunchRecord>(
     factoryContractId: { type: String, required: true, immutable: true },
     factoryIndex: { type: Number, required: true, min: 1, immutable: true },
     contractId: { type: String, required: true, immutable: true },
+    slug: { type: String, required: true, immutable: true },
     owner: { type: String, required: true, immutable: true },
     asset: { type: String, required: true, immutable: true },
     pair: { type: String, required: true, immutable: true },
@@ -53,6 +54,15 @@ launchSchema.index({ network: 1, owner: 1, factoryIndex: -1 }, { name: 'launches
 launchSchema.index(
   { network: 1, createdAt: -1, contractId: 1 },
   { name: 'launches_creation_list' },
+);
+
+launchSchema.index(
+  { network: 1, slug: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { slug: { $type: 'string' } },
+    name: 'launches_slug_unique',
+  },
 );
 
 const Launch = model<LaunchRecord>('Launch', launchSchema);

@@ -1,5 +1,6 @@
 import log from '../../logger';
 import Launch from '../../models/Launch';
+import LaunchName from '../../models/LaunchName';
 import TokenImage from '../../models/TokenImage';
 import deleteTokenImageObject from './deleteTokenImageObject';
 
@@ -49,6 +50,31 @@ const processTokenImageCleanup = async (now = new Date()): Promise<void> => {
           },
         );
         continue;
+      }
+
+      // Atomically release only an unclaimed reservation. A worker claim keeps the image alive.
+      if (claimed.slug) {
+        const released = await LaunchName.updateOne({
+          network: claimed.network,
+          slug: claimed.slug,
+          ownerAddress: claimed.ownerAddress,
+          publicUrl: claimed.publicUrl,
+          contractId: null,
+          status: 'reserved',
+        }, { $set: { status: 'expired' } });
+
+        if (released.modifiedCount === 0) {
+          const indexed = await LaunchName.exists({
+            network: claimed.network,
+            slug: claimed.slug,
+            publicUrl: claimed.publicUrl,
+            contractId: { $type: 'string' },
+          });
+
+          if (indexed) {
+            continue;
+          }
+        }
       }
 
       await deleteTokenImageObject(claimed.objectKey);

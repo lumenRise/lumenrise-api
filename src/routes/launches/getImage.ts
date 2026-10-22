@@ -29,6 +29,8 @@ const getLaunchImageRoute: RequestHandler = async (req, res) => {
       message: 'Token image retrieved',
       result: {
         imageId: image._id.toString(),
+        slug: image.slug ?? null,
+        name: image.projectName ?? null,
         network: image.network,
         ownerAddress: image.ownerAddress,
         publicUrl: image.publicUrl,

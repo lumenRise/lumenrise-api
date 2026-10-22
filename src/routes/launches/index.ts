@@ -21,6 +21,7 @@ import deleteExternalTeamMember from './team/deleteExternal';
 import requireSession from '../../middleware/requireSession';
 import teamImageUpload from '../../middleware/teamImageUpload';
 import tokenImageUpload from '../../middleware/tokenImageUpload';
+import resolveLaunchSlug from '../../middleware/resolveLaunchSlug';
 import requireLaunchOwner from '../../middleware/requireLaunchOwner';
 
 const launchRoutes = Router();
@@ -28,55 +29,62 @@ const launchRoutes = Router();
 launchRoutes.get('/', getLaunchesRoute);
 launchRoutes.get('/team/invitations', requireSession, getTeamInvitations);
 
-launchRoutes.patch('/:contractId/team/invitation', requireSession, patchTeamInvitation);
 launchRoutes.get('/prelaunch/:imageId', requireSession, getLaunchImageRoute);
 launchRoutes.post('/prelaunch', requireSession, tokenImageUpload, postPrelaunchRoute);
 
+launchRoutes.patch('/:slug/team/invitation', requireSession, resolveLaunchSlug, patchTeamInvitation);
+
 launchRoutes.get(
-  '/:contractId/team/candidates',
+  '/:slug/team/candidates',
   requireSession,
+  resolveLaunchSlug,
   requireLaunchOwner,
   getTeamCandidates,
 );
-launchRoutes.get('/:contractId/team', requireSession, requireLaunchOwner, getLaunchTeam);
+launchRoutes.get('/:slug/team', requireSession, resolveLaunchSlug, requireLaunchOwner, getLaunchTeam);
 launchRoutes.post(
-  '/:contractId/team/external',
+  '/:slug/team/external',
   requireSession,
+  resolveLaunchSlug,
   requireLaunchOwner,
   teamImageUpload,
   postExternalTeamMember,
 );
 launchRoutes.put(
-  '/:contractId/team/external/:memberId',
+  '/:slug/team/external/:memberId',
   requireSession,
+  resolveLaunchSlug,
   requireLaunchOwner,
   teamImageUpload,
   putExternalTeamMember,
 );
 launchRoutes.delete(
-  '/:contractId/team/external/:memberId',
+  '/:slug/team/external/:memberId',
   requireSession,
+  resolveLaunchSlug,
   requireLaunchOwner,
   deleteExternalTeamMember,
 );
 launchRoutes.put(
-  '/:contractId/team/:identityId',
+  '/:slug/team/:identityId',
   requireSession,
+  resolveLaunchSlug,
   requireLaunchOwner,
   putLaunchTeamMember,
 );
 launchRoutes.delete(
-  '/:contractId/team/:identityId',
+  '/:slug/team/:identityId',
   requireSession,
+  resolveLaunchSlug,
   requireLaunchOwner,
   deleteLaunchTeamMember,
 );
 
-launchRoutes.get('/:contractId/trades', getTrades);
-launchRoutes.get('/:contractId/holders', getHolders);
-launchRoutes.post('/:contractId/trades', requireSession, postTrade);
-launchRoutes.get('/:contractId/market', getMarket);
-launchRoutes.get('/:contractId/chart', getChart);
-launchRoutes.get('/:contractId', getLaunchByContractIdRoute);
+launchRoutes.get('/:slug/trades', resolveLaunchSlug, getTrades);
+launchRoutes.get('/:slug/holders', resolveLaunchSlug, getHolders);
+launchRoutes.post('/:slug/trades', requireSession, resolveLaunchSlug, postTrade);
+launchRoutes.get('/:slug/market', resolveLaunchSlug, getMarket);
+launchRoutes.get('/:slug/chart', resolveLaunchSlug, getChart);
+launchRoutes.get('/:slug', resolveLaunchSlug, getLaunchByContractIdRoute);
 
 export default launchRoutes;

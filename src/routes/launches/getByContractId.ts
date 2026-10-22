@@ -1,24 +1,20 @@
-import { StrKey } from '@stellar/stellar-sdk';
 import type { RequestHandler } from 'express';
 
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import toLaunchResult from '../../utils/launch/toLaunchResult';
+import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 import getPublicLaunchTeam from '../../services/launch/getPublicLaunchTeam';
 
 const getLaunchByContractIdRoute: RequestHandler = async (req, res) => {
-  const network = req.network;
-  const contractId = req.params.contractId;
+  const identity = parseMarketRequest(req);
 
-  if (
-    typeof contractId !== 'string' ||
-    !StrKey.isValidContract(contractId)
-  ) {
+  if (!identity) {
     return res.status(400).json({ status: 'error', message: 'Invalid launch query', result: {} });
   }
 
   try {
-    const launch = await Launch.findOne({ network, contractId }).lean();
+    const launch = await Launch.findOne(identity).lean();
 
     if (!launch) {
       return res.status(404).json({ status: 'error', message: 'Launch not found', result: {} });
@@ -32,7 +28,7 @@ const getLaunchByContractIdRoute: RequestHandler = async (req, res) => {
       result: { ...toLaunchResult(launch), team },
     });
   } catch (error) {
-    log.error({ error, contractId }, 'Launch lookup failed');
+    log.error({ error, identity }, 'Launch lookup failed');
 
     return res.status(503).json({
       status: 'error',

@@ -6,6 +6,7 @@ const toLaunchResult = (launch: LaunchRecord, now = new Date()) => ({
   factoryContractId: launch.factoryContractId,
   factoryIndex: launch.factoryIndex,
   contractId: launch.contractId,
+  slug: launch.slug,
   owner: launch.owner,
   asset: launch.asset,
   pair: launch.pair,

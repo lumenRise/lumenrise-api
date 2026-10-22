@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 
 import log from '../../../logger';
+import Launch from '../../../models/Launch';
 import LaunchTeamMember from '../../../models/LaunchTeamMember';
 
 const getTeamInvitations: RequestHandler = async (req, res) => {
@@ -14,6 +15,13 @@ const getTeamInvitations: RequestHandler = async (req, res) => {
       .sort({ createdAt: -1, _id: -1 })
       .lean();
 
+    const launches = await Launch.find({
+      network: req.network,
+      contractId: { $in: invitations.map((member) => member.contractId) },
+    }).select('contractId slug').lean();
+
+    const slugs = new Map(launches.map((launch) => [launch.contractId, launch.slug]));
+
     return res.json({
       status: 'success',
       message: 'Team invitations retrieved',
@@ -22,6 +30,7 @@ const getTeamInvitations: RequestHandler = async (req, res) => {
           memberId: member._id.toString(),
           network: member.network,
           contractId: member.contractId,
+          slug: slugs.get(member.contractId) ?? null,
           role: member.role,
           status: member.status,
         })),

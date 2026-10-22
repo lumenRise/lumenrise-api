@@ -12,6 +12,7 @@ interface LaunchRecord {
   factoryContractId: string;
   factoryIndex: number;
   contractId: string;
+  slug: string;
   owner: string;
   asset: string;
   pair: string;

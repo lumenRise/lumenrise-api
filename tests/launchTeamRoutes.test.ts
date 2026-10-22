@@ -15,7 +15,7 @@ import LaunchTeamMember from '../src/models/LaunchTeamMember';
 
 vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet' } }));
 vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
-vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn() } }));
+vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn(), find: vi.fn() } }));
 vi.mock('../src/models/ExternalAccount', () => ({ default: { find: vi.fn() } }));
 vi.mock('../src/models/Identity', () => ({ default: { find: vi.fn(), findOne: vi.fn() } }));
 vi.mock('../src/models/StellarAccount', () => ({ default: { exists: vi.fn(), findOne: vi.fn() } }));
@@ -50,7 +50,7 @@ const contractId = StrKey.encodeContract(Buffer.alloc(32, 7));
 const owner = Keypair.random().publicKey();
 const memberId = new Types.ObjectId('507f1f77bcf86cd799439012');
 const profile = { _id: memberId, name: 'Alice', avatarUrl: 'https://images.example/alice.png' };
-const base = `/v1/launches/${contractId}/team`;
+const base = '/v1/launches/blue-man/team';
 
 app.use(express.json());
 app.use('/v1/launches', launchRoutes);
@@ -63,9 +63,10 @@ describe('owner-managed launch teams', () => {
         lean: vi.fn().mockResolvedValue([]),
       }),
     } as never);
+    vi.mocked(Launch.find).mockReturnValue({ select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([]) }) } as never);
     vi.mocked(Launch.findOne).mockReturnValue({
       select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue({ owner }),
+        lean: vi.fn().mockResolvedValue({ owner, contractId }),
       }),
     } as never);
     vi.mocked(StellarAccount.exists).mockResolvedValue({ _id: 'wallet' } as never);
@@ -137,7 +138,7 @@ describe('owner-managed launch teams', () => {
   });
 
   it('validates the launch identity before querying the database', async () => {
-    const result = await request(app).get('/v1/launches/invalid/team').set('x-user-id', 'owner');
+    const result = await request(app).get('/v1/launches/INVALID/team').set('x-user-id', 'owner');
 
     expect(result.status).toBe(400);
     expect(Launch.findOne).not.toHaveBeenCalled();

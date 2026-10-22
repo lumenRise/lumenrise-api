@@ -6,6 +6,8 @@ interface TokenImageRecord {
   network: 'testnet' | 'public';
   objectKey: string;
   publicUrl: string;
+  slug?: string;
+  projectName?: string;
   website?: string;
   xAccount?: string;
   status: 'pending' | 'cleanup_ready' | 'deleting' | 'finalized' | 'expired';
