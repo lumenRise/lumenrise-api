@@ -84,6 +84,7 @@ const openApiComponents = {
         'factoryContractId',
         'factoryIndex',
         'contractId',
+        'slug',
         'owner',
         'asset',
         'pair',
@@ -100,6 +101,7 @@ const openApiComponents = {
         network: { type: 'string', enum: ['testnet', 'public'] },
         factoryContractId: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
         factoryIndex: { type: 'integer', minimum: 1 },
+        slug: { type: 'string', maxLength: 100, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' },
         contractId: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
         owner: {
           oneOf: [stellarAddress, { type: 'string', pattern: '^C[A-Z2-7]{55}$' }],

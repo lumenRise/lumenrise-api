@@ -3,9 +3,9 @@ import jsonResponse from '../../utils/openapi/jsonResponse';
 const identity = [
   {
     in: 'path',
-    name: 'contractId',
+    name: 'slug',
     required: true,
-    schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+    schema: { type: 'string', maxLength: 100, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' },
   },
   { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
 ];
@@ -16,7 +16,7 @@ const errors = {
 };
 
 const launchMarketPaths = {
-  '/v1/launches/{contractId}/holders': {
+  '/v1/launches/{slug}/holders': {
     get: {
       tags: ['Launches'],
       security: [],
@@ -41,7 +41,7 @@ const launchMarketPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/trades': {
+  '/v1/launches/{slug}/trades': {
     get: {
       tags: ['Launches'],
       security: [],
@@ -112,7 +112,7 @@ const launchMarketPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/market': {
+  '/v1/launches/{slug}/market': {
     get: {
       tags: ['Launches'],
       security: [],
@@ -127,7 +127,7 @@ const launchMarketPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}/chart': {
+  '/v1/launches/{slug}/chart': {
     get: {
       tags: ['Launches'],
       security: [],

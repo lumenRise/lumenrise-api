@@ -105,9 +105,10 @@ const launchPaths = {
           'multipart/form-data': {
             schema: {
               type: 'object',
-              required: ['ownerAddress', 'image'],
+              required: ['name', 'ownerAddress', 'image'],
               properties: {
                 network: { type: 'string', enum: ['testnet', 'public'] },
+                name: { type: 'string', minLength: 1, maxLength: 2048, description: 'Project name. Its normalized slug must contain 1 to 100 characters and be unique within the network. Spaces and punctuation become hyphens; case is ignored. team and prelaunch are reserved.' },
                 ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
                 image: { type: 'string', format: 'binary' },
                 website: { type: 'string', maxLength: 2048 },
@@ -120,8 +121,10 @@ const launchPaths = {
       responses: {
         '201': jsonResponse('Token image uploaded and pending chain confirmation.', {
           type: 'object',
-          required: ['imageId', 'publicUrl', 'status'],
+          required: ['imageId', 'publicUrl', 'status', 'slug', 'name'],
           properties: {
+            slug: { type: 'string' },
+            name: { type: 'string' },
             imageId: { type: 'string' },
             publicUrl: { type: 'string', format: 'uri' },
             status: { type: 'string', enum: ['pending'] },
@@ -130,6 +133,7 @@ const launchPaths = {
         '400': { $ref: '#/components/responses/BadRequest' },
         '401': { $ref: '#/components/responses/Unauthorized' },
         '403': { $ref: '#/components/responses/Forbidden' },
+        '409': { description: 'Project name is already taken or reserved in this network.' },
         '413': { $ref: '#/components/responses/UploadLimitExceeded' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },
@@ -164,6 +168,8 @@ const launchPaths = {
           ],
           properties: {
             imageId: { type: 'string' },
+            slug: { type: ['string', 'null'] },
+            name: { type: ['string', 'null'] },
             network: { type: 'string', enum: ['testnet', 'public'] },
             ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
             publicUrl: { type: 'string', format: 'uri' },
@@ -186,18 +192,18 @@ const launchPaths = {
       },
     },
   },
-  '/v1/launches/{contractId}': {
+  '/v1/launches/{slug}': {
     get: {
       tags: ['Launches'],
-      summary: 'Get a confirmed bonding-curve launch by child contract ID',
-      operationId: 'getLaunchByContractId',
+      summary: 'Get a confirmed bonding-curve launch by project slug',
+      operationId: 'getLaunchBySlug',
       security: [],
       parameters: [
         {
           in: 'path',
-          name: 'contractId',
+          name: 'slug',
           required: true,
-          schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+          schema: { type: 'string', maxLength: 100, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' },
         },
         { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
       ],
