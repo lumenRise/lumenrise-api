@@ -1,4 +1,5 @@
 import log from '../logger';
+import launchSlugs from './20261022LaunchSlugs';
 import launchListIndexes from './20261019LaunchListIndexes';
 import launchTeamIndexes from './20261017LaunchTeamIndexes';
 import DatabaseMigration from '../models/DatabaseMigration';
@@ -21,6 +22,7 @@ const migrations: readonly MigrationDefinition[] = [
   launchListIndexes,
   stellarNetworkIsolation,
   launchTeamInvitations,
+  launchSlugs,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {
