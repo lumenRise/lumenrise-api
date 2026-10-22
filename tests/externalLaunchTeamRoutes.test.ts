@@ -61,7 +61,7 @@ const contractId = StrKey.encodeContract(Buffer.alloc(32, 7));
 const owner = Keypair.random().publicKey();
 const memberId = new Types.ObjectId('507f1f77bcf86cd799439012');
 const registeredId = new Types.ObjectId('507f1f77bcf86cd799439013');
-const base = `/v1/launches/${contractId}/team`;
+const base = '/v1/launches/blue-man/team';
 const external = {
   _id: memberId,
   network: 'testnet',
@@ -88,7 +88,7 @@ describe('external launch team members', () => {
     } as never);
     vi.mocked(Launch.findOne).mockReturnValue({
       select: vi.fn().mockReturnValue({
-        lean: vi.fn().mockResolvedValue({ owner }),
+        lean: vi.fn().mockResolvedValue({ owner, contractId }),
       }),
     } as never);
     vi.mocked(StellarAccount.exists).mockResolvedValue({ _id: 'wallet' } as never);
