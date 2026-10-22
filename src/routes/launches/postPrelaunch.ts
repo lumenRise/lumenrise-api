@@ -2,9 +2,12 @@ import { StrKey } from '@stellar/stellar-sdk';
 import type { RequestHandler } from 'express';
 
 import log from '../../logger';
+import Launch from '../../models/Launch';
+import LaunchName from '../../models/LaunchName';
 import TokenImage from '../../models/TokenImage';
 import StellarAccount from '../../models/StellarAccount';
 import isR2Configured from '../../storage/isR2Configured';
+import toLaunchSlug from '../../utils/launch/toLaunchSlug';
 import uploadTokenImage from '../../services/tokenImage/uploadTokenImage';
 import processTokenImage from '../../services/tokenImage/processTokenImage';
 import deleteAvatarOrQueue from '../../services/avatar/deleteAvatarOrQueue';
@@ -33,16 +36,24 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
     });
   }
 
+  let slug: string;
+  let projectName: string;
   let website: string | undefined;
   let xAccount: string | undefined;
 
   try {
+    if (typeof req.body?.name !== 'string') {
+      throw new Error('Project name is required');
+    }
+
+    projectName = req.body.name.trim();
+    slug = toLaunchSlug(projectName);
     website = parseOptionalProjectUrl(req.body?.website);
     xAccount = parseOptionalProjectUrl(req.body?.xAccount);
   } catch {
     return res.status(400).json({
       status: 'error',
-      message: 'website and xAccount must be valid HTTPS links or left blank',
+      message: 'A valid project name and optional HTTPS website and xAccount links are required',
       result: {},
     });
   }
@@ -72,6 +83,12 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
       });
     }
 
+    const existing = await Launch.exists({ network, slug });
+
+    if (existing) {
+      return res.status(409).json({ status: 'error', message: 'Project name is already taken', result: {} });
+    }
+
     const stored = await uploadTokenImage(network, body);
 
     try {
@@ -79,11 +96,30 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
         ownerIdentityId: req.auth!.identityId,
         ownerAddress,
         network,
+        slug,
+        projectName,
         ...stored,
         website,
         xAccount,
         status: 'pending',
       });
+
+      try {
+        await LaunchName.findOneAndUpdate(
+          { network, slug, status: 'expired' },
+          { $set: { ownerAddress, publicUrl: stored.publicUrl, status: 'reserved', contractId: null } },
+          { upsert: true },
+        );
+      } catch (error) {
+        await LaunchName.updateOne(
+          { network, slug, ownerAddress, publicUrl: stored.publicUrl, status: 'reserved', contractId: null },
+          { $set: { status: 'expired' } },
+        );
+
+        await TokenImage.updateOne({ _id: image._id }, { $set: { status: 'expired', expiredAt: new Date() } });
+
+        throw error;
+      }
 
       return res.status(201).json({
         status: 'success',
@@ -91,6 +127,8 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
         result: {
           imageId: image._id.toString(),
           publicUrl: stored.publicUrl,
+          slug,
+          name: projectName,
           status: 'pending',
         },
       });
@@ -99,6 +137,10 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
       throw error;
     }
   } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
+      return res.status(409).json({ status: 'error', message: 'Project name is already taken', result: {} });
+    }
+
     log.error({ error }, 'Token image upload failed');
     return res
       .status(503)

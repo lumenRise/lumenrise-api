@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import Launch from '../src/models/Launch';
+import LaunchName from '../src/models/LaunchName';
 import TokenImage from '../src/models/TokenImage';
 import deleteTokenImageObject from '../src/services/tokenImage/deleteTokenImageObject';
 import processTokenImageCleanup from '../src/services/tokenImage/processTokenImageCleanup';
 
+vi.mock('../src/models/LaunchName', () => ({ default: { updateOne: vi.fn(), exists: vi.fn() } }));
 vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn() } }));
 vi.mock('../src/models/TokenImage', () => ({ default: { find: vi.fn(), findOneAndUpdate: vi.fn(), updateOne: vi.fn() } }));
 vi.mock('../src/services/tokenImage/deleteTokenImageObject', () => ({ default: vi.fn() }));
@@ -68,4 +70,39 @@ describe('token image cleanup', () => {
       expect.anything(), { $set: expect.objectContaining({ status: 'expired' }) },
     );
   });
+
+  it('releases an unused reserved name before removing its image', async () => {
+    const reserved = { ...image, slug: 'blue-man' };
+
+    vi.mocked(TokenImage.findOneAndUpdate).mockReturnValue({ lean: vi.fn().mockResolvedValue(reserved) } as never);
+    vi.mocked(Launch.findOne).mockReturnValue({
+      select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue(null) }),
+    } as never);
+    vi.mocked(LaunchName.updateOne).mockResolvedValue({ modifiedCount: 1 } as never);
+    vi.mocked(deleteTokenImageObject).mockResolvedValue(undefined);
+
+    await processTokenImageCleanup(now);
+
+    expect(LaunchName.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({ network: 'testnet', slug: 'blue-man', contractId: null, status: 'reserved' }),
+      { $set: { status: 'expired' } },
+    );
+    expect(deleteTokenImageObject).toHaveBeenCalledWith(image.objectKey);
+  });
+
+  it('keeps an image when a worker claimed its name during cleanup', async () => {
+    vi.mocked(TokenImage.findOneAndUpdate).mockReturnValue({
+      lean: vi.fn().mockResolvedValue({ ...image, slug: 'blue-man' }),
+    } as never);
+    vi.mocked(Launch.findOne).mockReturnValue({
+      select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue(null) }),
+    } as never);
+    vi.mocked(LaunchName.updateOne).mockResolvedValue({ modifiedCount: 0 } as never);
+    vi.mocked(LaunchName.exists).mockResolvedValue({ _id: 'claim' } as never);
+
+    await processTokenImageCleanup(now);
+
+    expect(deleteTokenImageObject).not.toHaveBeenCalled();
+  });
+
 });
