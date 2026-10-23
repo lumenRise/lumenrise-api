@@ -71,7 +71,7 @@ describe('public launch team', () => {
       _id: { $in: [ownerId] },
       status: 'active',
       deletedAt: null,
-      externalUserId: { $type: 'string', $ne: '' },
+      'externalUserIds.0': { $exists: true },
     });
   });
 

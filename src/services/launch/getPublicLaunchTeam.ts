@@ -35,7 +35,7 @@ const getPublicLaunchTeam = async (
     _id: { $in: identityIds },
     status: 'active',
     deletedAt: null,
-    externalUserId: { $type: 'string', $ne: '' },
+    'externalUserIds.0': { $exists: true },
   })
     .select('name avatarUrl')
     .lean();

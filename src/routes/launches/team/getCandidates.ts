@@ -36,7 +36,7 @@ const getTeamCandidates: RequestHandler = async (req, res) => {
       ...filter,
       status: 'active',
       deletedAt: null,
-      externalUserId: { $type: 'string', $ne: '' },
+      'externalUserIds.0': { $exists: true },
     })
       .select('name avatarUrl')
       .sort({ name: 1, _id: 1 })

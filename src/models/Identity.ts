@@ -5,7 +5,7 @@ import type { IdentityRecord } from '../types/identity/model';
 
 const identitySchema = new Schema<IdentityRecord>(
   {
-    externalUserId: { type: String, default: null },
+    externalUserIds: { type: [String], default: [] },
     name: { type: String, default: null, trim: true, maxlength: 80 },
     avatarObjectKey: { type: String, default: null, select: false },
     avatarUrl: { type: String, default: null },
@@ -27,11 +27,11 @@ const identitySchema = new Schema<IdentityRecord>(
 );
 
 identitySchema.index(
-  { externalUserId: 1 },
+  { externalUserIds: 1 },
   {
     unique: true,
-    partialFilterExpression: { externalUserId: { $type: 'string' } },
-    name: 'identities_external_user_unique',
+    partialFilterExpression: { externalUserIds: { $type: 'string' } },
+    name: 'identities_external_users_unique',
   },
 );
 

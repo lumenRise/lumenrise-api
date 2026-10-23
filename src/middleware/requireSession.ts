@@ -11,7 +11,7 @@ const requireSession: RequestHandler = async (req, res, next) => {
       .json({ status: 'error', message: 'Authentication required', result: {} });
   }
 
-  const identity = await Identity.findOne({ externalUserId: userId }).select('_id status');
+  const identity = await Identity.findOne({ externalUserIds: userId }).select('_id status');
 
   if (!identity) {
     return res.status(401).json({ status: 'error', message: 'Unknown user ID', result: {} });

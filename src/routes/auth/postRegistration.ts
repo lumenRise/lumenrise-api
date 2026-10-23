@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { StrKey } from '@stellar/stellar-sdk';
 import type { RequestHandler } from 'express';
 
 import env from '../../env';
@@ -17,9 +18,12 @@ import { getVerifiedProviderAddresses, parseExternalUserId } from '../../service
 const postRegistration: RequestHandler = async (req, res) => {
   const userId = parseExternalUserId(req.body?.userId);
   const name: unknown = req.body?.name;
+  const address: unknown = req.body?.address;
 
   if (
     !userId ||
+    (address !== undefined &&
+      (typeof address !== 'string' || !StrKey.isValidEd25519PublicKey(address))) ||
     typeof name !== 'string' ||
     !name.trim() ||
     name.trim().length > applicationRules.profile.nameMaxLength
@@ -54,7 +58,10 @@ const postRegistration: RequestHandler = async (req, res) => {
       });
     }
 
-    const addresses = await getVerifiedProviderAddresses(userId);
+    const addresses = await getVerifiedProviderAddresses(
+      userId,
+      typeof address === 'string' ? address : undefined,
+    );
 
     if (!addresses) {
       return res
@@ -75,7 +82,7 @@ const postRegistration: RequestHandler = async (req, res) => {
     }
 
     const result = await withDatabaseTransaction(async (session) => {
-      let identity = await Identity.findOne({ externalUserId: userId }).session(session);
+      let identity = await Identity.findOne({ externalUserIds: userId }).session(session);
       const accounts = await StellarAccount.find({ address: { $in: addresses } }).session(session);
       const owners = new Set(accounts.map((account) => account.identity.toString()));
 
@@ -88,7 +95,7 @@ const postRegistration: RequestHandler = async (req, res) => {
 
       if (!identity && accounts.length) {
         identity = await Identity.findById(accounts[0]!.identity).session(session);
-        if (!identity || identity.externalUserId) {
+        if (!identity) {
           return null;
         }
       }
@@ -102,7 +109,7 @@ const postRegistration: RequestHandler = async (req, res) => {
           [
             {
               _id: newIdentityId,
-              externalUserId: userId,
+              externalUserIds: [userId],
               name: name.trim(),
               ...(uploaded
                 ? { avatarObjectKey: uploaded.objectKey, avatarUrl: uploaded.publicUrl }
@@ -113,8 +120,11 @@ const postRegistration: RequestHandler = async (req, res) => {
         );
 
         identity = created[0] ?? null;
-      } else if (!identity.externalUserId || !identity.name?.trim()) {
-        identity.externalUserId = userId;
+      } else if (!identity.externalUserIds.includes(userId) || !identity.name?.trim()) {
+        if (!identity.externalUserIds.includes(userId)) {
+          identity.externalUserIds.push(userId);
+        }
+
         identity.name = identity.name?.trim() ? identity.name : name.trim();
 
         if (uploaded && !identity.avatarUrl) {
