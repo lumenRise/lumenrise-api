@@ -95,6 +95,18 @@ describe('Auth provider registration verification', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('verifies a selected external wallet even when it is absent from the user wallet list', async () => {
+    fetch
+      .mockResolvedValueOnce(reply({ id: 42, accounts: [] }))
+      .mockResolvedValueOnce(reply({ exists: true, user_id: 42, network: 'stellar' }));
+
+    expect(await getVerifiedProviderAddresses('42', address)).toEqual([address]);
+    expect(fetch).toHaveBeenLastCalledWith(
+      'https://identity.example/server/wallets/verify',
+      expect.objectContaining({ body: JSON.stringify({ address, user_id: 42 }) }),
+    );
+  });
+
   it('canonicalizes numeric IDs without accepting unsafe or ambiguous values', () => {
     expect(parseExternalUserId(42)).toBe('42');
     expect(parseExternalUserId('42')).toBe('42');

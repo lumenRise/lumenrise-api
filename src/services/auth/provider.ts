@@ -1,9 +1,13 @@
 import { StrKey } from '@stellar/stellar-sdk';
 
+import verifyProviderAddress from './verifyProviderAddress';
 import { requestAuthProvider } from '../../utils/services/auth/provider/requestAuthProvider';
 import { parseExternalUserId } from '../../utils/services/auth/provider/parseExternalUserId';
 
-const getVerifiedProviderAddresses = async (userId: string): Promise<string[] | null> => {
+const getVerifiedProviderAddresses = async (
+  userId: string,
+  address?: string,
+): Promise<string[] | null> => {
   const user = await requestAuthProvider(`server/users/${userId}`);
 
   if (user === null) {
@@ -19,7 +23,7 @@ const getVerifiedProviderAddresses = async (userId: string): Promise<string[] | 
     throw new Error('Invalid Auth provider user');
   }
 
-  const candidates: unknown[] = [];
+  const candidates: unknown[] = address ? [address] : [];
 
   if ('wallet' in user) {
     candidates.push(user.wallet);
@@ -43,24 +47,11 @@ const getVerifiedProviderAddresses = async (userId: string): Promise<string[] | 
   ];
 
   for (const address of addresses) {
-    const result = await requestAuthProvider('server/wallets/verify', {
-      address,
-      user_id: Number(userId),
-    });
-
-    if (
-      !result ||
-      typeof result !== 'object' ||
-      !('exists' in result) ||
-      result.exists !== true ||
-      !('user_id' in result) ||
-      parseExternalUserId(result.user_id) !== userId ||
-      !('network' in result) ||
-      result.network !== 'stellar'
-    ) {
+    if (!(await verifyProviderAddress(userId, address))) {
       return null;
     }
   }
+
   return addresses;
 };
 
