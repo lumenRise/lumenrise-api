@@ -5,7 +5,7 @@ import type { LaunchRecord } from '../types/launch/model';
 const metadataSchema = new Schema(
   {
     name: { type: String, required: true, immutable: true },
-    description: { type: String, required: true, immutable: true },
+    description: { type: String, default: '' },
     logo: { type: String, required: true, immutable: true },
     symbol: { type: String, required: true, immutable: true },
     website: { type: String },

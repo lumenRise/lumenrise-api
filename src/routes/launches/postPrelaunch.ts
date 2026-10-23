@@ -38,14 +38,24 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
 
   let slug: string;
   let projectName: string;
+  let description: string;
   let website: string | undefined;
   let xAccount: string | undefined;
 
   try {
-    if (typeof req.body?.name !== 'string') {
+    if (typeof req.body?.name !== 'string' || req.body.name.length > 2048) {
       throw new Error('Project name is required');
     }
 
+    if (
+      typeof req.body?.description !== 'string' ||
+      req.body.description.trim().length === 0 ||
+      req.body.description.trim().length > 10_000
+    ) {
+      throw new Error('Project description must contain 1 to 10000 characters');
+    }
+
+    description = req.body.description.trim();
     projectName = req.body.name.trim();
     slug = toLaunchSlug(projectName);
     website = parseOptionalProjectUrl(req.body?.website);
@@ -53,7 +63,7 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
   } catch {
     return res.status(400).json({
       status: 'error',
-      message: 'A valid project name and optional HTTPS website and xAccount links are required',
+      message: 'A valid project name, description of 1 to 10000 characters and optional HTTPS website and xAccount links are required',
       result: {},
     });
   }
@@ -98,6 +108,7 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
         network,
         slug,
         projectName,
+        description,
         ...stored,
         website,
         xAccount,
@@ -129,6 +140,7 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
           publicUrl: stored.publicUrl,
           slug,
           name: projectName,
+          description,
           status: 'pending',
         },
       });

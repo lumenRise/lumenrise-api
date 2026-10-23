@@ -8,6 +8,7 @@ interface TokenImageRecord {
   publicUrl: string;
   slug?: string;
   projectName?: string;
+  description?: string;
   website?: string;
   xAccount?: string;
   status: 'pending' | 'cleanup_ready' | 'deleting' | 'finalized' | 'expired';

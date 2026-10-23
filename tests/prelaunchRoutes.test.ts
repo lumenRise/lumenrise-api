@@ -52,16 +52,18 @@ describe('prelaunch upload', () => {
 
   it('accepts the image and both optional links as multipart fields', async () => {
     const result = await request(app).post('/v1/launches/prelaunch')
-      .field('name', 'Blue Man').field('network', 'testnet').field('ownerAddress', owner)
+      .field('description', '  Server project description  ').field('name', 'Blue Man').field('network', 'testnet').field('ownerAddress', owner)
       .field('website', ' https://project.example ')
       .field('xAccount', 'https://x.com/project')
       .attach('image', Buffer.from('image'), 'logo.png');
 
     expect(result.status).toBe(201);
+    expect(result.body.result.description).toBe('Server project description');
     expect(TokenImage.create).toHaveBeenCalledWith(expect.objectContaining({
       ownerAddress: owner,
       slug: 'blue-man',
       projectName: 'Blue Man',
+      description: 'Server project description',
       website: 'https://project.example',
       xAccount: 'https://x.com/project',
     }));
@@ -69,7 +71,7 @@ describe('prelaunch upload', () => {
 
   it.each([{}, { website: '', xAccount: '   ' }])('accepts missing or blank links: %j', async (links) => {
     let upload = request(app).post('/v1/launches/prelaunch')
-      .field('name', 'Blue Man').field('network', 'testnet').field('ownerAddress', owner);
+      .field('description', '  Server project description  ').field('name', 'Blue Man').field('network', 'testnet').field('ownerAddress', owner);
 
     for (const [key, value] of Object.entries(links)) {
       upload = upload.field(key, value);
@@ -90,7 +92,7 @@ describe('prelaunch upload', () => {
     ['website', 'https://project.example/' + 'a'.repeat(2048)],
   ])('rejects invalid %s before storing an image', async (field, value) => {
     const result = await request(app).post('/v1/launches/prelaunch')
-      .field('name', 'Blue Man').field('network', 'testnet').field('ownerAddress', owner)
+      .field('description', '  Server project description  ').field('name', 'Blue Man').field('network', 'testnet').field('ownerAddress', owner)
       .field(field, value).attach('image', Buffer.from('image'), 'logo.png');
 
     expect(result.status).toBe(400);
@@ -102,7 +104,7 @@ describe('prelaunch upload', () => {
     vi.mocked(Launch.exists).mockResolvedValue({ _id: 'launch' } as never);
 
     const result = await request(app).post('/v1/launches/prelaunch')
-      .field('name', name).field('ownerAddress', owner)
+      .field('description', '  Server project description  ').field('name', name).field('ownerAddress', owner)
       .attach('image', Buffer.from('image'), 'logo.png');
 
     expect(result.status).toBe(409);
@@ -114,7 +116,7 @@ describe('prelaunch upload', () => {
     vi.mocked(LaunchName.findOneAndUpdate).mockRejectedValue({ code: 11000 });
 
     const result = await request(app).post('/v1/launches/prelaunch')
-      .field('name', 'blue-man').field('ownerAddress', owner)
+      .field('description', '  Server project description  ').field('name', 'blue-man').field('ownerAddress', owner)
       .attach('image', Buffer.from('image'), 'logo.png');
 
     expect(result.status).toBe(409);
@@ -125,8 +127,34 @@ describe('prelaunch upload', () => {
     );
   });
 
+  it.each([undefined, '', '   ', 'a'.repeat(10_001)])('rejects missing, blank or oversized descriptions', async (description: string | undefined): Promise<void> => {
+    let upload = request(app).post('/v1/launches/prelaunch')
+      .field('name', 'Blue Man').field('ownerAddress', owner);
+
+    if (description !== undefined) {
+      upload = upload.field('description', description);
+    }
+
+    const result = await upload.attach('image', Buffer.from('image'), 'logo.png');
+
+    expect(result.status).toBe(400);
+    expect(uploadTokenImage).not.toHaveBeenCalled();
+    expect(TokenImage.create).not.toHaveBeenCalled();
+  });
+
+  it.each(['a'.repeat(10_000), 'テ'.repeat(10_000)])('accepts a description at the character limit', async (description: string): Promise<void> => {
+    const result = await request(app).post('/v1/launches/prelaunch')
+      .field('name', 'Blue Man').field('ownerAddress', owner)
+      .field('description', description)
+      .attach('image', Buffer.from('image'), 'logo.png');
+
+    expect(result.status).toBe(201);
+    expect(TokenImage.create).toHaveBeenCalledWith(expect.objectContaining({ description }));
+  });
+
   it('requires a project name', async () => {
     const result = await request(app).post('/v1/launches/prelaunch')
+      .field('description', 'Server project description')
       .field('ownerAddress', owner).attach('image', Buffer.from('image'), 'logo.png');
 
     expect(result.status).toBe(400);
