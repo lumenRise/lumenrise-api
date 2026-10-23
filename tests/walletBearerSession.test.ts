@@ -20,7 +20,7 @@ describe('Auth provider user ID authentication', () => {
     const response = await request(app).get('/v1/auth/session').set('X-User-Id', '42');
     expect(response.status).toBe(200);
     expect(response.body.result).toEqual({ identityId: identityId.toString(), userId: '42' });
-    expect(lookup).toHaveBeenCalledWith({ externalUserId: '42' });
+    expect(lookup).toHaveBeenCalledWith({ externalUserIds: '42' });
     expect(fetch).not.toHaveBeenCalled();
     expect(response.headers['set-cookie']).toBeUndefined();
   });

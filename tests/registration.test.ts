@@ -62,7 +62,7 @@ describe('Auth provider registration', () => {
   it('stores a verified user and wallets without issuing credentials', async () => {
     const response = await request(app)
       .post('/v1/auth/register')
-      .send({ userId: 42, name: 'Alice', address: 'untrusted' });
+      .send({ userId: 42, name: 'Alice', address });
     expect(response.status).toBe(200);
     expect(response.body.result).toEqual({
       userId: '42',
@@ -72,7 +72,7 @@ describe('Auth provider registration', () => {
       addresses: [address],
     });
     expect(Identity.create).toHaveBeenCalledWith(
-      [expect.objectContaining({ externalUserId: '42', name: 'Alice' })],
+      [expect.objectContaining({ externalUserIds: ['42'], name: 'Alice' })],
       expect.anything(),
     );
     expect(StellarAccount.create).toHaveBeenCalledWith(
@@ -103,7 +103,7 @@ describe('Auth provider registration', () => {
     vi.mocked(Identity.findOne).mockReturnValue(
       query({
         _id: identityId,
-        externalUserId: '42',
+        externalUserIds: ['42'],
         status: 'active',
         name: 'Existing name',
       }) as never,
@@ -116,23 +116,32 @@ describe('Auth provider registration', () => {
     expect(Identity.create).not.toHaveBeenCalled();
   });
 
-  it('does not reassign a wallet owned by another Auth provider identity', async () => {
+  it('links a verified alternate user ID to the existing wallet identity', async () => {
     vi.mocked(StellarAccount.find).mockReturnValue(
-      query([{ identity: identityId, address }]) as never,
+      query([{ identity: identityId, address, save: vi.fn() }]) as never,
     );
     vi.spyOn(Identity, 'findById').mockReturnValue(
-      query({ _id: identityId, externalUserId: '43', status: 'active' }) as never,
+      query({
+        _id: identityId,
+        externalUserIds: ['43'],
+        status: 'active',
+        name: 'Original',
+        save: vi.fn(),
+      }) as never,
     );
-    expect(
-      (await request(app).post('/v1/auth/register').send({ userId: '42', name: 'Alice' })).status,
-    ).toBe(409);
+    const response = await request(app)
+      .post('/v1/auth/register')
+      .send({ userId: '42', name: 'Alice' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.result.identityId).toBe(identityId.toString());
+    expect(response.body.result.name).toBe('Original');
     expect(Identity.create).not.toHaveBeenCalled();
-    expect(StellarAccount.create).not.toHaveBeenCalled();
   });
 
   it('does not reactivate a suspended identity', async () => {
     vi.mocked(Identity.findOne).mockReturnValue(
-      query({ _id: identityId, externalUserId: '42', status: 'suspended' }) as never,
+      query({ _id: identityId, externalUserIds: ['42'], status: 'suspended' }) as never,
     );
     expect(
       (await request(app).post('/v1/auth/register').send({ userId: '42', name: 'Alice' })).status,
@@ -243,7 +252,7 @@ describe('Auth provider registration', () => {
     vi.mocked(Identity.findOne).mockReturnValue(
       query({
         _id: identityId,
-        externalUserId: '42',
+        externalUserIds: ['42'],
         status: 'active',
         name: 'Original',
         avatarUrl: 'https://images.example/original.webp',
@@ -276,7 +285,7 @@ describe('Auth provider registration', () => {
     const save = vi.fn().mockResolvedValue(undefined);
     const identity = {
       _id: identityId,
-      externalUserId: '42',
+      externalUserIds: ['42'],
       status: 'active',
       name: null,
       avatarUrl: null,

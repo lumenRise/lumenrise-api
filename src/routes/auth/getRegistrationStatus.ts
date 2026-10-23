@@ -15,7 +15,7 @@ const getRegistrationStatus: RequestHandler = async (req, res) => {
   }
 
   try {
-    const identity = await Identity.findOne({ externalUserId: userId }).select(
+    const identity = await Identity.findOne({ externalUserIds: userId }).select(
       '_id status name avatarUrl',
     );
 

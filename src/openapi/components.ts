@@ -530,6 +530,11 @@ const openApiComponents = {
             { type: 'integer', minimum: 1, maximum: 9007199254740991 },
           ],
         },
+        address: {
+          type: 'string',
+          pattern: '^G[A-Z2-7]{55}$',
+          description: 'Optional selected Stellar wallet; verified against userId.',
+        },
         name: {
           type: 'string',
           minLength: 1,

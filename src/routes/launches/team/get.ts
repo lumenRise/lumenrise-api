@@ -21,7 +21,7 @@ const getLaunchTeam: RequestHandler = async (_req, res) => {
       },
       status: 'active',
       deletedAt: null,
-      externalUserId: { $type: 'string', $ne: '' },
+      'externalUserIds.0': { $exists: true },
     })
       .select('name avatarUrl')
       .lean();

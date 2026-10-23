@@ -119,7 +119,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB network isol
     await stellarNetworkIsolation.up();
     await Identity.createIndexes();
     await ManualRefreshCooldown.createIndexes();
-    await Identity.create({ externalUserId: '42', status: 'active' });
+    await Identity.create({ externalUserIds: ['42'], status: 'active' });
 
     const [testnet, publicNetwork] = await Promise.all([
       request(app).post(`/v1/stellar/accounts/${address}/activity-scan`).set('X-User-Id', '42'),

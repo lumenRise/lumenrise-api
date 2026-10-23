@@ -63,7 +63,9 @@ describe('owner-managed launch teams', () => {
         lean: vi.fn().mockResolvedValue([]),
       }),
     } as never);
-    vi.mocked(Launch.find).mockReturnValue({ select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([]) }) } as never);
+    vi.mocked(Launch.find).mockReturnValue({
+      select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([]) }),
+    } as never);
     vi.mocked(Launch.findOne).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue({ owner, contractId }),
@@ -168,7 +170,7 @@ describe('owner-managed launch teams', () => {
       _id: memberId.toString(),
       status: 'active',
       deletedAt: null,
-      externalUserId: { $type: 'string', $ne: '' },
+      'externalUserIds.0': { $exists: true },
     });
     expect(LaunchTeamMember.findOneAndUpdate).toHaveBeenCalledWith(
       { network: 'public', contractId, kind: 'registered', identity: memberId, status: 'pending' },
@@ -304,7 +306,7 @@ describe('owner-managed launch teams', () => {
       expect.objectContaining({
         status: 'active',
         deletedAt: null,
-        externalUserId: { $type: 'string', $ne: '' },
+        'externalUserIds.0': { $exists: true },
       }),
     );
   });
@@ -320,7 +322,7 @@ describe('owner-managed launch teams', () => {
       name: { $regex: 'A\\.\\*', $options: 'i' },
       status: 'active',
       deletedAt: null,
-      externalUserId: { $type: 'string', $ne: '' },
+      'externalUserIds.0': { $exists: true },
     });
     expect(result.body.result.users).toEqual([
       {
