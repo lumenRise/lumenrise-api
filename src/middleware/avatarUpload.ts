@@ -5,7 +5,7 @@ import env from '../env';
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: env.R2_MAX_IMAGE_BYTES, files: 1, fields: 0, parts: 1 },
+  limits: { fileSize: env.R2_MAX_IMAGE_BYTES, files: 1, fields: 1, fieldSize: 1024, parts: 3 },
 });
 
 const avatarUpload: RequestHandler = (req, res, next) => {
@@ -16,7 +16,9 @@ const avatarUpload: RequestHandler = (req, res, next) => {
 
     if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({
-        status: 'error', message: 'Avatar exceeds upload limit', result: { maxBytes: env.R2_MAX_IMAGE_BYTES },
+        status: 'error',
+        message: 'Avatar exceeds upload limit',
+        result: { maxBytes: env.R2_MAX_IMAGE_BYTES },
       });
     }
 

@@ -9,6 +9,7 @@ import type { AvatarMutationResult } from '../../types/avatar';
 const replaceAvatar = async (
   identityId: Types.ObjectId,
   input: Buffer,
+  name?: string,
 ): Promise<AvatarMutationResult | { status: 'invalid' }> => {
   const body = await processAvatar(input);
 
@@ -16,8 +17,9 @@ const replaceAvatar = async (
     return { status: 'invalid' };
   }
 
-  const identity = await Identity.findOne({ _id: identityId, status: 'active' })
-    .select('+avatarObjectKey name avatarUrl');
+  const identity = await Identity.findOne({ _id: identityId, status: 'active' }).select(
+    '+avatarObjectKey name avatarUrl',
+  );
 
   if (!identity) {
     return { status: 'missing' };
@@ -31,8 +33,14 @@ const replaceAvatar = async (
   try {
     updated = await Identity.findOneAndUpdate(
       { _id: identityId, status: 'active', avatarObjectKey: previousKey },
-      { $set: { avatarObjectKey: uploaded.objectKey, avatarUrl: uploaded.publicUrl } },
-      { new: true },
+      {
+        $set: {
+          avatarObjectKey: uploaded.objectKey,
+          avatarUrl: uploaded.publicUrl,
+          ...(name === undefined ? {} : { name }),
+        },
+      },
+      { new: true, runValidators: true },
     ).select('name avatarUrl');
   } catch (error) {
     await deleteAvatarOrQueue(uploaded.objectKey);
@@ -50,7 +58,11 @@ const replaceAvatar = async (
 
   return {
     status: 'updated',
-    result: { identityId: updated._id.toString(), name: updated.name, avatarUrl: updated.avatarUrl },
+    result: {
+      identityId: updated._id.toString(),
+      name: updated.name,
+      avatarUrl: updated.avatarUrl,
+    },
   };
 };
 
