@@ -2,11 +2,19 @@ import type { PipelineStage } from 'mongoose';
 
 import type { LaunchListQuery } from '../../types/launch/list';
 import launchUnsignedExpression from './launchUnsignedExpression';
+import buildLaunchVolumePipeline from './buildLaunchVolumePipeline';
 
 const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineStage[] => {
   const direction = query.direction === 'asc' ? 1 : -1;
-  const since = new Date(now.getTime() - 86_400_000);
   const nowSeconds = Math.floor(now.getTime() / 1000);
+
+  const emptyVolume = {
+    grossPairAmount: '0',
+    assetAmount: '0',
+    tradeCount: 0,
+    buyCount: 0,
+    sellCount: 0,
+  };
 
   const match: Record<string, unknown> = {
     network: query.network,
@@ -35,7 +43,6 @@ const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineSta
       pipeline: [
         {
           $match: {
-            tradedAt: { $gte: since, $lte: now },
             $expr: {
               $and: [
                 { $eq: ['$network', '$$launchNetwork'] },
@@ -44,15 +51,7 @@ const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineSta
             },
           },
         },
-        {
-          $group: {
-            _id: null,
-            tradeCount: { $sum: 1 },
-            buyCount: { $sum: { $cond: [{ $eq: ['$side', 'buy'] }, 1, 0] } },
-            grossPairAmount: { $sum: { $toDecimal: '$grossAmount' } },
-            assetAmount: { $sum: { $toDecimal: '$assetAmount' } },
-          },
-        },
+        ...buildLaunchVolumePipeline(now),
       ],
       as: '_market',
     },
@@ -60,22 +59,14 @@ const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineSta
 
   const marketFields: PipelineStage.AddFields = {
     $addFields: {
-      '_listing.tradeCount': { $ifNull: [{ $arrayElemAt: ['$_market.tradeCount', 0] }, 0] },
-      '_listing.grossVolume': { $ifNull: [{ $arrayElemAt: ['$_market.grossPairAmount', 0] }, 0] },
-      volume24h: {
-        tradeCount: { $ifNull: [{ $arrayElemAt: ['$_market.tradeCount', 0] }, 0] },
-        buyCount: { $ifNull: [{ $arrayElemAt: ['$_market.buyCount', 0] }, 0] },
-        sellCount: {
-          $subtract: [
-            { $ifNull: [{ $arrayElemAt: ['$_market.tradeCount', 0] }, 0] },
-            { $ifNull: [{ $arrayElemAt: ['$_market.buyCount', 0] }, 0] },
-          ],
-        },
-        grossPairAmount: {
-          $toString: { $ifNull: [{ $arrayElemAt: ['$_market.grossPairAmount', 0] }, 0] },
-        },
-        assetAmount: { $toString: { $ifNull: [{ $arrayElemAt: ['$_market.assetAmount', 0] }, 0] } },
+      '_listing.tradeCount': {
+        $ifNull: [{ $arrayElemAt: ['$_market.volume24h.tradeCount', 0] }, 0],
       },
+      '_listing.grossVolume': {
+        $toDecimal: { $ifNull: [{ $arrayElemAt: ['$_market.volume24h.grossPairAmount', 0] }, '0'] },
+      },
+      volume24h: { $ifNull: [{ $arrayElemAt: ['$_market.volume24h', 0] }, emptyVolume] },
+      volumeTotal: { $ifNull: [{ $arrayElemAt: ['$_market.volumeTotal', 0] }, emptyVolume] },
     },
   };
 
