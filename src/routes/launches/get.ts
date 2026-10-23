@@ -4,7 +4,7 @@ import log from '../../logger';
 import Launch from '../../models/Launch';
 import type { LaunchListPage } from '../../types/launch/list';
 import toLaunchResult from '../../utils/launch/toLaunchResult';
-import decimalInteger from '../../utils/launch/decimalInteger';
+import toLaunchVolume from '../../utils/launch/toLaunchVolume';
 import parseLaunchListQuery from '../../utils/launch/parseLaunchListQuery';
 import buildLaunchListPipeline from '../../utils/launch/buildLaunchListPipeline';
 
@@ -32,11 +32,8 @@ const getLaunchesRoute: RequestHandler = async (req, res): Promise<unknown> => {
           ...toLaunchResult(launch, now),
           category: 'bonding-curve',
           amountScale: 7,
-          volume24h: {
-            ...launch.volume24h,
-            grossPairAmount: decimalInteger(launch.volume24h.grossPairAmount),
-            assetAmount: decimalInteger(launch.volume24h.assetAmount),
-          },
+          volume24h: toLaunchVolume(launch.volume24h),
+          volumeTotal: toLaunchVolume(launch.volumeTotal),
         })),
         page: query.page,
         limit: query.limit,

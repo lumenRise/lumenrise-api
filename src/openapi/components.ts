@@ -259,12 +259,31 @@ const openApiComponents = {
               { $ref: '#/components/schemas/Launch' },
               {
                 type: 'object',
-                required: ['category', 'amountScale', 'volume24h'],
+                required: ['category', 'amountScale', 'volume24h', 'volumeTotal'],
                 properties: {
                   category: { type: 'string', const: 'bonding-curve' },
                   amountScale: { type: 'integer', const: 7 },
                   volume24h: {
                     type: 'object',
+                    required: [
+                      'grossPairAmount',
+                      'assetAmount',
+                      'tradeCount',
+                      'buyCount',
+                      'sellCount',
+                    ],
+                    properties: {
+                      grossPairAmount: unsignedAmount,
+                      assetAmount: unsignedAmount,
+                      tradeCount: { type: 'integer', minimum: 0 },
+                      buyCount: { type: 'integer', minimum: 0 },
+                      sellCount: { type: 'integer', minimum: 0 },
+                    },
+                  },
+                  volumeTotal: {
+                    type: 'object',
+                    description:
+                      'All verified API-submitted trades through statsAsOf, without a lower time bound.',
                     required: [
                       'grossPairAmount',
                       'assetAmount',
@@ -289,7 +308,10 @@ const openApiComponents = {
         direction: { type: 'string', enum: ['asc', 'desc'] },
         dateMeaning: { type: 'string', const: 'contract_creation' },
         statsAsOf: dateTime,
-        statsSince: dateTime,
+        statsSince: {
+          ...dateTime,
+          description: 'Lower bound for volume24h only; volumeTotal has no lower time bound.',
+        },
         statsCoverage: { type: 'string', const: 'verified_client_submitted_trades' },
         page: { type: 'integer', minimum: 1 },
         limit: { type: 'integer', minimum: 1, maximum: 100 },

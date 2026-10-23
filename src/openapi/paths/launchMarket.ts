@@ -117,9 +117,9 @@ const launchMarketPaths = {
       tags: ['Launches'],
       security: [],
       operationId: 'getLaunchMarket',
-      summary: 'Read curve price and 24-hour trade statistics',
+      summary: 'Read curve price, 24-hour and total trade statistics',
       description:
-        'Price is the latest recorded current_price contract response. 24-hour statistics cover verified client-submitted trades. This GET reads the database without making RPC calls.',
+        'Price is the latest recorded current_price contract response. 24-hour and total statistics cover verified client-submitted trades. volumeTotal includes all recorded buys and sells through the current time, without a lower time bound. This GET reads the database without making RPC calls.',
       parameters: identity,
       responses: {
         '200': jsonResponse('Market retrieved.', { $ref: '#/components/schemas/LaunchMarket' }),

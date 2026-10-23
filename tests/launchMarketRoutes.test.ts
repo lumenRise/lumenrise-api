@@ -10,11 +10,15 @@ import getTrades from '../src/routes/launches/getTrades';
 import getMarket from '../src/routes/launches/getMarket';
 import LaunchPriceSample from '../src/models/LaunchPriceSample';
 
-vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet', LOG_LEVEL: 'silent', NODE_ENV: 'test' } }));
+vi.mock('../src/env', () => ({
+  default: { STELLAR_AUTH_NETWORK: 'testnet', LOG_LEVEL: 'silent', NODE_ENV: 'test' },
+}));
 
 vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn() } }));
 vi.mock('../src/models/LaunchTrade', () => ({ default: { aggregate: vi.fn(), find: vi.fn() } }));
-vi.mock('../src/models/LaunchPriceSample', () => ({ default: { aggregate: vi.fn(), findOne: vi.fn() } }));
+vi.mock('../src/models/LaunchPriceSample', () => ({
+  default: { aggregate: vi.fn(), findOne: vi.fn() },
+}));
 const now = new Date('2026-10-11T00:00:00Z');
 const launch = {
   asset: 'token',
@@ -35,22 +39,53 @@ describe('submitted trades and observed price reads', () => {
   afterEach(() => vi.useRealTimers());
   it('uses the recorded contract price without calculating a formula', async () => {
     vi.mocked(LaunchTrade.aggregate).mockResolvedValue([
-      { tradeCount: 3, buyCount: 2, grossVolume: '9007199254740993', assetVolume: '20000000' },
+      {
+        volume24h: {
+          tradeCount: 3,
+          buyCount: 2,
+          sellCount: 1,
+          grossPairAmount: '9007199254740993',
+          assetAmount: '20000000',
+        },
+        volumeTotal: {
+          tradeCount: 5,
+          buyCount: 3,
+          sellCount: 2,
+          grossPairAmount: '19007199254740993',
+          assetAmount: '40000000',
+        },
+      },
     ]);
     const res = response();
     await getMarket(request(), res as unknown as Response, vi.fn());
     expect(res.json.mock.calls[0]![0].result).toMatchObject({
       currentPrice: '12345678',
       volume24h: { sellCount: 1, grossPairAmount: '9007199254740993' },
+      volumeTotal: {
+        tradeCount: 5,
+        buyCount: 3,
+        sellCount: 2,
+        grossPairAmount: '19007199254740993',
+        assetAmount: '40000000',
+      },
     });
     expect(res.json.mock.calls[0]![0].result).not.toHaveProperty('coverage');
   });
   it('does not fabricate a price when no contract observation exists', async () => {
-    vi.mocked(LaunchPriceSample.findOne).mockReturnValue({ sort: () => ({ lean: async () => null }) } as never);
+    vi.mocked(LaunchPriceSample.findOne).mockReturnValue({
+      sort: () => ({ lean: async () => null }),
+    } as never);
     vi.mocked(LaunchTrade.aggregate).mockResolvedValue([]);
     const res = response();
     await getMarket(request(), res as unknown as Response, vi.fn());
     expect(res.json.mock.calls[0]![0].result.currentPrice).toBeNull();
+    expect(res.json.mock.calls[0]![0].result.volumeTotal).toEqual({
+      grossPairAmount: '0',
+      assetAmount: '0',
+      tradeCount: 0,
+      buyCount: 0,
+      sellCount: 0,
+    });
   });
   it('returns sample candles and a preceding price for a flat carry-forward', async () => {
     vi.mocked(LaunchPriceSample.aggregate).mockResolvedValue([
@@ -118,11 +153,22 @@ describe('submitted trades and observed price reads', () => {
         executionPrice: '40000000',
       },
     ]);
-    expect(JSON.parse(Buffer.from(result.nextCursor, 'base64url').toString())).toEqual([now.toISOString(), 200, 3, 0]);
-    await getTrades(request({ cursor: result.nextCursor }), response() as unknown as Response, vi.fn());
+    expect(JSON.parse(Buffer.from(result.nextCursor, 'base64url').toString())).toEqual([
+      now.toISOString(),
+      200,
+      3,
+      0,
+    ]);
+    await getTrades(
+      request({ cursor: result.nextCursor }),
+      response() as unknown as Response,
+      vi.fn(),
+    );
     expect(LaunchTrade.find).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        $or: expect.arrayContaining([{ tradedAt: now, ledger: 200, transactionIndex: 3, operationIndex: { $lt: 0 } }]),
+        $or: expect.arrayContaining([
+          { tradedAt: now, ledger: 200, transactionIndex: 3, operationIndex: { $lt: 0 } },
+        ]),
       }),
     );
   });

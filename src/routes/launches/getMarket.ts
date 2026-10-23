@@ -4,10 +4,11 @@ import log from '../../logger';
 import Launch from '../../models/Launch';
 import LaunchTrade from '../../models/LaunchTrade';
 import LaunchPriceSample from '../../models/LaunchPriceSample';
-import decimalInteger from '../../utils/launch/decimalInteger';
+import toLaunchVolume from '../../utils/launch/toLaunchVolume';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
+import buildLaunchVolumePipeline from '../../utils/launch/buildLaunchVolumePipeline';
 
-const getMarket: RequestHandler = async (req, res) => {
+const getMarket: RequestHandler = async (req, res): Promise<unknown> => {
   const identity = parseMarketRequest(req);
 
   if (!identity) {
@@ -16,31 +17,10 @@ const getMarket: RequestHandler = async (req, res) => {
 
   try {
     const now = new Date();
-    const since = new Date(now.getTime() - 86_400_000);
     const [launch, price, totals] = await Promise.all([
       Launch.findOne(identity).lean(),
       LaunchPriceSample.findOne(identity).sort({ ledger: -1, sampledAt: -1 }).lean(),
-      LaunchTrade.aggregate([
-        { $match: { ...identity, tradedAt: { $gte: since, $lte: now } } },
-        {
-          $group: {
-            _id: null,
-            tradeCount: { $sum: 1 },
-            buyCount: { $sum: { $cond: [{ $eq: ['$side', 'buy'] }, 1, 0] } },
-            grossVolume: { $sum: { $toDecimal: '$grossAmount' } },
-            assetVolume: { $sum: { $toDecimal: '$assetAmount' } },
-          },
-        },
-        {
-          $project: {
-            _id: 0,
-            tradeCount: 1,
-            buyCount: 1,
-            grossVolume: { $toString: '$grossVolume' },
-            assetVolume: { $toString: '$assetVolume' },
-          },
-        },
-      ]),
+      LaunchTrade.aggregate([{ $match: identity }, ...buildLaunchVolumePipeline(now)]),
     ]);
 
     if (!launch) {
@@ -69,17 +49,13 @@ const getMarket: RequestHandler = async (req, res) => {
         curveReserve: launch.state.quote_reserve,
         netTokensSold: launch.state.sold,
         distinctBuyers: launch.state.buyer_count,
-        volume24h: {
-          grossPairAmount: decimalInteger(total?.grossVolume ?? '0'),
-          assetAmount: decimalInteger(total?.assetVolume ?? '0'),
-          tradeCount: total?.tradeCount ?? 0,
-          buyCount: total?.buyCount ?? 0,
-          sellCount: (total?.tradeCount ?? 0) - (total?.buyCount ?? 0),
-        },
+        volume24h: toLaunchVolume(total?.volume24h),
+        volumeTotal: toLaunchVolume(total?.volumeTotal),
       },
     });
   } catch (error) {
     log.error({ error }, 'Market read failed');
+
     return res
       .status(503)
       .json({ status: 'error', message: 'Market is temporarily unavailable', result: {} });

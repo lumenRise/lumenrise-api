@@ -73,8 +73,8 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
       [0, '9999', -100],
       [1, '100', -100],
       [1, '100', -200],
-      [1, '100', -300],
-      [1, '999999', -86_401],
+      [1, '100', -86_400],
+      [1, '9007199254740993', -86_401],
       [1, '999999', 1],
       [2, '50', -100],
       [2, '50', -200],
@@ -149,7 +149,28 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
       grossPairAmount: '300',
       assetAmount: '30',
     });
+    expect(page?.launches[0]?.volumeTotal).toEqual({
+      tradeCount: 4,
+      buyCount: 2,
+      sellCount: 2,
+      grossPairAmount: '9007199254741293',
+      assetAmount: '40',
+    });
     expect(page?.total).toEqual([{ count: 7 }]);
+  });
+
+  it('returns zero total volume for launches without recorded trades', async () => {
+    const [page] = await Launch.aggregate<LaunchListPage>(
+      buildLaunchListPipeline({ ...baseQuery, search: 'token4' }, now),
+    );
+
+    expect(page?.launches[0]?.volumeTotal).toEqual({
+      grossPairAmount: '0',
+      assetAmount: '0',
+      tradeCount: 0,
+      buyCount: 0,
+      sellCount: 0,
+    });
   });
 
   it('includes only open ungraduated curves with positive targets, including contracts without expiry', async () => {

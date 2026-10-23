@@ -33,6 +33,7 @@ interface LaunchListVolume {
 
 interface LaunchListRecord extends LaunchRecord {
   volume24h: LaunchListVolume;
+  volumeTotal: LaunchListVolume;
 }
 
 interface LaunchListPage {

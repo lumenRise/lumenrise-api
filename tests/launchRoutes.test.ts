@@ -84,6 +84,13 @@ describe('public launch handlers', () => {
         launches: [
           {
             ...launch,
+            volumeTotal: {
+              grossPairAmount: '9007199254740993',
+              assetAmount: '100',
+              tradeCount: 2,
+              buyCount: 1,
+              sellCount: 1,
+            },
             volume24h: {
               grossPairAmount: '0',
               assetAmount: '0',
@@ -116,6 +123,13 @@ describe('public launch handlers', () => {
             expect.objectContaining({
               contractId,
               asOfLedger: 123,
+              volumeTotal: {
+                grossPairAmount: '9007199254740993',
+                assetAmount: '100',
+                tradeCount: 2,
+                buyCount: 1,
+                sellCount: 1,
+              },
               bonding: expect.objectContaining({ version: 1, progressBps: 0 }),
             }),
           ],
@@ -132,7 +146,9 @@ describe('public launch handlers', () => {
     await getLaunchByContractIdRoute(
       {
         network: 'testnet',
-        query: { network: 'testnet' }, params: { contractId } } as unknown as Request,
+        query: { network: 'testnet' },
+        params: { contractId },
+      } as unknown as Request,
       res as unknown as Response,
       vi.fn(),
     );

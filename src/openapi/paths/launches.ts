@@ -6,7 +6,7 @@ const launchPaths = {
       tags: ['Launches'],
       summary: 'Search, filter and rank confirmed launches before pagination',
       description:
-        'All filters and sorting apply globally before pagination. Newest/date use verified contract creation time, never startsAt or observedAt; unknown dates sort last in both directions. Categories currently contain only bonding-curve launches; auction and pre-sale return empty results. Trending counts verified client-submitted trades in the rolling 24-hour window. Top volume requires pair (payment asset contract ID). Almost graduated includes only open, ungraduated curves with valid positive targets, ordered by net reserve / target; no minimum progress threshold. Equal sort values use contractId ascending. 24-hour statistics cover verified client-submitted trades, not all chain activity.',
+        'All filters and sorting apply globally before pagination. Newest/date use verified contract creation time, never startsAt or observedAt; unknown dates sort last in both directions. Categories currently contain only bonding-curve launches; auction and pre-sale return empty results. Trending counts verified client-submitted trades in the rolling 24-hour window. Top volume requires pair (payment asset contract ID). Almost graduated includes only open, ungraduated curves with valid positive targets, ordered by net reserve / target; no minimum progress threshold. Equal sort values use contractId ascending. 24-hour and total statistics cover verified client-submitted trades, not all chain activity. volumeTotal includes all recorded buys and sells through statsAsOf, without a lower time bound. statsSince applies only to volume24h.',
       operationId: 'getLaunches',
       security: [],
       parameters: [
@@ -97,7 +97,8 @@ const launchPaths = {
   '/v1/launches/prelaunch': {
     post: {
       tags: ['Launches'],
-      summary: 'Save a token image, required description and optional project links before signing a launch transaction',
+      summary:
+        'Save a token image, required description and optional project links before signing a launch transaction',
       operationId: 'postPrelaunch',
       requestBody: {
         required: true,
@@ -108,8 +109,20 @@ const launchPaths = {
               required: ['name', 'description', 'ownerAddress', 'image'],
               properties: {
                 network: { type: 'string', enum: ['testnet', 'public'] },
-                name: { type: 'string', minLength: 1, maxLength: 2048, description: 'Project name. Its normalized slug must contain 1 to 100 characters and be unique within the network. Spaces and punctuation become hyphens; case is ignored. team and prelaunch are reserved.' },
-                description: { type: 'string', minLength: 1, maxLength: 10_000, description: 'Required project description stored by the server. The contract description is ignored.' },
+                name: {
+                  type: 'string',
+                  minLength: 1,
+                  maxLength: 2048,
+                  description:
+                    'Project name. Its normalized slug must contain 1 to 100 characters and be unique within the network. Spaces and punctuation become hyphens; case is ignored. team and prelaunch are reserved.',
+                },
+                description: {
+                  type: 'string',
+                  minLength: 1,
+                  maxLength: 10_000,
+                  description:
+                    'Required project description stored by the server. The contract description is ignored.',
+                },
                 ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
                 image: { type: 'string', format: 'binary' },
                 website: { type: 'string', maxLength: 2048 },

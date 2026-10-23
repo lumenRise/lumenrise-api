@@ -111,6 +111,18 @@ const marketSchemas = {
           sellCount: count,
         },
       },
+      volumeTotal: {
+        type: 'object',
+        description:
+          'All verified trades submitted to the API through the current time, without a lower time bound. Amounts include both buys and sells; this is not a complete on-chain volume index.',
+        properties: {
+          grossPairAmount: amount,
+          assetAmount: amount,
+          tradeCount: count,
+          buyCount: count,
+          sellCount: count,
+        },
+      },
     },
   },
   LaunchTimeframeChart: {
