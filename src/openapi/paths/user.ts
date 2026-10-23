@@ -17,7 +17,7 @@ const userPaths = {
   '/v1/user/avatar': {
     put: {
       tags: ['Profile'],
-      summary: 'Upload or replace the signed-in identity avatar',
+      summary: 'Update the signed-in identity name, avatar, or both',
       operationId: 'putMyAvatar',
       requestBody: {
         required: true,
@@ -25,14 +25,24 @@ const userPaths = {
           'multipart/form-data': {
             schema: {
               type: 'object',
-              required: ['avatar'],
-              properties: { avatar: { type: 'string', format: 'binary' } },
+              additionalProperties: false,
+              anyOf: [{ required: ['avatar'] }, { required: ['name'] }],
+              properties: {
+                avatar: { type: 'string', format: 'binary' },
+                name: {
+                  type: 'string',
+                  minLength: 1,
+                  maxLength: 80,
+                  description:
+                    'Display name. Leading and trailing whitespace is removed; blank names are rejected.',
+                },
+              },
             },
           },
         },
       },
       responses: {
-        '200': jsonResponse('Avatar updated.', { $ref: '#/components/schemas/MyProfile' }),
+        '200': jsonResponse('Profile updated.', { $ref: '#/components/schemas/MyProfile' }),
         '400': { $ref: '#/components/responses/BadRequest' },
         '401': { $ref: '#/components/responses/Unauthorized' },
         '404': { $ref: '#/components/responses/NotFound' },
