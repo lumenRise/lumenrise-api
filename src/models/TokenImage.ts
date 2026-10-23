@@ -10,6 +10,7 @@ const schema = new Schema<TokenImageRecord>(
     objectKey: { type: String, required: true, unique: true, immutable: true },
     slug: { type: String, immutable: true },
     projectName: { type: String, immutable: true },
+    description: { type: String, immutable: true },
     website: { type: String },
     xAccount: { type: String },
     publicUrl: { type: String, required: true, unique: true, immutable: true },

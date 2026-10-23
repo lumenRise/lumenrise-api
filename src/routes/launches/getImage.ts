@@ -31,6 +31,7 @@ const getLaunchImageRoute: RequestHandler = async (req, res) => {
         imageId: image._id.toString(),
         slug: image.slug ?? null,
         name: image.projectName ?? null,
+        description: image.description ?? null,
         network: image.network,
         ownerAddress: image.ownerAddress,
         publicUrl: image.publicUrl,

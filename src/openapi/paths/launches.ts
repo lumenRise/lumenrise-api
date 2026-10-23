@@ -97,7 +97,7 @@ const launchPaths = {
   '/v1/launches/prelaunch': {
     post: {
       tags: ['Launches'],
-      summary: 'Save a token image and optional project links before signing a launch transaction',
+      summary: 'Save a token image, required description and optional project links before signing a launch transaction',
       operationId: 'postPrelaunch',
       requestBody: {
         required: true,
@@ -105,10 +105,11 @@ const launchPaths = {
           'multipart/form-data': {
             schema: {
               type: 'object',
-              required: ['name', 'ownerAddress', 'image'],
+              required: ['name', 'description', 'ownerAddress', 'image'],
               properties: {
                 network: { type: 'string', enum: ['testnet', 'public'] },
                 name: { type: 'string', minLength: 1, maxLength: 2048, description: 'Project name. Its normalized slug must contain 1 to 100 characters and be unique within the network. Spaces and punctuation become hyphens; case is ignored. team and prelaunch are reserved.' },
+                description: { type: 'string', minLength: 1, maxLength: 10_000, description: 'Required project description stored by the server. The contract description is ignored.' },
                 ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
                 image: { type: 'string', format: 'binary' },
                 website: { type: 'string', maxLength: 2048 },
@@ -121,10 +122,11 @@ const launchPaths = {
       responses: {
         '201': jsonResponse('Token image uploaded and pending chain confirmation.', {
           type: 'object',
-          required: ['imageId', 'publicUrl', 'status', 'slug', 'name'],
+          required: ['imageId', 'publicUrl', 'status', 'slug', 'name', 'description'],
           properties: {
             slug: { type: 'string' },
             name: { type: 'string' },
+            description: { type: 'string' },
             imageId: { type: 'string' },
             publicUrl: { type: 'string', format: 'uri' },
             status: { type: 'string', enum: ['pending'] },
@@ -170,6 +172,7 @@ const launchPaths = {
             imageId: { type: 'string' },
             slug: { type: ['string', 'null'] },
             name: { type: ['string', 'null'] },
+            description: { type: ['string', 'null'] },
             network: { type: 'string', enum: ['testnet', 'public'] },
             ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
             publicUrl: { type: 'string', format: 'uri' },
