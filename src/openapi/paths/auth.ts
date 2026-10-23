@@ -27,6 +27,41 @@ const authPaths = {
       },
     },
   },
+  '/v1/auth/resolve': {
+    post: {
+      tags: ['Authentication'],
+      summary: 'Resolve an identity using a verified Stellar wallet',
+      description:
+        'Send the current Blux userId and selected Stellar address after login. Verifies the exact pair with Blux, then links an alternate user ID to the existing active wallet identity. Returns registered false when no identity exists or the name is incomplete. Conflicting identities are never merged. Does not issue credentials.',
+      operationId: 'resolveIdentity',
+      security: [],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['userId', 'address'],
+              properties: {
+                userId: { $ref: '#/components/schemas/ExternalUserId' },
+                address: { type: 'string', pattern: '^G[A-Z2-7]{55}$' },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        '200': jsonResponse('Resolved registration status.', {
+          $ref: '#/components/schemas/RegistrationStatus',
+        }),
+        '400': { $ref: '#/components/responses/BadRequest' },
+        '401': { $ref: '#/components/responses/Unauthorized' },
+        '403': { $ref: '#/components/responses/Forbidden' },
+        '409': { $ref: '#/components/responses/Conflict' },
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
   '/v1/auth/register': {
     post: {
       tags: ['Authentication'],
@@ -50,6 +85,11 @@ const authPaths = {
                   minLength: 1,
                   maxLength: 80,
                   description: 'Trimmed, nonempty display name.',
+                },
+                address: {
+                  type: 'string',
+                  pattern: '^G[A-Z2-7]{55}$',
+                  description: 'Optional selected wallet; verified against userId.',
                 },
                 avatar: { type: 'string', format: 'binary' },
               },
