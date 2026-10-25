@@ -3,6 +3,10 @@ import type { RuntimeConfiguration } from '../../types/configuration';
 import { parseUrl } from '../../utils/services/configuration/validateRuntimeConfiguration/parseUrl';
 
 const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void => {
+  if (Boolean(configuration.PRIVY_APP_ID) !== Boolean(configuration.PRIVY_APP_SECRET)) {
+    throw new Error('PRIVY_APP_ID and PRIVY_APP_SECRET must be configured together');
+  }
+
   const hasXClientId = configuration.X_CLIENT_ID.length > 0;
   const hasXClientSecret = configuration.X_CLIENT_SECRET.length > 0;
   const hasGitHubClientId = configuration.GITHUB_CLIENT_ID.length > 0;
@@ -52,10 +56,12 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   }
 
   const clientOrigin = parseUrl(configuration.CLIENT_ORIGIN, 'CLIENT_ORIGIN');
+
   const stellarHorizonUrls = [
     parseUrl(configuration.STELLAR_TESTNET_HORIZON_URL, 'STELLAR_TESTNET_HORIZON_URL'),
     parseUrl(configuration.STELLAR_PUBLIC_HORIZON_URL, 'STELLAR_PUBLIC_HORIZON_URL'),
   ];
+
   const githubCallbackUrl = parseUrl(configuration.GITHUB_CALLBACK_URL, 'GITHUB_CALLBACK_URL');
   const xCallbackUrl = parseUrl(configuration.X_CALLBACK_URL, 'X_CALLBACK_URL');
 
@@ -102,6 +108,7 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
   if (r2Values.every(Boolean)) {
     const endpoint = parseUrl(configuration.R2_ENDPOINT, 'R2_ENDPOINT');
     const publicBase = parseUrl(configuration.R2_PUBLIC_BASE_URL, 'R2_PUBLIC_BASE_URL');
+
     const hasAllowedProtocol = (url: URL): boolean =>
       url.protocol === 'https:' ||
       (configuration.NODE_ENV === 'development' &&
