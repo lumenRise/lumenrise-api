@@ -27,6 +27,13 @@ const schema = defineConfig({
   CLIENT_ORIGIN: {
     default: 'http://localhost:5173',
   },
+  PRIVY_APP_ID: {
+    default: '',
+  },
+  PRIVY_APP_SECRET: {
+    default: '',
+    secret: true,
+  },
   AUTH_PROVIDER_API_URL: {
     example: 'https://identity.example',
   },
@@ -80,6 +87,13 @@ const schema = defineConfig({
     default: '',
     example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
   },
+  BASE_TESTNET_RPC_URL: { default: '' },
+  BASE_PUBLIC_RPC_URL: { default: '' },
+  BASE_TESTNET_FACTORY_ADDRESS: { default: '' },
+  BASE_PUBLIC_FACTORY_ADDRESS: { default: '' },
+  BASE_TESTNET_DEPLOYMENT_BLOCK: { default: '' },
+  BASE_PUBLIC_DEPLOYMENT_BLOCK: { default: '' },
+  BASE_LOG_BATCH_SIZE: { type: 'number', default: 500 },
   STELLAR_TESTNET_RPC_URL: {
     default: 'https://soroban-testnet.stellar.org',
   },

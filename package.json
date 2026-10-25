@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1147.0",
+    "@privy-io/node": "^0.37.0",
     "@stellar/stellar-sdk": "^17.1.0",
     "amqplib": "0.10.9",
     "compression": "^1.8.2",
@@ -41,7 +42,8 @@
     "pino": "^10.3.1",
     "sharp": "^0.35.5",
     "smol-toml": "^1.8.0",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "viem": "^2.57.13"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
