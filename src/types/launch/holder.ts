@@ -5,6 +5,7 @@ interface LaunchHolderRecord extends MarketIdentity {
   asset: string;
   balance: string;
   balanceSort: string;
+  observedBlock?: number;
   observedAt: Date;
 }
 

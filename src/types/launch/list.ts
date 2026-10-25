@@ -1,6 +1,8 @@
 import type { LaunchRecord } from './model';
+import type { Chain } from '../network/chain';
 
 interface LaunchListQuery {
+  chain?: Chain;
   network: 'testnet' | 'public';
   owner?: string;
   search?: string;
