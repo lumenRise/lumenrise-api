@@ -6,6 +6,7 @@ import launchTeamIndexes from './20261017LaunchTeamIndexes';
 import DatabaseMigration from '../models/DatabaseMigration';
 import manualXReputation from './20261013ManualXReputation';
 import launchHolderIndexes from './20261014LaunchHolderIndexes';
+import launchChainIsolation from './20261028LaunchChainIsolation';
 import createCurrentIndexes from './20261012CreateCurrentIndexes';
 import launchTeamInvitations from './20261022LaunchTeamInvitations';
 import type { MigrationDefinition } from '../types/database/migration';
@@ -25,6 +26,7 @@ const migrations: readonly MigrationDefinition[] = [
   launchTeamInvitations,
   launchSlugs,
   identityUserIds,
+  launchChainIsolation,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {
