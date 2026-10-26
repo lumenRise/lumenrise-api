@@ -4,6 +4,13 @@ import type { TokenImageRecord } from '../types/tokenImage';
 
 const schema = new Schema<TokenImageRecord>(
   {
+    chain: {
+      type: String,
+      enum: ['stellar', 'base'],
+      required: true,
+      default: 'stellar',
+      immutable: true,
+    },
     ownerIdentityId: { type: Schema.Types.ObjectId, required: true, immutable: true },
     ownerAddress: { type: String, required: true, immutable: true },
     network: { type: String, enum: ['testnet', 'public'], required: true, immutable: true },
@@ -32,29 +39,35 @@ const schema = new Schema<TokenImageRecord>(
   { collection: 'token_images', versionKey: false },
 );
 
-schema.index({ network: 1, publicUrl: 1, ownerAddress: 1 }, { name: 'token_images_launch_match' });
+schema.index(
+  { chain: 1, network: 1, publicUrl: 1, ownerAddress: 1 },
+  { name: 'token_images_launch_match_chain' },
+);
 
 schema.index({ ownerIdentityId: 1, createdAt: -1 }, { name: 'token_images_owner' });
 
 schema.index({ status: 1, cleanupNextAt: 1 }, { name: 'token_images_cleanup_due' });
 
-schema.index({ network: 1, status: 1, createdAt: 1 }, { name: 'token_images_pending_age' });
+schema.index(
+  { chain: 1, network: 1, status: 1, createdAt: 1 },
+  { name: 'token_images_pending_age_chain' },
+);
 
 schema.index(
-  { network: 1, assetContractId: 1 },
+  { chain: 1, network: 1, assetContractId: 1 },
   {
     unique: true,
     partialFilterExpression: { assetContractId: { $type: 'string' } },
-    name: 'token_images_asset_unique',
+    name: 'token_images_asset_unique_chain',
   },
 );
 
 schema.index(
-  { network: 1, launchContractId: 1 },
+  { chain: 1, network: 1, launchContractId: 1 },
   {
     unique: true,
     partialFilterExpression: { launchContractId: { $type: 'string' } },
-    name: 'token_images_launch_unique',
+    name: 'token_images_launch_unique_chain',
   },
 );
 

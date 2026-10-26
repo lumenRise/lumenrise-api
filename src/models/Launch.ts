@@ -16,8 +16,16 @@ const metadataSchema = new Schema(
 
 const launchSchema = new Schema<LaunchRecord>(
   {
+    chain: {
+      type: String,
+      enum: ['stellar', 'base'],
+      required: true,
+      default: 'stellar',
+      immutable: true,
+    },
     network: { type: String, enum: ['testnet', 'public'], required: true, immutable: true },
     factoryContractId: { type: String, required: true, immutable: true },
+    prelaunchId: { type: String, default: null, immutable: true },
     factoryIndex: { type: Number, required: true, min: 1, immutable: true },
     contractId: { type: String, required: true, immutable: true },
     slug: { type: String, required: true, immutable: true },
@@ -40,28 +48,31 @@ const launchSchema = new Schema<LaunchRecord>(
 );
 
 launchSchema.index(
-  { network: 1, factoryContractId: 1, factoryIndex: 1 },
-  { unique: true, name: 'launches_factory_index_unique' },
+  { chain: 1, network: 1, factoryContractId: 1, factoryIndex: 1 },
+  { unique: true, name: 'launches_factory_index_unique_chain' },
 );
 
 launchSchema.index(
-  { network: 1, contractId: 1 },
-  { unique: true, name: 'launches_contract_unique' },
-);
-
-launchSchema.index({ network: 1, owner: 1, factoryIndex: -1 }, { name: 'launches_owner_list' });
-
-launchSchema.index(
-  { network: 1, createdAt: -1, contractId: 1 },
-  { name: 'launches_creation_list' },
+  { chain: 1, network: 1, contractId: 1 },
+  { unique: true, name: 'launches_contract_unique_chain' },
 );
 
 launchSchema.index(
-  { network: 1, slug: 1 },
+  { chain: 1, network: 1, owner: 1, factoryIndex: -1 },
+  { name: 'launches_owner_list_chain' },
+);
+
+launchSchema.index(
+  { chain: 1, network: 1, createdAt: -1, contractId: 1 },
+  { name: 'launches_creation_list_chain' },
+);
+
+launchSchema.index(
+  { chain: 1, network: 1, slug: 1 },
   {
     unique: true,
     partialFilterExpression: { slug: { $type: 'string' } },
-    name: 'launches_slug_unique',
+    name: 'launches_slug_unique_chain',
   },
 );
 
