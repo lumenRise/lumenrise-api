@@ -16,7 +16,7 @@ app.disable('x-powered-by');
 app.use(helmet());
 app.use(compression());
 
-app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
+app.use(cors({ origin: [env.CLIENT_ORIGIN, 'http://localhost:3000'], credentials: true }));
 
 app.use(resolveNetwork);
 app.use(cookieParser());
