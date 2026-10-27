@@ -23,18 +23,23 @@ const processTokenImageCleanup = async (now = new Date()): Promise<void> => {
       { $set: { status: 'deleting', cleanupNextAt: new Date(now.getTime() + 15 * 60_000) } },
       { new: true },
     ).lean();
+
     if (!claimed) {
       continue;
     }
 
     try {
       const launch = await Launch.findOne({
+        chain: claimed.chain ?? 'stellar',
         network: claimed.network,
         owner: claimed.ownerAddress,
-        'metadata.logo': claimed.publicUrl,
+        ...(claimed.chain === 'base'
+          ? { prelaunchId: claimed._id.toString() }
+          : { 'metadata.logo': claimed.publicUrl }),
       })
         .select('contractId asset')
         .lean();
+
       if (launch) {
         await TokenImage.updateOne(
           { _id: claimed._id, status: 'deleting' },
@@ -49,22 +54,28 @@ const processTokenImageCleanup = async (now = new Date()): Promise<void> => {
             },
           },
         );
+
         continue;
       }
 
       // Atomically release only an unclaimed reservation. A worker claim keeps the image alive.
       if (claimed.slug) {
-        const released = await LaunchName.updateOne({
-          network: claimed.network,
-          slug: claimed.slug,
-          ownerAddress: claimed.ownerAddress,
-          publicUrl: claimed.publicUrl,
-          contractId: null,
-          status: 'reserved',
-        }, { $set: { status: 'expired' } });
+        const released = await LaunchName.updateOne(
+          {
+            chain: claimed.chain ?? 'stellar',
+            network: claimed.network,
+            slug: claimed.slug,
+            ownerAddress: claimed.ownerAddress,
+            publicUrl: claimed.publicUrl,
+            contractId: null,
+            status: 'reserved',
+          },
+          { $set: { status: 'expired' } },
+        );
 
         if (released.modifiedCount === 0) {
           const indexed = await LaunchName.exists({
+            chain: claimed.chain ?? 'stellar',
             network: claimed.network,
             slug: claimed.slug,
             publicUrl: claimed.publicUrl,
@@ -78,6 +89,7 @@ const processTokenImageCleanup = async (now = new Date()): Promise<void> => {
       }
 
       await deleteTokenImageObject(claimed.objectKey);
+
       await TokenImage.updateOne(
         { _id: claimed._id, status: 'deleting' },
         {
@@ -86,8 +98,10 @@ const processTokenImageCleanup = async (now = new Date()): Promise<void> => {
       );
     } catch (error) {
       log.warn({ error, imageId: claimed._id }, 'Token image cleanup will retry');
+
       const attempts = (claimed.cleanupAttempts ?? 0) + 1;
       const delay = Math.min(60 * 60_000, 60_000 * 2 ** Math.min(attempts, 6));
+
       await TokenImage.updateOne(
         { _id: claimed._id, status: 'deleting' },
         {
