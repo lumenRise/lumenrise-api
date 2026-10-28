@@ -8,6 +8,7 @@ import Identity from '../../models/Identity';
 import { withDatabaseTransaction } from '../../db';
 import type { StoredAvatar } from '../../types/avatar';
 import StellarAccount from '../../models/StellarAccount';
+import postBaseRegistration from './postBaseRegistration';
 import uploadAvatar from '../../services/avatar/uploadAvatar';
 import applicationRules from '../../constants/applicationRules';
 import processAvatar from '../../services/avatar/processAvatar';
@@ -15,7 +16,11 @@ import deleteAvatarOrQueue from '../../services/avatar/deleteAvatarOrQueue';
 import isAvatarStorageConfigured from '../../services/avatar/isAvatarStorageConfigured';
 import { getVerifiedProviderAddresses, parseExternalUserId } from '../../services/auth/provider';
 
-const postRegistration: RequestHandler = async (req, res) => {
+const postRegistration: RequestHandler = async (req, res, next) => {
+  if (req.chain === 'base') {
+    return postBaseRegistration(req, res, next);
+  }
+
   const userId = parseExternalUserId(req.body?.userId);
   const name: unknown = req.body?.name;
   const address: unknown = req.body?.address;
@@ -95,6 +100,7 @@ const postRegistration: RequestHandler = async (req, res) => {
 
       if (!identity && accounts.length) {
         identity = await Identity.findById(accounts[0]!.identity).session(session);
+
         if (!identity) {
           return null;
         }
@@ -129,6 +135,7 @@ const postRegistration: RequestHandler = async (req, res) => {
 
         if (uploaded && !identity.avatarUrl) {
           identity.avatarObjectKey = uploaded.objectKey;
+
           identity.avatarUrl = uploaded.publicUrl;
         }
 
@@ -150,6 +157,7 @@ const postRegistration: RequestHandler = async (req, res) => {
 
         if (existing) {
           existing.disconnectedAt = null;
+
           existing.isPrimary = primary ? primary.address === address : index === 0;
 
           await existing.save({ session });
@@ -179,6 +187,7 @@ const postRegistration: RequestHandler = async (req, res) => {
 
     if (uploaded && result?.avatarUrl !== uploaded.publicUrl) {
       await deleteAvatarOrQueue(uploaded.objectKey);
+
       uploaded = null;
     }
 
