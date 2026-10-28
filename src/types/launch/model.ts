@@ -20,6 +20,8 @@ interface LaunchRecord {
   owner: string;
   asset: string;
   pair: string;
+  assetDecimals?: number;
+  pairDecimals?: number;
   metadata: LaunchMetadata;
   config: Record<string, unknown>;
   state: Record<string, unknown>;
