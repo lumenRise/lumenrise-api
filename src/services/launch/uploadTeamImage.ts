@@ -11,7 +11,7 @@ const uploadTeamImage = async (
   memberId: string,
   body: Buffer,
 ): Promise<StoredAvatar> => {
-  const objectKey = `launch-teams/${launch.network}/${launch.contractId}/${memberId}/${randomUUID()}.webp`;
+  const objectKey = `launch-teams/${launch.chain === 'base' ? 'base/' : ''}${launch.network}/${launch.contractId}/${memberId}/${randomUUID()}.webp`;
 
   await getR2Client().send(
     new PutObjectCommand({

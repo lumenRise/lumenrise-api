@@ -14,14 +14,21 @@ import resolveNetwork from '../src/middleware/resolveNetwork';
 import LaunchTeamMember from '../src/models/LaunchTeamMember';
 
 vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet' } }));
+
 vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
+
 vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn(), find: vi.fn() } }));
+
 vi.mock('../src/models/ExternalAccount', () => ({ default: { find: vi.fn() } }));
+
 vi.mock('../src/models/Identity', () => ({ default: { find: vi.fn(), findOne: vi.fn() } }));
+
 vi.mock('../src/models/StellarAccount', () => ({ default: { exists: vi.fn(), findOne: vi.fn() } }));
+
 vi.mock('../src/models/LaunchTeamMember', () => ({
   default: { find: vi.fn(), findOne: vi.fn(), findOneAndUpdate: vi.fn(), deleteOne: vi.fn() },
 }));
+
 vi.mock('../src/middleware/requireSession', () => {
   const requireSession: RequestHandler = (req, res, next) => {
     if (!req.get('x-user-id')) {
@@ -46,6 +53,7 @@ vi.mock('../src/middleware/requireSession', () => {
 const app = express();
 
 app.use(resolveNetwork);
+
 const contractId = StrKey.encodeContract(Buffer.alloc(32, 7));
 const owner = Keypair.random().publicKey();
 const memberId = new Types.ObjectId('507f1f77bcf86cd799439012');
@@ -53,30 +61,37 @@ const profile = { _id: memberId, name: 'Alice', avatarUrl: 'https://images.examp
 const base = '/v1/launches/blue-man/team';
 
 app.use(express.json());
+
 app.use('/v1/launches', launchRoutes);
 
 describe('owner-managed launch teams', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+
     vi.mocked(ExternalAccount.find).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue([]),
       }),
     } as never);
+
     vi.mocked(Launch.find).mockReturnValue({
       select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([]) }),
     } as never);
+
     vi.mocked(Launch.findOne).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue({ owner, contractId }),
       }),
     } as never);
+
     vi.mocked(StellarAccount.exists).mockResolvedValue({ _id: 'wallet' } as never);
+
     vi.mocked(Identity.findOne).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue(profile),
       }),
     } as never);
+
     vi.mocked(Identity.find).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue([profile]),
@@ -85,6 +100,7 @@ describe('owner-managed launch teams', () => {
         }),
       }),
     } as never);
+
     vi.mocked(LaunchTeamMember.findOneAndUpdate).mockResolvedValue({
       _id: memberId,
       kind: 'registered',
@@ -93,9 +109,11 @@ describe('owner-managed launch teams', () => {
       status: 'pending',
       slot: 1,
     } as never);
+
     vi.mocked(LaunchTeamMember.findOne).mockReturnValue({
       lean: vi.fn().mockResolvedValue(null),
     } as never);
+
     vi.mocked(LaunchTeamMember.find).mockReturnValue({
       lean: vi.fn().mockResolvedValue([{ slot: 1 }]),
       sort: vi.fn().mockReturnValue({
@@ -118,6 +136,7 @@ describe('owner-managed launch teams', () => {
     const result = await request(app)[method](url).send({ role: 'Developer' });
 
     expect(result.status).toBe(401);
+
     expect(Launch.findOne).not.toHaveBeenCalled();
   });
 
@@ -129,9 +148,13 @@ describe('owner-managed launch teams', () => {
     const result = await pendingRequest.set('x-user-id', 'owner').send({ role: 'Developer' });
 
     expect(result.status).toBe(403);
+
     expect(LaunchTeamMember.find).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.deleteOne).not.toHaveBeenCalled();
+
     expect(StellarAccount.exists).toHaveBeenCalledWith({
       identity: new Types.ObjectId('507f1f77bcf86cd799439011'),
       address: owner,
@@ -143,6 +166,7 @@ describe('owner-managed launch teams', () => {
     const result = await request(app).get('/v1/launches/INVALID/team').set('x-user-id', 'owner');
 
     expect(result.status).toBe(400);
+
     expect(Launch.findOne).not.toHaveBeenCalled();
   });
 
@@ -156,6 +180,7 @@ describe('owner-managed launch teams', () => {
     const result = await request(app).get(base).set('x-user-id', 'owner');
 
     expect(result.status).toBe(404);
+
     expect(StellarAccount.exists).not.toHaveBeenCalled();
   });
 
@@ -166,17 +191,27 @@ describe('owner-managed launch teams', () => {
       .send({ role: ' Developer ' });
 
     expect(result.status).toBe(200);
+
     expect(Identity.findOne).toHaveBeenCalledWith({
       _id: memberId.toString(),
       status: 'active',
       deletedAt: null,
       'externalUserIds.0': { $exists: true },
     });
+
     expect(LaunchTeamMember.findOneAndUpdate).toHaveBeenCalledWith(
-      { network: 'public', contractId, kind: 'registered', identity: memberId, status: 'pending' },
+      {
+        chain: 'stellar',
+        network: 'public',
+        contractId,
+        kind: 'registered',
+        identity: memberId,
+        status: 'pending',
+      },
       { $set: { role: 'Developer', slot: 2, status: 'pending' } },
       { upsert: true, runValidators: true, returnDocument: 'after' },
     );
+
     expect(result.body.result.member).toEqual({
       memberId: memberId.toString(),
       kind: 'registered',
@@ -202,6 +237,7 @@ describe('owner-managed launch teams', () => {
       .send({ role: 'Developer' });
 
     expect(result.status).toBe(404);
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
@@ -212,7 +248,9 @@ describe('owner-managed launch teams', () => {
       .send({ role });
 
     expect(result.status).toBe(400);
+
     expect(Identity.findOne).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
@@ -233,13 +271,17 @@ describe('owner-managed launch teams', () => {
 
       const url = method === 'get' ? base : `${base}/${memberId}`;
       const pendingRequest = request(app)[method](url);
+
       const result = await pendingRequest
         .set('x-user-id', 'owner')
         .send({ role: 'Developer', xAccount: 'https://x.com/forged' });
+
       const member = method === 'get' ? result.body.result.members[0] : result.body.result.member;
 
       expect(result.status).toBe(200);
+
       expect(member.xAccount).toBe('https://x.com/alice');
+
       expect(ExternalAccount.find).toHaveBeenCalledWith({
         identity: { $in: [memberId] },
         provider: 'x',
@@ -256,6 +298,7 @@ describe('owner-managed launch teams', () => {
       .send({ role: 'Developer', xAccount: 'https://x.com/forged' });
 
     expect(result.status).toBe(200);
+
     expect(result.body.result.member.xAccount).toBeNull();
   });
 
@@ -271,6 +314,7 @@ describe('owner-managed launch teams', () => {
     const result = await request(app).get(base).set('x-user-id', 'owner');
 
     expect(result.status).toBe(200);
+
     expect(result.body.result.members[0].xAccount).toBe('https://x.com/alice');
   });
 
@@ -278,6 +322,7 @@ describe('owner-managed launch teams', () => {
     const result = await request(app).get(base).set('x-user-id', 'owner');
 
     expect(result.status).toBe(200);
+
     expect(result.body.result.members).toEqual([
       {
         memberId: memberId.toString(),
@@ -302,6 +347,7 @@ describe('owner-managed launch teams', () => {
     const result = await request(app).get(base).set('x-user-id', 'owner');
 
     expect(result.body.result.members).toEqual([]);
+
     expect(Identity.find).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'active',
@@ -318,12 +364,14 @@ describe('owner-managed launch teams', () => {
       .set('x-user-id', 'owner');
 
     expect(result.status).toBe(200);
+
     expect(Identity.find).toHaveBeenCalledWith({
       name: { $regex: 'A\\.\\*', $options: 'i' },
       status: 'active',
       deletedAt: null,
       'externalUserIds.0': { $exists: true },
     });
+
     expect(result.body.result.users).toEqual([
       {
         identityId: memberId.toString(),
@@ -346,7 +394,9 @@ describe('owner-managed launch teams', () => {
       .set('x-user-id', 'owner');
 
     expect(result.status).toBe(200);
+
     expect(StellarAccount.findOne).toHaveBeenCalledWith({ address: owner, disconnectedAt: null });
+
     expect(Identity.find).toHaveBeenCalledWith(expect.objectContaining({ _id: memberId }));
   });
 
@@ -359,6 +409,7 @@ describe('owner-managed launch teams', () => {
       .set('x-user-id', 'other');
 
     expect(result.status).toBe(403);
+
     expect(Identity.find).not.toHaveBeenCalled();
   });
 
@@ -369,6 +420,7 @@ describe('owner-managed launch teams', () => {
       .set('x-user-id', 'owner');
 
     expect(result.status).toBe(400);
+
     expect(Identity.find).not.toHaveBeenCalled();
   });
 
@@ -376,7 +428,9 @@ describe('owner-managed launch teams', () => {
     const result = await request(app).delete(`${base}/${memberId}`).set('x-user-id', 'owner');
 
     expect(result.status).toBe(200);
+
     expect(LaunchTeamMember.deleteOne).toHaveBeenCalledWith({
+      chain: 'stellar',
       network: 'testnet',
       contractId,
       kind: 'registered',
@@ -389,7 +443,9 @@ describe('owner-managed launch teams', () => {
     const result = await pendingRequest.set('x-user-id', 'owner').send({ role: 'Developer' });
 
     expect(result.status).toBe(400);
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.deleteOne).not.toHaveBeenCalled();
   });
 
@@ -402,8 +458,10 @@ describe('owner-managed launch teams', () => {
       .send({ role: 'Developer' });
 
     expect(result.status).toBe(503);
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
   });
+
   it.each(['507f1f77bcf86cd799439011', '507F1F77BCF86CD799439011'])(
     'rejects inviting the owner: %s',
     async (identityId) => {
@@ -413,6 +471,7 @@ describe('owner-managed launch teams', () => {
         .send({ role: 'Developer' });
 
       expect(result.status).toBe(400);
+
       expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
     },
   );
@@ -436,6 +495,7 @@ describe('owner-managed launch teams', () => {
       .send({ role: 'Developer' });
 
     expect(result.status).toBe(409);
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
@@ -450,6 +510,7 @@ describe('owner-managed launch teams', () => {
       .send({ role: 'Designer', status: 'pending' });
 
     expect(result.status).toBe(200);
+
     expect(LaunchTeamMember.findOneAndUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'active' }),
       { $set: { role: 'Designer', slot: 3, status: 'active' } },
@@ -468,6 +529,7 @@ describe('owner-managed launch teams', () => {
       .send({ role: 'Developer', status: 'active' });
 
     expect(result.status).toBe(200);
+
     expect(LaunchTeamMember.findOneAndUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'canceled' }),
       { $set: { role: 'Developer', slot: 2, status: 'pending' } },
@@ -479,6 +541,7 @@ describe('owner-managed launch teams', () => {
     'lets only the invited identity respond with %s',
     async (status) => {
       vi.mocked(LaunchTeamMember.findOneAndUpdate).mockResolvedValue({ status } as never);
+
       vi.mocked(StellarAccount.exists).mockResolvedValue(null);
 
       const result = await request(app)
@@ -487,8 +550,10 @@ describe('owner-managed launch teams', () => {
         .send({ status, identityId: 'forged' });
 
       expect(result.status).toBe(200);
+
       expect(LaunchTeamMember.findOneAndUpdate).toHaveBeenCalledWith(
         {
+          chain: 'stellar',
           network: 'public',
           contractId,
           kind: 'registered',
@@ -499,6 +564,7 @@ describe('owner-managed launch teams', () => {
         { $set: { status }, ...(status === 'canceled' ? { $unset: { slot: 1 } } : {}) },
         { runValidators: true, returnDocument: 'after' },
       );
+
       expect(StellarAccount.exists).not.toHaveBeenCalled();
     },
   );
@@ -512,6 +578,7 @@ describe('owner-managed launch teams', () => {
       .send({ status: 'active' });
 
     expect(result.status).toBe(404);
+
     expect(LaunchTeamMember.findOneAndUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         identity: new Types.ObjectId('507f1f77bcf86cd799439011'),
@@ -531,6 +598,7 @@ describe('owner-managed launch teams', () => {
         .send({ status });
 
       expect(result.status).toBe(400);
+
       expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
     },
   );
@@ -541,12 +609,15 @@ describe('owner-managed launch teams', () => {
       .set('x-user-id', 'member');
 
     expect(result.status).toBe(200);
+
     expect(LaunchTeamMember.find).toHaveBeenCalledWith({
+      chain: 'stellar',
       network: 'public',
       identity: memberId,
       kind: 'registered',
       status: 'pending',
     });
+
     expect(Launch.findOne).not.toHaveBeenCalled();
   });
 

@@ -4,6 +4,7 @@ import { StrKey } from '@stellar/stellar-sdk';
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import LaunchTrade from '../../models/LaunchTrade';
+import isBaseAddress from '../../utils/base/isBaseAddress';
 import toTradeResult from '../../utils/launch/toTradeResult';
 import type { TradePosition } from '../../types/launch/market';
 import applicationRules from '../../constants/applicationRules';
@@ -69,7 +70,10 @@ const getTrades: RequestHandler = async (req, res) => {
     limit < applicationRules.trades.minLimit ||
     limit > applicationRules.trades.maxLimit ||
     (trader !== undefined &&
-      (typeof trader !== 'string' || !StrKey.isValidEd25519PublicKey(trader))) ||
+      (typeof trader !== 'string' ||
+        (req.chain === 'base'
+          ? !isBaseAddress(trader)
+          : !StrKey.isValidEd25519PublicKey(trader)))) ||
     (requestedSide !== undefined && !side)
   ) {
     return res.status(400).json({ status: 'error', message: 'Invalid trade query', result: {} });
@@ -77,6 +81,7 @@ const getTrades: RequestHandler = async (req, res) => {
 
   try {
     const launch = await Launch.findOne(identity).lean();
+
     if (!launch) {
       return res.status(404).json({ status: 'error', message: 'Launch not found', result: {} });
     }
@@ -103,15 +108,15 @@ const getTrades: RequestHandler = async (req, res) => {
 
     const rows = await LaunchTrade.find({
       ...identity,
-      ...(trader ? { trader } : {}),
+      ...(trader ? { trader: req.chain === 'base' ? String(trader).toLowerCase() : trader } : {}),
       ...(side ? { side } : {}),
       ...pagination,
     })
       .sort({ tradedAt: -1, ledger: -1, transactionIndex: -1, operationIndex: -1 })
       .limit(limit + 1)
       .lean();
-    const items = rows.slice(0, limit).map((trade) => toTradeResult(trade, launch.asset));
 
+    const items = rows.slice(0, limit).map((trade) => toTradeResult(trade, launch.asset));
     const last = rows.slice(0, limit).at(-1);
 
     const nextCursor =
@@ -141,6 +146,7 @@ const getTrades: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     log.error({ error }, 'Trade list failed');
+
     return res
       .status(503)
       .json({ status: 'error', message: 'Trades are temporarily unavailable', result: {} });

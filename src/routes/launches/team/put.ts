@@ -40,7 +40,9 @@ const putLaunchTeamMember: RequestHandler = async (req, res) => {
       _id: identityId,
       status: 'active',
       deletedAt: null,
-      'externalUserIds.0': { $exists: true },
+      ...(req.chain === 'base'
+        ? { name: { $type: 'string', $ne: '' } }
+        : { 'externalUserIds.0': { $exists: true } }),
     })
       .select('name avatarUrl')
       .lean();

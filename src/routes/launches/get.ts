@@ -9,7 +9,7 @@ import parseLaunchListQuery from '../../utils/launch/parseLaunchListQuery';
 import buildLaunchListPipeline from '../../utils/launch/buildLaunchListPipeline';
 
 const getLaunchesRoute: RequestHandler = async (req, res): Promise<unknown> => {
-  const query = parseLaunchListQuery(req.query, req.network);
+  const query = parseLaunchListQuery(req.query, req.network, req.chain);
 
   if (!query) {
     return res.status(400).json({
@@ -43,7 +43,10 @@ const getLaunchesRoute: RequestHandler = async (req, res): Promise<unknown> => {
         dateMeaning: 'contract_creation',
         statsAsOf: now.toISOString(),
         statsSince: new Date(now.getTime() - 86_400_000).toISOString(),
-        statsCoverage: 'verified_client_submitted_trades',
+        statsCoverage:
+          req.chain === 'base'
+            ? 'verified_receipts_and_events'
+            : 'verified_client_submitted_trades',
       },
     });
   } catch (error) {

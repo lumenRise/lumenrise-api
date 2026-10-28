@@ -51,9 +51,7 @@ const decodeTradeTransaction = (
   }
 
   const [trader, rawAmount, rawLimit] = call.args.map(scValToNative) as unknown[];
-
   const quote = scValToNative(transaction.returnValue) as Record<string, unknown>;
-
   const amount = parseTradeInteger(rawAmount);
   const limit = parseTradeInteger(rawLimit);
   const gross = parseTradeInteger(quote.gross);
@@ -75,6 +73,7 @@ const decodeTradeTransaction = (
   const price = (gross * 10_000_000n + amount - 1n) / amount;
 
   return {
+    chain: 'stellar',
     network: launch.network,
     contractId: launch.contractId,
     transactionHash: transaction.txHash,

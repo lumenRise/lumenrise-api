@@ -14,6 +14,7 @@ const getLaunchImageRoute: RequestHandler = async (req, res) => {
   try {
     const image = await TokenImage.findOne({
       _id: imageId,
+      chain: req.chain ?? 'stellar',
       network: req.network,
       ownerIdentityId: req.auth!.identityId,
     }).lean();
@@ -28,6 +29,7 @@ const getLaunchImageRoute: RequestHandler = async (req, res) => {
       status: 'success',
       message: 'Token image retrieved',
       result: {
+        ...(image.chain === 'base' ? { chain: 'base' } : {}),
         imageId: image._id.toString(),
         slug: image.slug ?? null,
         name: image.projectName ?? null,
@@ -46,7 +48,10 @@ const getLaunchImageRoute: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     log.error({ error }, 'Token image lookup failed');
-    return res.status(503).json({ status: 'error', message: 'Token image lookup is unavailable', result: {} });
+
+    return res
+      .status(503)
+      .json({ status: 'error', message: 'Token image lookup is unavailable', result: {} });
   }
 };
 

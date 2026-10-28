@@ -8,6 +8,7 @@ import getPublicLaunchTeam from '../src/services/launch/getPublicLaunchTeam';
 import getLaunchByContractIdRoute from '../src/routes/launches/getByContractId';
 
 vi.mock('../src/env', () => ({ default: { STELLAR_AUTH_NETWORK: 'testnet' } }));
+
 vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
 
 vi.mock('../src/models/Launch', () => ({
@@ -19,6 +20,7 @@ vi.mock('../src/services/launch/getPublicLaunchTeam', () => ({ default: vi.fn() 
 const contractId = StrKey.encodeContract(Buffer.alloc(32, 1));
 const factoryContractId = StrKey.encodeContract(Buffer.alloc(32, 2));
 const owner = Keypair.random().publicKey();
+
 const launch = {
   network: 'testnet',
   factoryContractId,
@@ -65,6 +67,7 @@ const response = () => ({ status: vi.fn().mockReturnThis(), json: vi.fn().mockRe
 describe('public launch handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
     vi.mocked(getPublicLaunchTeam).mockResolvedValue([
       {
         memberId: null,
@@ -78,6 +81,7 @@ describe('public launch handlers', () => {
       },
     ]);
   });
+
   it('lists only the requested network and returns chain-backed data', async () => {
     vi.mocked(Launch.aggregate).mockResolvedValue([
       {
@@ -113,9 +117,11 @@ describe('public launch handlers', () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(200);
+
     expect(Launch.aggregate).toHaveBeenCalledWith(
-      expect.arrayContaining([{ $match: { network: 'testnet' } }]),
+      expect.arrayContaining([{ $match: { chain: 'stellar', network: 'testnet' } }]),
     );
+
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         result: expect.objectContaining({
@@ -154,8 +160,15 @@ describe('public launch handlers', () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(Launch.findOne).toHaveBeenCalledWith({ network: 'testnet', contractId });
+
+    expect(Launch.findOne).toHaveBeenCalledWith({
+      chain: 'stellar',
+      network: 'testnet',
+      contractId,
+    });
+
     expect(getPublicLaunchTeam).toHaveBeenCalledWith(launch);
+
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         result: expect.objectContaining({
@@ -178,6 +191,7 @@ describe('public launch handlers', () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(400);
+
     expect(Launch.findOne).not.toHaveBeenCalled();
   });
 });

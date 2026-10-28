@@ -20,11 +20,17 @@ import deleteAvatarOrQueue from '../src/services/avatar/deleteAvatarOrQueue';
 vi.mock('../src/env', () => ({
   default: { STELLAR_AUTH_NETWORK: 'testnet', R2_MAX_IMAGE_BYTES: 4096 },
 }));
+
 vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
+
 vi.mock('../src/models/Launch', () => ({ default: { findOne: vi.fn() } }));
+
 vi.mock('../src/models/ExternalAccount', () => ({ default: { find: vi.fn() } }));
+
 vi.mock('../src/models/Identity', () => ({ default: { find: vi.fn() } }));
+
 vi.mock('../src/models/StellarAccount', () => ({ default: { exists: vi.fn() } }));
+
 vi.mock('../src/models/LaunchTeamMember', () => ({
   default: {
     find: vi.fn(),
@@ -34,10 +40,15 @@ vi.mock('../src/models/LaunchTeamMember', () => ({
     findOneAndDelete: vi.fn(),
   },
 }));
+
 vi.mock('../src/storage/isR2Configured', () => ({ default: vi.fn() }));
+
 vi.mock('../src/services/avatar/processAvatar', () => ({ default: vi.fn() }));
+
 vi.mock('../src/services/launch/uploadTeamImage', () => ({ default: vi.fn() }));
+
 vi.mock('../src/services/avatar/deleteAvatarOrQueue', () => ({ default: vi.fn() }));
+
 vi.mock('../src/middleware/requireSession', () => {
   const requireSession: RequestHandler = (req, res, next) => {
     if (!req.get('x-user-id')) {
@@ -57,11 +68,13 @@ vi.mock('../src/middleware/requireSession', () => {
 const app = express();
 
 app.use(resolveNetwork);
+
 const contractId = StrKey.encodeContract(Buffer.alloc(32, 7));
 const owner = Keypair.random().publicKey();
 const memberId = new Types.ObjectId('507f1f77bcf86cd799439012');
 const registeredId = new Types.ObjectId('507f1f77bcf86cd799439013');
 const base = '/v1/launches/blue-man/team';
+
 const external = {
   _id: memberId,
   network: 'testnet',
@@ -76,38 +89,50 @@ const external = {
 };
 
 app.use(express.json());
+
 app.use('/v1/launches', launchRoutes);
 
 describe('external launch team members', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+
     vi.mocked(ExternalAccount.find).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue([]),
       }),
     } as never);
+
     vi.mocked(Launch.findOne).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue({ owner, contractId }),
       }),
     } as never);
+
     vi.mocked(StellarAccount.exists).mockResolvedValue({ _id: 'wallet' } as never);
+
     vi.mocked(LaunchTeamMember.find).mockReturnValue({
       lean: vi.fn().mockResolvedValue([]),
     } as never);
+
     vi.mocked(isR2Configured).mockReturnValue(true);
+
     vi.mocked(processAvatar).mockResolvedValue(Buffer.from('processed'));
+
     vi.mocked(uploadTeamImage).mockResolvedValue({
       objectKey: 'launch-teams/new.webp',
       publicUrl: 'https://images.example/new.webp',
     });
+
     vi.mocked(LaunchTeamMember.create).mockResolvedValue(external as never);
+
     vi.mocked(LaunchTeamMember.findOneAndUpdate).mockResolvedValue(external as never);
+
     vi.mocked(LaunchTeamMember.findOne).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue(external),
       }),
     } as never);
+
     vi.mocked(LaunchTeamMember.findOneAndDelete).mockReturnValue({
       select: vi.fn().mockResolvedValue(external),
     } as never);
@@ -123,7 +148,9 @@ describe('external launch team members', () => {
       .attach('image', Buffer.from('photo'), 'bob.png');
 
     expect(result.status).toBe(201);
+
     expect(Identity.find).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.create).toHaveBeenCalledWith(
       expect.objectContaining({
         network: 'testnet',
@@ -137,6 +164,7 @@ describe('external launch team members', () => {
         avatarObjectKey: 'launch-teams/new.webp',
       }),
     );
+
     expect(result.body.result.member).toEqual({
       memberId: memberId.toString(),
       kind: 'external',
@@ -147,15 +175,17 @@ describe('external launch team members', () => {
       xAccount: external.xAccount,
       status: 'active',
     });
+
     expect(result.body.result.member.avatarObjectKey).toBeUndefined();
   });
 
   it('allows multiple external members without requiring registered identities', async () => {
     const actual = await vi.importActual('../src/models/LaunchTeamMember');
     const model = actual.default as typeof LaunchTeamMember;
+
     const index = model.schema
       .indexes()
-      .find(([, options]) => options.name === 'launch_team_member_unique');
+      .find(([, options]) => options.name === 'launch_team_member_unique_chain');
 
     expect(index?.[1].partialFilterExpression).toEqual({ identity: { $type: 'objectId' } });
   });
@@ -176,7 +206,9 @@ describe('external launch team members', () => {
       const result = await upload.attach('image', Buffer.from('photo'), 'bob.png');
 
       expect(result.status).toBe(400);
+
       expect(LaunchTeamMember.create).not.toHaveBeenCalled();
+
       expect(uploadTeamImage).not.toHaveBeenCalled();
     },
   );
@@ -190,6 +222,7 @@ describe('external launch team members', () => {
         .send({ name: 'Bob', role: 'Advisor', xAccount });
 
       expect(result.status).toBe(400);
+
       expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
     },
   );
@@ -197,6 +230,7 @@ describe('external launch team members', () => {
   it.each(['post', 'put', 'delete'] as const)('requires login for external %s', async (method) => {
     const url = method === 'post' ? `${base}/external` : `${base}/external/${memberId}`;
     const pendingRequest = request(app)[method](url);
+
     const result = await pendingRequest.send({
       name: 'Bob',
       role: 'Advisor',
@@ -204,9 +238,13 @@ describe('external launch team members', () => {
     });
 
     expect(result.status).toBe(401);
+
     expect(processAvatar).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.create).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.findOneAndDelete).not.toHaveBeenCalled();
   });
 
@@ -217,14 +255,19 @@ describe('external launch team members', () => {
 
       const url = method === 'post' ? `${base}/external` : `${base}/external/${memberId}`;
       const pendingRequest = request(app)[method](url);
+
       const result = await pendingRequest
         .set('x-user-id', 'other')
         .send({ name: 'Bob', role: 'Advisor', xAccount: 'https://x.com/bob' });
 
       expect(result.status).toBe(403);
+
       expect(processAvatar).not.toHaveBeenCalled();
+
       expect(LaunchTeamMember.create).not.toHaveBeenCalled();
+
       expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
+
       expect(LaunchTeamMember.findOneAndDelete).not.toHaveBeenCalled();
     },
   );
@@ -238,6 +281,7 @@ describe('external launch team members', () => {
       .field('xAccount', 'https://x.com/bob');
 
     expect(result.status).toBe(400);
+
     expect(uploadTeamImage).not.toHaveBeenCalled();
   });
 
@@ -254,6 +298,7 @@ describe('external launch team members', () => {
       .send(input);
 
     expect(result.status).toBe(400);
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
@@ -269,7 +314,9 @@ describe('external launch team members', () => {
       .attach('image', Buffer.from('invalid'), 'bob.png');
 
     expect(result.status).toBe(400);
+
     expect(uploadTeamImage).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.create).not.toHaveBeenCalled();
   });
 
@@ -283,6 +330,7 @@ describe('external launch team members', () => {
       .attach('image', Buffer.alloc(4097), 'bob.png');
 
     expect(result.status).toBe(413);
+
     expect(uploadTeamImage).not.toHaveBeenCalled();
   });
 
@@ -298,6 +346,7 @@ describe('external launch team members', () => {
       .attach('image', Buffer.from('photo'), 'bob.png');
 
     expect(result.status).toBe(503);
+
     expect(deleteAvatarOrQueue).toHaveBeenCalledWith('launch-teams/new.webp');
   });
 
@@ -315,6 +364,7 @@ describe('external launch team members', () => {
         ]),
       }),
     } as never);
+
     vi.mocked(Identity.find).mockReturnValue({
       select: vi.fn().mockReturnValue({
         lean: vi.fn().mockResolvedValue([{ _id: registeredId, name: 'Alice', avatarUrl: null }]),
@@ -324,13 +374,18 @@ describe('external launch team members', () => {
     const result = await request(app).get(base).set('x-user-id', 'owner');
 
     expect(result.status).toBe(200);
+
     expect(result.body.result.members.map((member: { kind: string }) => member.kind)).toEqual([
       'external',
       'registered',
     ]);
+
     expect(result.body.result.members[0].identityId).toBeNull();
+
     expect(result.body.result.members[1].name).toBe('Alice');
+
     expect(result.body.result.members[0].avatarObjectKey).toBeUndefined();
+
     expect(Identity.find).toHaveBeenCalledWith(
       expect.objectContaining({ _id: { $in: [registeredId] } }),
     );
@@ -343,8 +398,10 @@ describe('external launch team members', () => {
       .send({ name: 'Robert', role: 'Designer', xAccount: 'https://x.com/robert' });
 
     expect(result.status).toBe(200);
+
     expect(LaunchTeamMember.findOneAndUpdate).toHaveBeenCalledWith(
       {
+        chain: 'stellar',
         network: 'testnet',
         contractId,
         _id: memberId.toString(),
@@ -354,7 +411,9 @@ describe('external launch team members', () => {
       { $set: { name: 'Robert', role: 'Designer', xAccount: 'https://x.com/robert' } },
       { runValidators: true, returnDocument: 'after' },
     );
+
     expect(uploadTeamImage).not.toHaveBeenCalled();
+
     expect(deleteAvatarOrQueue).not.toHaveBeenCalled();
   });
 
@@ -368,6 +427,7 @@ describe('external launch team members', () => {
       .attach('image', Buffer.from('new photo'), 'bob.png');
 
     expect(result.status).toBe(200);
+
     expect(LaunchTeamMember.findOneAndUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ avatarObjectKey: external.avatarObjectKey }),
       {
@@ -378,6 +438,7 @@ describe('external launch team members', () => {
       },
       expect.anything(),
     );
+
     expect(deleteAvatarOrQueue).toHaveBeenCalledExactlyOnceWith(external.avatarObjectKey);
   });
 
@@ -393,6 +454,7 @@ describe('external launch team members', () => {
       .attach('image', Buffer.from('new photo'), 'bob.png');
 
     expect(result.status).toBe(409);
+
     expect(deleteAvatarOrQueue).toHaveBeenCalledExactlyOnceWith('launch-teams/new.webp');
   });
 
@@ -409,12 +471,15 @@ describe('external launch team members', () => {
       .send({ name: 'Bob', role: 'Advisor', xAccount: 'https://x.com/bob' });
 
     expect(result.status).toBe(404);
+
     expect(LaunchTeamMember.findOne).toHaveBeenCalledWith({
+      chain: 'stellar',
       network: 'testnet',
       contractId,
       _id: memberId.toString(),
       kind: 'external',
     });
+
     expect(LaunchTeamMember.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
@@ -424,12 +489,15 @@ describe('external launch team members', () => {
       .set('x-user-id', 'owner');
 
     expect(result.status).toBe(200);
+
     expect(LaunchTeamMember.findOneAndDelete).toHaveBeenCalledWith({
+      chain: 'stellar',
       network: 'testnet',
       contractId,
       _id: memberId.toString(),
       kind: 'external',
     });
+
     expect(deleteAvatarOrQueue).toHaveBeenCalledExactlyOnceWith(external.avatarObjectKey);
   });
 
@@ -443,8 +511,10 @@ describe('external launch team members', () => {
       .set('x-user-id', 'owner');
 
     expect(result.status).toBe(200);
+
     expect(deleteAvatarOrQueue).not.toHaveBeenCalled();
   });
+
   it('rejects a sixth additional member before uploading an image', async () => {
     vi.mocked(LaunchTeamMember.find).mockReturnValue({
       lean: vi
@@ -461,7 +531,9 @@ describe('external launch team members', () => {
       .attach('image', Buffer.from('photo'), 'bob.png');
 
     expect(result.status).toBe(409);
+
     expect(uploadTeamImage).not.toHaveBeenCalled();
+
     expect(LaunchTeamMember.create).not.toHaveBeenCalled();
   });
 
@@ -477,21 +549,25 @@ describe('external launch team members', () => {
       .attach('image', Buffer.from('photo'), 'bob.png');
 
     expect(result.status).toBe(409);
+
     expect(deleteAvatarOrQueue).toHaveBeenCalledExactlyOnceWith('launch-teams/new.webp');
   });
 
   it('enforces unique per-launch capacity slots at the database level', async () => {
     const actual = await vi.importActual('../src/models/LaunchTeamMember');
     const model = actual.default as typeof LaunchTeamMember;
+
     const index = model.schema
       .indexes()
-      .find(([, options]) => options.name === 'launch_team_slot_unique');
+      .find(([, options]) => options.name === 'launch_team_slot_unique_chain');
 
-    expect(index?.[0]).toEqual({ network: 1, contractId: 1, slot: 1 });
+    expect(index?.[0]).toEqual({ chain: 1, network: 1, contractId: 1, slot: 1 });
+
     expect(index?.[1]).toMatchObject({
       unique: true,
       partialFilterExpression: { slot: { $type: 'number' } },
     });
+
     expect(model.schema.path('slot').options.max).toBe(5);
   });
 });

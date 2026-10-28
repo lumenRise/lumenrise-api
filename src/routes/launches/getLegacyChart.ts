@@ -7,6 +7,7 @@ import LaunchPriceSample from '../../models/LaunchPriceSample';
 import chartLaunchStart from '../../utils/launch/chartLaunchStart';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 import initialLaunchPrice from '../../utils/launch/initialLaunchPrice';
+import toPublicMarketIdentity from '../../utils/launch/toPublicMarketIdentity';
 
 const ranges = { '1D': 1, '1W': 7, '1M': 30, '3M': 90, ALL: 0 };
 const intervals = { '1D': 300, '1W': 900, '1M': 3600, '3M': 14_400, ALL: 86_400 };
@@ -120,6 +121,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
         const row = rows.get(timestamp);
         const open = row?.firstObservedAt === timestamp ? row.open : carried;
         const close = row?.close ?? open;
+
         items.push({
           timestamp,
           open,
@@ -130,6 +132,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
           firstObservedAt: row?.firstObservedAt ?? null,
           lastObservedAt: row?.lastObservedAt ?? null,
         });
+
         carried = close;
       }
     } else if (!launchStart || initialPrice === null) {
@@ -142,7 +145,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
       status: 'success',
       message: 'Chart retrieved',
       result: {
-        ...identity,
+        ...toPublicMarketIdentity(identity),
         asset: launch.asset,
         pair: launch.pair,
         range,
@@ -160,6 +163,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     log.error({ error }, 'Chart read failed');
+
     return res
       .status(503)
       .json({ status: 'error', message: 'Chart is temporarily unavailable', result: {} });

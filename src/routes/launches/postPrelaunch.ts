@@ -5,8 +5,10 @@ import log from '../../logger';
 import Launch from '../../models/Launch';
 import LaunchName from '../../models/LaunchName';
 import TokenImage from '../../models/TokenImage';
+import EvmAccount from '../../models/EvmAccount';
 import StellarAccount from '../../models/StellarAccount';
 import isR2Configured from '../../storage/isR2Configured';
+import isBaseAddress from '../../utils/base/isBaseAddress';
 import toLaunchSlug from '../../utils/launch/toLaunchSlug';
 import uploadTokenImage from '../../services/tokenImage/uploadTokenImage';
 import processTokenImage from '../../services/tokenImage/processTokenImage';
@@ -20,13 +22,16 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
       .json({ status: 'error', message: 'Image storage is not configured', result: {} });
   }
 
+  const chain = req.chain ?? 'stellar';
   const network = req.network;
   const ownerAddress: unknown = req.body?.ownerAddress;
 
   if (
     (req.body?.network !== undefined && req.body.network !== network) ||
     typeof ownerAddress !== 'string' ||
-    !StrKey.isValidEd25519PublicKey(ownerAddress) ||
+    (chain === 'base'
+      ? !isBaseAddress(ownerAddress)
+      : !StrKey.isValidEd25519PublicKey(ownerAddress)) ||
     !req.file
   ) {
     return res.status(400).json({
@@ -56,14 +61,19 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
     }
 
     description = req.body.description.trim();
+
     projectName = req.body.name.trim();
+
     slug = toLaunchSlug(projectName);
+
     website = parseOptionalProjectUrl(req.body?.website);
+
     xAccount = parseOptionalProjectUrl(req.body?.xAccount);
   } catch {
     return res.status(400).json({
       status: 'error',
-      message: 'A valid project name, description of 1 to 10000 characters and optional HTTPS website and xAccount links are required',
+      message:
+        'A valid project name, description of 1 to 10000 characters and optional HTTPS website and xAccount links are required',
       result: {},
     });
   }
@@ -79,9 +89,12 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
   }
 
   try {
-    const account = await StellarAccount.exists({
+    const accountModel = chain === 'base' ? EvmAccount : StellarAccount;
+    const normalizedOwner = chain === 'base' ? ownerAddress.toLowerCase() : ownerAddress;
+
+    const account = await accountModel.exists({
       identity: req.auth!.identityId,
-      address: ownerAddress,
+      address: normalizedOwner,
       disconnectedAt: null,
     });
 
@@ -93,18 +106,21 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
       });
     }
 
-    const existing = await Launch.exists({ network, slug });
+    const existing = await Launch.exists({ chain, network, slug });
 
     if (existing) {
-      return res.status(409).json({ status: 'error', message: 'Project name is already taken', result: {} });
+      return res
+        .status(409)
+        .json({ status: 'error', message: 'Project name is already taken', result: {} });
     }
 
-    const stored = await uploadTokenImage(network, body);
+    const stored = await uploadTokenImage(network, body, chain);
 
     try {
       const image = await TokenImage.create({
         ownerIdentityId: req.auth!.identityId,
-        ownerAddress,
+        ownerAddress: normalizedOwner,
+        chain,
         network,
         slug,
         projectName,
@@ -117,17 +133,36 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
 
       try {
         await LaunchName.findOneAndUpdate(
-          { network, slug, status: 'expired' },
-          { $set: { ownerAddress, publicUrl: stored.publicUrl, status: 'reserved', contractId: null } },
+          { chain, network, slug, status: 'expired' },
+          {
+            $set: {
+              ...(chain === 'base' ? { prelaunchId: image._id.toString() } : {}),
+              ownerAddress: normalizedOwner,
+              publicUrl: stored.publicUrl,
+              status: 'reserved',
+              contractId: null,
+            },
+          },
           { upsert: true },
         );
       } catch (error) {
         await LaunchName.updateOne(
-          { network, slug, ownerAddress, publicUrl: stored.publicUrl, status: 'reserved', contractId: null },
+          {
+            chain,
+            network,
+            slug,
+            ownerAddress: normalizedOwner,
+            publicUrl: stored.publicUrl,
+            status: 'reserved',
+            contractId: null,
+          },
           { $set: { status: 'expired' } },
         );
 
-        await TokenImage.updateOne({ _id: image._id }, { $set: { status: 'expired', expiredAt: new Date() } });
+        await TokenImage.updateOne(
+          { _id: image._id },
+          { $set: { status: 'expired', expiredAt: new Date() } },
+        );
 
         throw error;
       }
@@ -136,6 +171,7 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
         status: 'success',
         message: 'Prelaunch data saved',
         result: {
+          ...(chain === 'base' ? { chain } : {}),
           imageId: image._id.toString(),
           publicUrl: stored.publicUrl,
           slug,
@@ -146,14 +182,18 @@ const postPrelaunchRoute: RequestHandler = async (req, res) => {
       });
     } catch (error) {
       await deleteAvatarOrQueue(stored.objectKey);
+
       throw error;
     }
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-      return res.status(409).json({ status: 'error', message: 'Project name is already taken', result: {} });
+      return res
+        .status(409)
+        .json({ status: 'error', message: 'Project name is already taken', result: {} });
     }
 
     log.error({ error }, 'Token image upload failed');
+
     return res
       .status(503)
       .json({ status: 'error', message: 'Token image upload is unavailable', result: {} });

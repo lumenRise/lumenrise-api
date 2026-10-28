@@ -1,6 +1,8 @@
 import type { Request } from 'express';
 import { StrKey } from '@stellar/stellar-sdk';
 
+import isBaseAddress from '../base/isBaseAddress';
+import type { Chain } from '../../types/network/chain';
 import type { LaunchListQuery } from '../../types/launch/list';
 import applicationRules from '../../constants/applicationRules';
 import type { StellarNetwork } from '../../types/network/configuration';
@@ -8,6 +10,7 @@ import type { StellarNetwork } from '../../types/network/configuration';
 const parseLaunchListQuery = (
   query: Request['query'],
   network: StellarNetwork,
+  chain: Chain = 'stellar',
 ): LaunchListQuery | null => {
   const owner = query.owner;
   const search = query.search ?? query.q;
@@ -30,14 +33,18 @@ const parseLaunchListQuery = (
   if (
     (owner !== undefined &&
       (typeof owner !== 'string' ||
-        (!StrKey.isValidEd25519PublicKey(owner) && !StrKey.isValidContract(owner)))) ||
+        (chain === 'base'
+          ? !isBaseAddress(owner)
+          : !StrKey.isValidEd25519PublicKey(owner) && !StrKey.isValidContract(owner)))) ||
     (search !== undefined &&
       (typeof search !== 'string' || search.length > applicationRules.launches.searchMaxLength)) ||
     typeof categoryRaw !== 'string' ||
     typeof sort !== 'string' ||
     !applicationRules.launches.sorts.some((value) => value === sort) ||
     !direction ||
-    (pair !== undefined && (typeof pair !== 'string' || !StrKey.isValidContract(pair))) ||
+    (pair !== undefined &&
+      (typeof pair !== 'string' ||
+        (chain === 'base' ? !isBaseAddress(pair) : !StrKey.isValidContract(pair)))) ||
     (applicationRules.launches.pairRequiredSorts.some((value) => value === sort) &&
       pair === undefined) ||
     !Number.isInteger(page) ||
@@ -57,13 +64,14 @@ const parseLaunchListQuery = (
   }
 
   return {
+    chain,
     network,
-    owner,
+    owner: chain === 'base' && typeof owner === 'string' ? owner.toLowerCase() : owner,
     search: typeof search === 'string' ? search.trim() : undefined,
     category: category as LaunchListQuery['category'],
     sort: sort as LaunchListQuery['sort'],
     direction,
-    pair,
+    pair: chain === 'base' && typeof pair === 'string' ? pair.toLowerCase() : pair,
     page,
     limit,
   };

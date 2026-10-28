@@ -4,6 +4,7 @@ import type { ChartRequest } from '../../types/launch/chart';
 import LaunchPriceSample from '../../models/LaunchPriceSample';
 import chartLaunchStart from '../../utils/launch/chartLaunchStart';
 import initialLaunchPrice from '../../utils/launch/initialLaunchPrice';
+import toPublicMarketIdentity from '../../utils/launch/toPublicMarketIdentity';
 
 const readLaunchChart = async (request: ChartRequest) => {
   const { identity, timeframes, to } = request;
@@ -35,7 +36,7 @@ const readLaunchChart = async (request: ChartRequest) => {
   );
 
   return {
-    ...identity,
+    ...toPublicMarketIdentity(identity),
     asset: launch.asset,
     pair: launch.pair,
     amountScale: 7,

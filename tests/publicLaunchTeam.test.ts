@@ -9,8 +9,11 @@ import type { LaunchRecord } from '../src/types/launch/model';
 import getPublicLaunchTeam from '../src/services/launch/getPublicLaunchTeam';
 
 vi.mock('../src/models/Identity', () => ({ default: { find: vi.fn() } }));
+
 vi.mock('../src/models/StellarAccount', () => ({ default: { findOne: vi.fn() } }));
+
 vi.mock('../src/models/ExternalAccount', () => ({ default: { find: vi.fn() } }));
+
 vi.mock('../src/models/LaunchTeamMember', () => ({ default: { find: vi.fn() } }));
 
 const ownerId = new Types.ObjectId();
@@ -25,19 +28,27 @@ const accountsLean = vi.fn();
 describe('public launch team', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+
     memberLean.mockResolvedValue([]);
+
     ownerLean.mockResolvedValue({ identity: ownerId });
+
     usersLean.mockResolvedValue([{ _id: ownerId, name: 'Creator', avatarUrl: 'creator.png' }]);
+
     accountsLean.mockResolvedValue([{ identity: ownerId, profileUrl: 'https://x.com/creator' }]);
+
     vi.mocked(LaunchTeamMember.find).mockReturnValue({
       sort: vi.fn().mockReturnValue({ lean: memberLean }),
     } as never);
+
     vi.mocked(StellarAccount.findOne).mockReturnValue({
       select: vi.fn().mockReturnValue({ lean: ownerLean }),
     } as never);
+
     vi.mocked(Identity.find).mockReturnValue({
       select: vi.fn().mockReturnValue({ lean: usersLean }),
     } as never);
+
     vi.mocked(ExternalAccount.find).mockReturnValue({
       select: vi.fn().mockReturnValue({ lean: accountsLean }),
     } as never);
@@ -59,14 +70,18 @@ describe('public launch team', () => {
         status: 'active',
       },
     ]);
+
     expect(LaunchTeamMember.find).toHaveBeenCalledWith({
+      chain: 'stellar',
       network: 'public',
       contractId: 'contract',
     });
+
     expect(StellarAccount.findOne).toHaveBeenCalledWith({
       address: 'wallet',
       disconnectedAt: null,
     });
+
     expect(Identity.find).toHaveBeenCalledWith({
       _id: { $in: [ownerId] },
       status: 'active',
@@ -99,6 +114,7 @@ describe('public launch team', () => {
           status: 'active',
         },
       ]);
+
       expect(ExternalAccount.find).not.toHaveBeenCalled();
     },
   );
@@ -124,6 +140,7 @@ describe('public launch team', () => {
         role: 'Inactive',
       },
     ]);
+
     usersLean.mockResolvedValue([
       { _id: ownerId, name: 'Creator' },
       { _id: userId, name: 'Designer', avatarUrl: 'designer.png' },
@@ -132,11 +149,13 @@ describe('public launch team', () => {
     const result = await getPublicLaunchTeam(launch);
 
     expect(result).toHaveLength(3);
+
     expect(result[0]).toMatchObject({
       role: 'owner',
       status: 'active',
       identityId: ownerId.toString(),
     });
+
     expect(result[1]).toEqual({
       memberId: userId.toString(),
       kind: 'registered',
@@ -148,6 +167,7 @@ describe('public launch team', () => {
       role: 'Designer',
       status: 'active',
     });
+
     expect(result[2]).toEqual({
       memberId: externalId.toString(),
       kind: 'external',
@@ -166,12 +186,14 @@ describe('public launch team', () => {
 
     await expect(getPublicLaunchTeam(launch)).rejects.toThrow('Database unavailable');
   });
+
   it('hides pending, canceled and legacy registered members until accepted', async () => {
     memberLean.mockResolvedValue([
       { _id: userId, kind: 'registered', identity: userId, status: 'pending', role: 'Designer' },
       { _id: userId, kind: 'registered', identity: userId, status: 'canceled', role: 'Designer' },
       { _id: userId, kind: 'registered', identity: userId, role: 'Designer' },
     ]);
+
     usersLean.mockResolvedValue([
       { _id: ownerId, name: 'Creator' },
       { _id: userId, name: 'Designer' },
@@ -180,6 +202,7 @@ describe('public launch team', () => {
     const result = await getPublicLaunchTeam(launch);
 
     expect(result).toHaveLength(1);
+
     expect(result[0]).toMatchObject({ kind: 'owner', status: 'active' });
   });
 });

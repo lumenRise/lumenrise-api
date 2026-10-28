@@ -17,6 +17,7 @@ const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineSta
   };
 
   const match: Record<string, unknown> = {
+    chain: query.chain ?? 'stellar',
     network: query.network,
     ...(query.owner ? { owner: query.owner } : {}),
     ...(query.pair ? { pair: query.pair } : {}),
@@ -39,12 +40,13 @@ const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineSta
   const lookup: PipelineStage.Lookup = {
     $lookup: {
       from: 'launch_trades',
-      let: { launchNetwork: '$network', launchContract: '$contractId' },
+      let: { launchChain: '$chain', launchNetwork: '$network', launchContract: '$contractId' },
       pipeline: [
         {
           $match: {
             $expr: {
               $and: [
+                { $eq: ['$chain', '$$launchChain'] },
                 { $eq: ['$network', '$$launchNetwork'] },
                 { $eq: ['$contractId', '$$launchContract'] },
               ],

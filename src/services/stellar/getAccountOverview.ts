@@ -1,10 +1,10 @@
+import getNetworkConfig from '../network/getNetworkConfig';
+import type { StellarNetwork } from '../../types/network/configuration';
 import isValidStellarGAddress from '../../utils/stellar/isValidStellarGAddress';
 import type {
   StellarAccountOverviewResult,
   StellarHorizonAccount,
 } from '../../types/stellar/account';
-import getNetworkConfig from '../network/getNetworkConfig';
-import type { StellarNetwork } from '../../types/network/configuration';
 
 const getStellarAccountOverview = async (
   address: string,

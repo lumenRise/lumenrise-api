@@ -14,6 +14,7 @@ const owner = Keypair.random().publicKey();
 const otherOwner = Keypair.random().publicKey();
 const pair = StrKey.encodeContract(Buffer.alloc(32, 80));
 const otherPair = StrKey.encodeContract(Buffer.alloc(32, 81));
+
 const ids = Array.from({ length: 8 }, (_, index) =>
   StrKey.encodeContract(Buffer.alloc(32, index + 1)),
 );
@@ -38,6 +39,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
 
     await Launch.collection.insertMany(
       ids.map((contractId, index) => ({
+        chain: 'stellar',
         network: index === 7 ? 'public' : 'testnet',
         factoryContractId: ids[0],
         factoryIndex: index + 1,
@@ -88,6 +90,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
 
     await LaunchTrade.collection.insertMany(
       trades.map(([index, gross, offset], position) => ({
+        chain: 'stellar',
         network: 'testnet',
         contractId: ids[Number(index)],
         transactionHash: String(position),
@@ -113,6 +116,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
     );
 
     expect(page?.launches.map((launch) => launch.contractId)).toEqual([ids[6], ids[5]]);
+
     expect(page?.total).toEqual([{ count: 7 }]);
 
     const [ascending] = await Launch.aggregate<LaunchListPage>(
@@ -120,6 +124,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
     );
 
     expect(ascending?.launches[0]?.contractId).toBe(ids[0]);
+
     expect(ascending?.launches.at(-1)?.contractId).toBe(ids[4]);
   });
 
@@ -127,12 +132,15 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
     const [literal] = await Launch.aggregate<LaunchListPage>(
       buildLaunchListPipeline({ ...baseQuery, search: 'a.*' }, now),
     );
+
     const [symbol] = await Launch.aggregate<LaunchListPage>(
       buildLaunchListPipeline({ ...baseQuery, search: 'token1' }, now),
     );
 
     expect(literal?.launches.map((launch) => launch.contractId)).toEqual([ids[0]]);
+
     expect(literal?.total).toEqual([{ count: 1 }]);
+
     expect(symbol?.launches.map((launch) => launch.contractId)).toEqual([ids[1]]);
   });
 
@@ -142,6 +150,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
     );
 
     expect(page?.launches[0]?.contractId).toBe(ids[1]);
+
     expect(page?.launches[0]?.volume24h).toEqual({
       tradeCount: 3,
       buyCount: 1,
@@ -149,6 +158,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
       grossPairAmount: '300',
       assetAmount: '30',
     });
+
     expect(page?.launches[0]?.volumeTotal).toEqual({
       tradeCount: 4,
       buyCount: 2,
@@ -156,6 +166,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
       grossPairAmount: '9007199254741293',
       assetAmount: '40',
     });
+
     expect(page?.total).toEqual([{ count: 7 }]);
   });
 
@@ -179,9 +190,11 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
     );
 
     expect(page?.launches[0]?.contractId).toBe(ids[1]);
+
     expect(page?.launches.map((launch) => launch.contractId).sort()).toEqual(
       [ids[1], ids[5], ids[6]].sort(),
     );
+
     expect(page?.total).toEqual([{ count: 3 }]);
   });
 
@@ -191,11 +204,13 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('global launch listin
     );
 
     expect(page?.launches[0]?.contractId).toBe(ids[0]);
+
     expect(
       page?.launches.every(
         (launch) => launch.pair === pair && launch.owner === owner && launch.network === 'testnet',
       ),
     ).toBe(true);
+
     expect(page?.total).toEqual([{ count: 5 }]);
   });
 

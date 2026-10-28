@@ -1,8 +1,8 @@
 import amqp from 'amqplib';
 
 import env from '../../env';
-import { LAUNCH_HOLDER_QUEUE } from '../../constants/launch/holderQueue';
 import type { StellarNetwork } from '../../types/network/configuration';
+import { LAUNCH_HOLDER_QUEUE } from '../../constants/launch/holderQueue';
 
 const publishLaunchHolderJob = async (jobId: string, network: StellarNetwork): Promise<void> => {
   const queue = `${LAUNCH_HOLDER_QUEUE}.${network}`;
@@ -20,6 +20,7 @@ const publishLaunchHolderJob = async (jobId: string, network: StellarNetwork): P
     });
 
     await channel.waitForConfirms();
+
     await channel.close();
   } finally {
     await connection.close();
