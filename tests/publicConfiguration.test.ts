@@ -42,6 +42,15 @@ vi.mock('../src/env', () => ({
     LAUNCH_PUBLIC_FACTORY_CONTRACT_ID: 'public-factory',
     PUBLIC_TOML: '/private/public.toml',
     FUTURE_SECRET: 'secret-added-later',
+    PRIVY_APP_ID: 'base-public-app-id',
+    PRIVY_APP_SECRET: 'secret-base-auth-value',
+    BASE_TESTNET_RPC_URL: 'https://private-base-rpc.example/private-rpc-key',
+    BASE_TESTNET_FACTORY_ADDRESS: '0x1111111111111111111111111111111111111111',
+    BASE_TESTNET_DEPLOYMENT_BLOCK: '100',
+    BASE_PUBLIC_RPC_URL: 'https://private-base-rpc.example/private-rpc-key',
+    BASE_PUBLIC_FACTORY_ADDRESS: '0x1111111111111111111111111111111111111111',
+    BASE_PUBLIC_DEPLOYMENT_BLOCK: '100',
+    BASE_LOG_BATCH_SIZE: 500,
   },
 }));
 
@@ -121,6 +130,7 @@ describe('public application configuration', () => {
     expect(validate(response.body.result), JSON.stringify(validate.errors)).toBe(true);
     expect(Object.keys(response.body.result).sort()).toEqual([
       'auth',
+      'base',
       'features',
       'network',
       'rules',
@@ -207,4 +217,54 @@ describe('public application configuration', () => {
 
     expect(aggregate).toHaveBeenCalledOnce();
   });
+});
+
+it('includes Base discovery without a chain header and exposes native decimal rules', async (): Promise<void> => {
+  const fetch = vi.spyOn(globalThis, 'fetch');
+  const response = await request(app).get('/v1/config');
+
+  expect(response.status).toBe(200);
+  expect(response.body.result.base).toMatchObject({
+    chain: 'base',
+    auth: { appId: 'base-public-app-id' },
+    network: {
+      header: 'X-Network',
+      configurations: {
+        testnet: { chainId: 84532, launchConfigured: true },
+        public: { chainId: 8453, launchConfigured: true },
+      },
+    },
+    rules: {
+      launches: { amountScale: null, priceScale: null },
+      base: { maxTokenDecimals: 18, tradeEvents: ['Bought', 'Sold'], reputationRequired: false },
+    },
+  });
+  expect(response.body.result.rules.launches).toMatchObject({ amountScale: 7, priceScale: 7 });
+  expect(response.text).not.toContain('private-rpc-key');
+  expect(response.text).not.toContain('secret-base-auth-value');
+  expect(fetch).not.toHaveBeenCalled();
+});
+
+it('keeps the explicit Base configuration response consistent with default discovery', async (): Promise<void> => {
+  const discovery = await request(app).get('/v1/config');
+  const response = await request(app).get('/v1/config').set('X-Chain', 'base');
+  const validate = createOpenApiValidator({ $ref: '#/components/schemas/BasePublicConfiguration' });
+
+  expect(response.status).toBe(200);
+  expect(response.body.result).toEqual(discovery.body.result.base);
+  expect(validate(response.body.result), JSON.stringify(validate.errors)).toBe(true);
+});
+
+it('keeps Stellar discovery available when an optional Base deployment is incomplete', async (): Promise<void> => {
+  Object.assign(env, { BASE_TESTNET_DEPLOYMENT_BLOCK: '' });
+
+  const response = await request(app).get('/v1/config');
+
+  expect(response.status).toBe(200);
+  expect(response.body.result.network.configurations.testnet.launchConfigured).toBe(true);
+  expect(response.body.result.base.network.configurations.testnet).toMatchObject({
+    launchConfigured: false,
+    factoryContractId: '',
+  });
+  expect(response.body.result.base.network.configurations.public.launchConfigured).toBe(true);
 });

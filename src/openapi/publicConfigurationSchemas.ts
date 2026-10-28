@@ -73,8 +73,9 @@ const publicConfigurationSchemas = {
   PublicConfiguration: {
     type: 'object',
     additionalProperties: false,
-    required: ['version', 'auth', 'network', 'features', 'uploads', 'rules'],
+    required: ['version', 'auth', 'network', 'features', 'uploads', 'rules', 'base'],
     properties: {
+      base: { $ref: '#/components/schemas/BasePublicConfiguration' },
       version: {
         type: 'integer',
         const: 1,
