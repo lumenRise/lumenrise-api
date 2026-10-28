@@ -9,7 +9,8 @@ const objectId = { type: 'string', pattern: '^[a-fA-F0-9]{24}$' };
 const unsignedAmount = {
   type: 'string',
   pattern: '^\\d+$',
-  description: 'Exact integer in 7-decimal token stroops or Unix seconds, as applicable.',
+  description:
+    'Exact integer in native token base units or Unix seconds, as applicable. Stellar uses 7 decimals; Base uses assetDecimals or pairDecimals.',
 };
 
 const stellarAddress = {
@@ -105,6 +106,8 @@ const openApiComponents = {
         network: { type: 'string', enum: ['testnet', 'public'] },
         factoryContractId: { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
         factoryIndex: { type: 'integer', minimum: 1 },
+        assetDecimals: { type: 'integer', minimum: 0, maximum: 18 },
+        pairDecimals: { type: 'integer', minimum: 0, maximum: 18 },
         slug: { type: 'string', maxLength: 100, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' },
         contractId: { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
         owner: {
@@ -269,7 +272,7 @@ const openApiComponents = {
                 required: ['category', 'amountScale', 'volume24h', 'volumeTotal'],
                 properties: {
                   category: { type: 'string', const: 'bonding-curve' },
-                  amountScale: { type: 'integer', const: 7 },
+                  amountScale: { type: 'integer', minimum: 0, maximum: 18 },
                   volume24h: {
                     type: 'object',
                     required: [

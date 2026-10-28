@@ -4,6 +4,7 @@ import log from '../../logger';
 import Launch from '../../models/Launch';
 import type { ChartRange } from '../../types/launch/market';
 import LaunchPriceSample from '../../models/LaunchPriceSample';
+import getLaunchScales from '../../utils/launch/getLaunchScales';
 import chartLaunchStart from '../../utils/launch/chartLaunchStart';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 import initialLaunchPrice from '../../utils/launch/initialLaunchPrice';
@@ -47,7 +48,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
     const firstTime = first?.sampledAt ?? null;
     const lastTime = last?.sampledAt ?? null;
     const launchStart = chartLaunchStart(launch.config);
-    const initialPrice = initialLaunchPrice(launch.config);
+    const initialPrice = initialLaunchPrice(launch.config, getLaunchScales(launch).amountScale);
     const historyStart = launchStart ?? firstTime;
     // Keep every response below 1000 buckets, including ALL for old launches.
     const intervalSeconds = Math.max(
@@ -150,8 +151,7 @@ const getLegacyChart: RequestHandler = async (req, res) => {
         pair: launch.pair,
         range,
         intervalSeconds,
-        priceScale: 7,
-        amountScale: 7,
+        ...getLaunchScales(launch),
         priceType: 'marginal_before_fee',
         firstObservationAt: firstTime?.toISOString() ?? null,
         lastObservationAt: lastTime?.toISOString() ?? null,

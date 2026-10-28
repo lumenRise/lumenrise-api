@@ -2,6 +2,7 @@ import Launch from '../../models/Launch';
 import readChartTimeframe from './readChartTimeframe';
 import type { ChartRequest } from '../../types/launch/chart';
 import LaunchPriceSample from '../../models/LaunchPriceSample';
+import getLaunchScales from '../../utils/launch/getLaunchScales';
 import chartLaunchStart from '../../utils/launch/chartLaunchStart';
 import initialLaunchPrice from '../../utils/launch/initialLaunchPrice';
 import toPublicMarketIdentity from '../../utils/launch/toPublicMarketIdentity';
@@ -30,7 +31,7 @@ const readLaunchChart = async (request: ChartRequest) => {
         request,
         first?.sampledAt ?? null,
         chartLaunchStart(launch.config),
-        initialLaunchPrice(launch.config),
+        initialLaunchPrice(launch.config, getLaunchScales(launch).amountScale),
       ),
     ),
   );
@@ -39,8 +40,7 @@ const readLaunchChart = async (request: ChartRequest) => {
     ...toPublicMarketIdentity(identity),
     asset: launch.asset,
     pair: launch.pair,
-    amountScale: 7,
-    priceScale: 7,
+    ...getLaunchScales(launch),
     priceType: 'marginal_before_fee',
     asOf: to.toISOString(),
     firstObservationAt: first?.sampledAt.toISOString() ?? null,

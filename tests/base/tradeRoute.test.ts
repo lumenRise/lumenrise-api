@@ -66,7 +66,14 @@ beforeEach((): void => {
 
   vi.spyOn(Launch, 'exists').mockResolvedValue({ _id: 'launch' } as never);
   vi.spyOn(Launch, 'findOne').mockReturnValue({
-    lean: vi.fn().mockResolvedValue({ contractId: event.address, asset: 'asset', pair: 'pair' }),
+    lean: vi.fn().mockResolvedValue({
+      chain: 'base',
+      contractId: event.address,
+      asset: 'asset',
+      pair: 'pair',
+      assetDecimals: 18,
+      pairDecimals: 6,
+    }),
     select: vi
       .fn()
       .mockReturnValue({ lean: vi.fn().mockResolvedValue({ contractId: event.address }) }),
@@ -95,6 +102,8 @@ it('verifies the receipt quickly and records every trade through shared ingestio
   expect(response.status).toBe(200);
 
   expect(response.body.result.trades).toHaveLength(2);
+
+  expect(response.body.result).toMatchObject({ amountScale: 18, priceScale: 6 });
 
   expect(processBaseBlock).toHaveBeenCalledWith(
     expect.objectContaining({ context, number: 20n, logs: [event, createBaseLog(3)] }),

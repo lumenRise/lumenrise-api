@@ -8,6 +8,7 @@ import isBaseAddress from '../../utils/base/isBaseAddress';
 import toTradeResult from '../../utils/launch/toTradeResult';
 import type { TradePosition } from '../../types/launch/market';
 import applicationRules from '../../constants/applicationRules';
+import getLaunchScales from '../../utils/launch/getLaunchScales';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
 
 const getTrades: RequestHandler = async (req, res) => {
@@ -139,8 +140,7 @@ const getTrades: RequestHandler = async (req, res) => {
       result: {
         items,
         nextCursor,
-        amountScale: 7,
-        priceScale: 7,
+        ...getLaunchScales(launch),
         pair: launch.pair,
       },
     });

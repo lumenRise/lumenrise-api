@@ -1,7 +1,8 @@
 const amount = {
   type: 'string',
   pattern: '^\\d+$',
-  description: 'Exact integer scaled by 10^7; divide by 10^7 for display.',
+  description:
+    'Exact integer in token base units. Use amountScale for asset amounts and priceScale for pair amounts and prices. Stellar uses 7; Base uses native token decimals.',
 };
 
 const date = { type: 'string', format: 'date-time' };
@@ -24,7 +25,7 @@ const trade = {
     executionPrice: {
       ...amount,
       description:
-        'Average execution price before creator fees, rounded up to 7 decimals, in the pair asset.',
+        'Average execution price before creator fees, rounded up to the pair token scale, in the pair asset.',
     },
   },
 };
@@ -47,7 +48,7 @@ const marketSchemas = {
       network,
       contractId: contract,
       asset: contract,
-      amountScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
       balanceSource: { const: 'token_contract' },
       coverage: { enum: ['trade_participants', 'indexed_trades_and_transfers'] },
       totalHolders: count,
@@ -72,7 +73,12 @@ const marketSchemas = {
   LaunchTradeSubmission: {
     type: 'object',
     required: ['trade', 'pair', 'amountScale', 'priceScale'],
-    properties: { trade, pair: contract, amountScale: { const: 7 }, priceScale: { const: 7 } },
+    properties: {
+      trade,
+      pair: contract,
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
+    },
   },
   LaunchTradeList: {
     type: 'object',
@@ -81,8 +87,8 @@ const marketSchemas = {
       items: { type: 'array', items: trade },
       nextCursor: { type: ['string', 'null'] },
       pair: contract,
-      amountScale: { const: 7 },
-      priceScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
     },
   },
   LaunchMarket: {
@@ -92,8 +98,8 @@ const marketSchemas = {
       contractId: contract,
       asset: contract,
       pair: contract,
-      amountScale: { const: 7 },
-      priceScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
       currentPrice: nullableAmount,
       priceObservedAt: nullableDate,
       priceType: { const: 'marginal_before_fee' },
@@ -148,8 +154,8 @@ const marketSchemas = {
       contractId: contract,
       asset: contract,
       pair: contract,
-      amountScale: { const: 7 },
-      priceScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
       priceType: { const: 'marginal_before_fee' },
       asOf: date,
       firstObservationAt: nullableDate,
@@ -238,8 +244,8 @@ const marketSchemas = {
       pair: contract,
       range: { type: 'string', enum: ['1D', '1W', '1M', '3M', 'ALL'] },
       intervalSeconds: { type: 'integer', minimum: 1 },
-      amountScale: { const: 7 },
-      priceScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
       priceType: { const: 'marginal_before_fee' },
       firstObservationAt: nullableDate,
       lastObservationAt: nullableDate,

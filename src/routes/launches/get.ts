@@ -5,6 +5,7 @@ import Launch from '../../models/Launch';
 import type { LaunchListPage } from '../../types/launch/list';
 import toLaunchResult from '../../utils/launch/toLaunchResult';
 import toLaunchVolume from '../../utils/launch/toLaunchVolume';
+import getLaunchScales from '../../utils/launch/getLaunchScales';
 import parseLaunchListQuery from '../../utils/launch/parseLaunchListQuery';
 import buildLaunchListPipeline from '../../utils/launch/buildLaunchListPipeline';
 
@@ -31,7 +32,7 @@ const getLaunchesRoute: RequestHandler = async (req, res): Promise<unknown> => {
         launches: (result?.launches ?? []).map((launch) => ({
           ...toLaunchResult(launch, now),
           category: 'bonding-curve',
-          amountScale: 7,
+          amountScale: getLaunchScales(launch).amountScale,
           volume24h: toLaunchVolume(launch.volume24h),
           volumeTotal: toLaunchVolume(launch.volumeTotal),
         })),

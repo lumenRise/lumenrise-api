@@ -6,6 +6,7 @@ import log from '../../logger';
 import Launch from '../../models/Launch';
 import toTradeResult from '../../utils/launch/toTradeResult';
 import getBaseContext from '../../services/base/getBaseContext';
+import getLaunchScales from '../../utils/launch/getLaunchScales';
 import decodeBaseTrade from '../../services/base/decodeBaseTrade';
 import acquireBaseLease from '../../services/base/acquireBaseLease';
 import releaseBaseLease from '../../services/base/releaseBaseLease';
@@ -64,11 +65,17 @@ const postBaseTrade: RequestHandler = async (req, res) => {
     const logs = receipt.logs.filter(
       (event): boolean =>
         event.address.toLowerCase() === launch.contractId &&
-        event.topics[0] === toEventSelector('Trade(address,bool,uint128,uint128,uint128,uint128)'),
+        (event.topics[0] === toEventSelector('Bought(address,uint256,uint256,uint256)') ||
+          event.topics[0] === toEventSelector('Sold(address,uint256,uint256,uint256)')),
     );
 
     const trades = logs.map((event) =>
-      decodeBaseTrade({ network: req.network, log: event, timestamp: block.timestamp }),
+      decodeBaseTrade({
+        network: req.network,
+        log: event,
+        timestamp: block.timestamp,
+        assetDecimals: launch.assetDecimals!,
+      }),
     );
 
     if (trades.length === 0) {
@@ -98,13 +105,11 @@ const postBaseTrade: RequestHandler = async (req, res) => {
       ) {
         res.set('Retry-After', '2');
 
-        return res
-          .status(202)
-          .json({
-            status: 'pending',
-            message: 'Launch is being reindexed after a chain change',
-            result: {},
-          });
+        return res.status(202).json({
+          status: 'pending',
+          message: 'Launch is being reindexed after a chain change',
+          result: {},
+        });
       }
 
       await processBaseBlock({
@@ -125,8 +130,7 @@ const postBaseTrade: RequestHandler = async (req, res) => {
         trade: toTradeResult(trades[0]!, launch.asset),
         trades: trades.map((trade) => toTradeResult(trade, launch.asset)),
         pair: launch.pair,
-        amountScale: 7,
-        priceScale: 7,
+        ...getLaunchScales(launch),
       },
     });
   } catch (error) {

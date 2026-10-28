@@ -3,6 +3,7 @@ import type { RequestHandler } from 'express';
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import LaunchHolder from '../../models/LaunchHolder';
+import getLaunchScales from '../../utils/launch/getLaunchScales';
 import parseHolderRequest from '../../utils/launch/parseHolderRequest';
 import toPublicMarketIdentity from '../../utils/launch/toPublicMarketIdentity';
 
@@ -61,7 +62,7 @@ const getHolders: RequestHandler = async (req, res) => {
       result: {
         ...toPublicMarketIdentity(identity),
         asset: launch.asset,
-        amountScale: 7,
+        amountScale: getLaunchScales(launch).amountScale,
         balanceSource: 'token_contract',
         coverage: identity.chain === 'base' ? 'indexed_trades_and_transfers' : 'trade_participants',
         totalHolders,
