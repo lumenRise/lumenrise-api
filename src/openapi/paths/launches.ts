@@ -64,7 +64,7 @@ const launchPaths = {
           name: 'pair',
           description:
             'Payment asset contract ID. Required for topVolume and figure to avoid comparing different currencies.',
-          schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+          schema: { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
         },
         {
           in: 'query',
@@ -72,7 +72,7 @@ const launchPaths = {
           schema: {
             oneOf: [
               { $ref: '#/components/schemas/StellarAddress' },
-              { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+              { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
             ],
           },
         },
@@ -123,7 +123,7 @@ const launchPaths = {
                   description:
                     'Required project description stored by the server. The contract description is ignored.',
                 },
-                ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
+                ownerAddress: { type: 'string', pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
                 image: { type: 'string', format: 'binary' },
                 website: { type: 'string', maxLength: 2048 },
                 xAccount: { type: 'string', maxLength: 2048 },
@@ -187,7 +187,7 @@ const launchPaths = {
             name: { type: ['string', 'null'] },
             description: { type: ['string', 'null'] },
             network: { type: 'string', enum: ['testnet', 'public'] },
-            ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
+            ownerAddress: { type: 'string', pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
             publicUrl: { type: 'string', format: 'uri' },
             website: { type: 'string', format: 'uri' },
             xAccount: { type: 'string', format: 'uri' },

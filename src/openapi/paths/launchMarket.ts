@@ -9,6 +9,7 @@ const identity = [
   },
   { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
 ];
+
 const errors = {
   '400': { $ref: '#/components/responses/BadRequest' },
   '404': { $ref: '#/components/responses/NotFound' },
@@ -57,7 +58,11 @@ const launchMarketPaths = {
           schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
         },
         { in: 'query', name: 'cursor', schema: { type: 'string', maxLength: 512 } },
-        { in: 'query', name: 'trader', schema: { type: 'string', pattern: '^G[A-Z2-7]{55}$' } },
+        {
+          in: 'query',
+          name: 'trader',
+          schema: { type: 'string', pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
+        },
         { in: 'query', name: 'side', schema: { type: 'string', enum: ['buy', 'sell'] } },
       ],
       responses: {
@@ -79,7 +84,9 @@ const launchMarketPaths = {
             schema: {
               type: 'object',
               required: ['transactionHash'],
-              properties: { transactionHash: { type: 'string', pattern: '^[a-fA-F0-9]{64}$' } },
+              properties: {
+                transactionHash: { type: 'string', pattern: '^(0x)?[a-fA-F0-9]{64}$' },
+              },
             },
           },
         },

@@ -6,7 +6,7 @@ const authPaths = {
       tags: ['Authentication'],
       summary: 'Check registration for an Auth provider user',
       description:
-        'Send the Auth provider user ID in x-user-id. This database lookup does not verify wallet ownership or issue credentials. A registered user has an active identity and a completed name.',
+        'Send the Auth provider user ID in x-user-id. For Base, also send Authorization: Bearer <Privy access token>; its authenticated DID must match x-user-id. This database lookup does not verify wallet ownership or issue credentials. A registered user has an active identity and a completed name.',
       operationId: 'getRegistrationStatus',
       security: [],
       parameters: [
@@ -22,6 +22,7 @@ const authPaths = {
           $ref: '#/components/schemas/RegistrationStatus',
         }),
         '400': { $ref: '#/components/responses/BadRequest' },
+        '401': { $ref: '#/components/responses/Unauthorized' },
         '403': { $ref: '#/components/responses/Forbidden' },
         '503': { $ref: '#/components/responses/ServiceUnavailable' },
       },
@@ -30,9 +31,9 @@ const authPaths = {
   '/v1/auth/resolve': {
     post: {
       tags: ['Authentication'],
-      summary: 'Resolve an identity using a verified Stellar wallet',
+      summary: 'Resolve an identity using a verified wallet',
       description:
-        'Send the current Blux userId and selected Stellar address after login. Verifies the exact pair with Blux, then links an alternate user ID to the existing active wallet identity. Returns registered false when no identity exists or the name is incomplete. Conflicting identities are never merged. Does not issue credentials.',
+        'Send the current Blux userId and selected Stellar address after login. For Base, send X-Chain: base, Authorization: Bearer <Privy access token>, a matching Privy DID and an EVM address; the server verifies the token and checks linked Privy wallets. For Stellar, verifies the exact pair with Blux, then links an alternate user ID to the existing active wallet identity. Returns registered false when no identity exists or the name is incomplete. Conflicting identities are never merged. Does not issue credentials.',
       operationId: 'resolveIdentity',
       security: [],
       requestBody: {
@@ -44,7 +45,7 @@ const authPaths = {
               required: ['userId', 'address'],
               properties: {
                 userId: { $ref: '#/components/schemas/ExternalUserId' },
-                address: { type: 'string', pattern: '^G[A-Z2-7]{55}$' },
+                address: { type: 'string', pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
               },
             },
           },
@@ -67,7 +68,7 @@ const authPaths = {
       tags: ['Authentication'],
       summary: 'Register an Auth provider user and verified Stellar wallets',
       description:
-        'Verifies the supplied user ID and Stellar wallets with the configured Auth provider. Completes registration idempotently where applicable. Does not create a signing challenge, issue a JWT or set a session cookie. For an avatar use multipart/form-data; JPEG, PNG or WebP, at least 128x128 pixels, subject to the configured upload size limit.',
+        'Verifies the supplied user ID and Stellar wallets with the configured Auth provider. For Base, send X-Chain: base and Authorization: Bearer <Privy access token>; the server verifies that its authenticated DID matches userId and checks linked EVM wallets with Privy. Completes registration idempotently where applicable. Does not create a signing challenge, issue a JWT or set a session cookie. For an avatar use multipart/form-data; JPEG, PNG or WebP, at least 128x128 pixels, subject to the configured upload size limit.',
       operationId: 'postRegistration',
       security: [],
       requestBody: {
@@ -88,7 +89,7 @@ const authPaths = {
                 },
                 address: {
                   type: 'string',
-                  pattern: '^G[A-Z2-7]{55}$',
+                  pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$',
                   description: 'Optional selected wallet; verified against userId.',
                 },
                 avatar: { type: 'string', format: 'binary' },
@@ -119,6 +120,8 @@ const authPaths = {
     get: {
       tags: ['Authentication'],
       summary: 'Inspect the identity selected by x-user-id',
+      description:
+        'For Base and all other protected Base endpoints, send Authorization: Bearer <Privy access token> with x-user-id matching the authenticated Privy DID.',
       operationId: 'getSession',
       responses: {
         '200': jsonResponse('User identified.', { $ref: '#/components/schemas/SessionResult' }),

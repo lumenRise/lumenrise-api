@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import env from './env';
 import router from './routes/index';
 import notFound from './middleware/notFound';
+import resolveChain from './middleware/resolveChain';
 import errorHandler from './middleware/errorHandler';
 import resolveNetwork from './middleware/resolveNetwork';
 
@@ -16,7 +17,15 @@ app.disable('x-powered-by');
 app.use(helmet());
 app.use(compression());
 
-app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
+app.use(
+  cors({
+    origin: env.CLIENT_ORIGIN,
+    credentials: true,
+    exposedHeaders: ['X-Chain', 'X-Network', 'X-Stellar-Network'],
+  }),
+);
+
+app.use(resolveChain);
 
 app.use(resolveNetwork);
 app.use(cookieParser());

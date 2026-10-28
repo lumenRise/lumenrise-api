@@ -29,6 +29,47 @@ const publicConfigurationSchemas = {
       launchConfigured: booleanSchema,
     },
   },
+  BasePublicConfiguration: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['version', 'chain', 'auth', 'network', 'features', 'uploads', 'rules'],
+    properties: {
+      version: { const: 1 },
+      chain: { const: 'base' },
+      auth: {
+        type: 'object',
+        required: ['appId'],
+        properties: { appId: stringSchema },
+        additionalProperties: false,
+      },
+      network: {
+        type: 'object',
+        required: ['default', 'header', 'supported', 'configurations'],
+        properties: {
+          default: { const: 'testnet' },
+          header: { const: 'X-Network' },
+          supported: { type: 'array', items: { enum: ['testnet', 'public'] } },
+          configurations: {
+            type: 'object',
+            required: ['testnet', 'public'],
+            additionalProperties: {
+              type: 'object',
+              required: ['network', 'chainId', 'factoryContractId', 'launchConfigured'],
+              properties: {
+                network: { enum: ['testnet', 'public'] },
+                chainId: { enum: [8453, 84532] },
+                factoryContractId: stringSchema,
+                launchConfigured: booleanSchema,
+              },
+            },
+          },
+        },
+      },
+      features: { type: 'object', additionalProperties: booleanSchema },
+      uploads: { type: 'object' },
+      rules: { type: 'object' },
+    },
+  },
   PublicConfiguration: {
     type: 'object',
     additionalProperties: false,

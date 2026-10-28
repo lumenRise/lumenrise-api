@@ -5,17 +5,21 @@ const dateTime = { type: 'string', format: 'date-time' };
 const nullableDateTime = { oneOf: [dateTime, { type: 'null' }] };
 const nullableString = { oneOf: [{ type: 'string' }, { type: 'null' }] };
 const objectId = { type: 'string', pattern: '^[a-fA-F0-9]{24}$' };
+
 const unsignedAmount = {
   type: 'string',
   pattern: '^\\d+$',
   description: 'Exact integer in 7-decimal token stroops or Unix seconds, as applicable.',
 };
+
 const stellarAddress = {
   type: 'string',
   pattern: '^G[A-Z2-7]{55}$',
   example: 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR',
 };
+
 const numberMetrics = { type: 'object', additionalProperties: { type: 'number' } };
+
 const scanSummary = {
   type: 'object',
   required: [
@@ -99,15 +103,18 @@ const openApiComponents = {
       ],
       properties: {
         network: { type: 'string', enum: ['testnet', 'public'] },
-        factoryContractId: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+        factoryContractId: { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
         factoryIndex: { type: 'integer', minimum: 1 },
         slug: { type: 'string', maxLength: 100, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' },
-        contractId: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+        contractId: { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
         owner: {
-          oneOf: [stellarAddress, { type: 'string', pattern: '^C[A-Z2-7]{55}$' }],
+          oneOf: [
+            stellarAddress,
+            { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
+          ],
         },
-        asset: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
-        pair: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+        asset: { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
+        pair: { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
         metadata: {
           type: 'object',
           required: ['name', 'description', 'logo', 'symbol'],
@@ -312,7 +319,10 @@ const openApiComponents = {
           ...dateTime,
           description: 'Lower bound for volume24h only; volumeTotal has no lower time bound.',
         },
-        statsCoverage: { type: 'string', const: 'verified_client_submitted_trades' },
+        statsCoverage: {
+          type: 'string',
+          enum: ['verified_client_submitted_trades', 'verified_receipts_and_events'],
+        },
         page: { type: 'integer', minimum: 1 },
         limit: { type: 'integer', minimum: 1, maximum: 100 },
         total: { type: 'integer', minimum: 0 },
@@ -537,10 +547,10 @@ const openApiComponents = {
     },
     ExternalUserId: {
       type: 'string',
-      pattern: '^[1-9]\\d*$',
+      pattern: '^([1-9]\\d*|did:privy:[a-zA-Z0-9_-]{1,128})$',
       example: '42',
       description:
-        'Positive Auth provider user ID, at most 9007199254740991. Returned as a string.',
+        'Blux numeric ID (up to 9007199254740991) for Stellar, or did:privy: ID for Base. Returned as a string; select Base using X-Chain.',
     },
     RegistrationRequest: {
       type: 'object',
@@ -554,8 +564,8 @@ const openApiComponents = {
         },
         address: {
           type: 'string',
-          pattern: '^G[A-Z2-7]{55}$',
-          description: 'Optional selected Stellar wallet; verified against userId.',
+          pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$',
+          description: 'Optional selected wallet for the selected chain; verified against userId.',
         },
         name: {
           type: 'string',
@@ -573,7 +583,11 @@ const openApiComponents = {
         identityId: objectId,
         name: { type: 'string' },
         avatarUrl: { type: ['string', 'null'], format: 'uri' },
-        addresses: { type: 'array', minItems: 1, items: stellarAddress },
+        addresses: {
+          type: 'array',
+          minItems: 1,
+          items: { type: 'string', pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
+        },
       },
     },
     RegistrationStatus: {

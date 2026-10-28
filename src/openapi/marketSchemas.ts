@@ -3,12 +3,14 @@ const amount = {
   pattern: '^\\d+$',
   description: 'Exact integer scaled by 10^7; divide by 10^7 for display.',
 };
+
 const date = { type: 'string', format: 'date-time' };
 const nullableDate = { type: ['string', 'null'], format: 'date-time' };
 const nullableAmount = { oneOf: [amount, { type: 'null' }] };
-const contract = { type: 'string', pattern: '^C[A-Z2-7]{55}$' };
+const contract = { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' };
 const count = { type: 'integer', minimum: 0 };
 const network = { type: 'string', enum: ['testnet', 'public'] };
+
 const trade = {
   type: 'object',
   required: ['trader', 'tradedAt', 'asset', 'side', 'assetAmount', 'executionPrice'],
@@ -26,6 +28,7 @@ const trade = {
     },
   },
 };
+
 const marketSchemas = {
   LaunchHolderList: {
     type: 'object',
@@ -46,7 +49,7 @@ const marketSchemas = {
       asset: contract,
       amountScale: { const: 7 },
       balanceSource: { const: 'token_contract' },
-      coverage: { const: 'trade_participants' },
+      coverage: { enum: ['trade_participants', 'indexed_trades_and_transfers'] },
       totalHolders: count,
       nextCursor: { type: ['string', 'null'] },
       items: {
@@ -57,7 +60,7 @@ const marketSchemas = {
           required: ['address', 'balance', 'observedAt'],
           additionalProperties: false,
           properties: {
-            address: { type: 'string', pattern: '^[GC][A-Z2-7]{55}$' },
+            address: { type: 'string', pattern: '^([GC][A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
             balance: amount,
             observedAt: date,
           },
@@ -276,4 +279,5 @@ const marketSchemas = {
     },
   },
 };
+
 export default marketSchemas;

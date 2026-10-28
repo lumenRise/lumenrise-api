@@ -4,15 +4,15 @@ import log from './logger';
 import { connectDatabase } from './db';
 import serverState from './utils/index/state';
 import { handleShutdown } from './utils/index/handleShutdown';
+import getNetworkConfig from './services/network/getNetworkConfig';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations';
 import refreshAvatarCleanup from './services/avatar/refreshAvatarCleanup';
 import syncManagedStellarToml from './services/stellar/syncManagedStellarToml';
+import verifyNetworkProviders from './services/network/verifyNetworkProviders';
 import refreshManagedStellarToml from './services/stellar/refreshManagedStellarToml';
 import refreshTokenImageCleanup from './services/tokenImage/refreshTokenImageCleanup';
-import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration';
-import getNetworkConfig from './services/network/getNetworkConfig';
-import verifyNetworkProviders from './services/network/verifyNetworkProviders';
 import validateNetworkConfiguration from './services/network/validateNetworkConfiguration';
+import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration';
 
 const bootstrap = async (): Promise<void> => {
   validateRuntimeConfiguration(env);
@@ -45,5 +45,6 @@ const bootstrap = async (): Promise<void> => {
 
 void bootstrap().catch((error: unknown) => {
   log.fatal({ err: error }, 'Lumenrise API failed to start');
+
   process.exitCode = 1;
 });
