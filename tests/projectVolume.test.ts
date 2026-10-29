@@ -81,6 +81,45 @@ it('returns zero volumes for an empty network', async (): Promise<void> => {
   expect(result.volume24h).toEqual(result.volumeTotal);
 });
 
+it.each([
+  { chain: 'base', scale: 6, recentBuy: true },
+  { chain: 'stellar', scale: 7, recentBuy: true },
+  { chain: 'base', scale: 6, recentBuy: false },
+  { chain: 'stellar', scale: 7, recentBuy: false },
+] as const)(
+  'counts a one-USDC buy and sell as four USDC on $chain with recentBuy=$recentBuy',
+  async ({ chain, scale, recentBuy }): Promise<void> => {
+    const records = [
+      {
+        chain,
+        contractId: `${chain}-curve`,
+        grossAmount: (10n ** BigInt(scale)).toString(),
+        tradedAt: recentBuy ? now : new Date(now.getTime() - 25 * 3_600_000),
+        side: 'buy',
+      },
+      {
+        chain,
+        contractId: `${chain}-curve`,
+        grossAmount: (10n ** BigInt(scale)).toString(),
+        tradedAt: now,
+        side: 'sell',
+      },
+    ];
+
+    const cursor = { [Symbol.asyncIterator]: () => records.values(), close };
+
+    vi.mocked(LaunchTrade.find).mockReturnValue({
+      select: () => ({ lean: () => ({ cursor: () => cursor }) }),
+    } as never);
+
+    const result = await getProjectVolume('testnet', now);
+
+    expect(result.volumeTotal).toEqual({ amount: '4', tradeCount: 2, buyCount: 1, sellCount: 1 });
+    expect(result.volume24h.amount).toBe(recentBuy ? '4' : '2');
+    expect(result.volume24h.tradeCount).toBe(recentBuy ? 2 : 1);
+  },
+);
+
 it('closes the cursor and fails instead of guessing decimals for an orphaned trade', async (): Promise<void> => {
   const records = [
     { chain: 'base', contractId: 'missing-curve', grossAmount: '100', tradedAt: now, side: 'buy' },
@@ -93,4 +132,69 @@ it('closes the cursor and fails instead of guessing decimals for an orphaned tra
 
   await expect(getProjectVolume('testnet', now)).rejects.toThrow('denomination');
   expect(close).toHaveBeenCalledOnce();
+});
+
+it('combines all environments without mixing decimal scales for the same contract address', async (): Promise<void> => {
+  vi.mocked(Launch.find).mockReturnValue({
+    select: () => ({
+      lean: async () => [
+        {
+          chain: 'base',
+          network: 'testnet',
+          contractId: 'same-address',
+          assetDecimals: 18,
+          pairDecimals: 6,
+        },
+        {
+          chain: 'base',
+          network: 'public',
+          contractId: 'same-address',
+          assetDecimals: 18,
+          pairDecimals: 18,
+        },
+        { chain: 'stellar', network: 'public', contractId: 'stellar-curve' },
+      ],
+    }),
+  } as never);
+
+  const records = [
+    {
+      chain: 'base',
+      network: 'testnet',
+      contractId: 'same-address',
+      grossAmount: '1000000',
+      tradedAt: now,
+      side: 'buy',
+    },
+    {
+      chain: 'base',
+      network: 'public',
+      contractId: 'same-address',
+      grossAmount: '1000000000000000000',
+      tradedAt: now,
+      side: 'sell',
+    },
+    {
+      chain: 'stellar',
+      network: 'public',
+      contractId: 'stellar-curve',
+      grossAmount: '10000000',
+      tradedAt: now,
+      side: 'buy',
+    },
+  ];
+
+  const cursor = { [Symbol.asyncIterator]: () => records.values(), close };
+
+  vi.mocked(LaunchTrade.find).mockReturnValue({
+    select: () => ({ lean: () => ({ cursor: () => cursor }) }),
+  } as never);
+
+  const result = await getProjectVolume('all', now);
+
+  expect(Launch.find).toHaveBeenCalledWith({});
+  expect(LaunchTrade.find).toHaveBeenCalledWith({ tradedAt: { $lte: now } });
+  expect(result.network).toBe('all');
+  expect(result.volumeTotal.amount).toBe('6');
+  expect(result.volume24h.amount).toBe('6');
 });

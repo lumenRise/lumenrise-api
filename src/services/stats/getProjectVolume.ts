@@ -6,26 +6,27 @@ import type { ProjectVolume } from '../../types/stats/volume';
 import getLaunchScales from '../../utils/launch/getLaunchScales';
 
 const getProjectVolume = async (
-  network: 'testnet' | 'public',
+  network: 'testnet' | 'public' | 'all',
   now: Date,
 ): Promise<ProjectVolume> => {
   const since = new Date(now.getTime() - 86_400_000);
+  const scope = network === 'all' ? {} : { network };
 
-  const launches = await Launch.find({ network })
-    .select('chain contractId assetDecimals pairDecimals')
+  const launches = await Launch.find(scope)
+    .select('chain network contractId assetDecimals pairDecimals')
     .lean();
 
   const scales = new Map<string, number>();
 
   for (const launch of launches) {
     scales.set(
-      `${launch.chain ?? 'stellar'}:${launch.contractId}`,
+      `${launch.chain ?? 'stellar'}:${launch.network ?? network}:${launch.contractId}`,
       getLaunchScales(launch).priceScale,
     );
   }
 
-  const trades = LaunchTrade.find({ network, tradedAt: { $lte: now } })
-    .select('chain contractId grossAmount tradedAt side')
+  const trades = LaunchTrade.find({ ...scope, tradedAt: { $lte: now } })
+    .select('chain network contractId grossAmount tradedAt side')
     .lean()
     .cursor();
 
@@ -38,7 +39,9 @@ const getProjectVolume = async (
 
   try {
     for await (const trade of trades) {
-      const scale = scales.get(`${trade.chain ?? 'stellar'}:${trade.contractId}`);
+      const scale = scales.get(
+        `${trade.chain ?? 'stellar'}:${trade.network ?? network}:${trade.contractId}`,
+      );
 
       if (scale === undefined || !/^\d+$/.test(trade.grossAmount)) {
         throw new Error('Trade has no valid launch denomination');

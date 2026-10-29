@@ -6,7 +6,7 @@ interface ProjectVolumeBucket {
 }
 
 interface ProjectVolume {
-  network: 'testnet' | 'public';
+  network: 'testnet' | 'public' | 'all';
   currency: 'USDC';
   multiplier: number;
   asOf: string;
