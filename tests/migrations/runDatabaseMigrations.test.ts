@@ -26,6 +26,10 @@ vi.mock('../../src/migrations/20261022LaunchTeamInvitations', () => ({
   default: { name: '20261022-launch-team-invitations', up: vi.fn() },
 }));
 
+vi.mock('../../src/migrations/20261029RepairIndexedLaunchSlugs', () => ({
+  default: { name: '20261029-repair-indexed-launch-slugs', up: vi.fn() },
+}));
+
 vi.mock('../../src/logger', () => ({ default: { info: vi.fn() } }));
 
 vi.mock('../../src/migrations/20261013ManualXReputation', () => ({
@@ -76,7 +80,7 @@ describe('consolidated database migrations', () => {
       vi.mocked(createCurrentIndexes.up).mock.invocationCallOrder[0]!,
     );
 
-    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(12);
+    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(13);
 
     expect(DatabaseMigration.updateOne).toHaveBeenLastCalledWith(
       { name: launchChainIsolation.name },
@@ -98,9 +102,9 @@ describe('consolidated database migrations', () => {
   });
 
   it('installs the baseline when the old upgrade has already been applied', async () => {
-    vi.mocked(DatabaseMigration.exists)
-      .mockResolvedValueOnce({ _id: 'old-history' } as never)
-      .mockResolvedValueOnce(null);
+    vi.mocked(DatabaseMigration.exists).mockImplementation(async (query) =>
+      query.name === upgradeIndexes.name ? ({ _id: 'old-history' } as never) : null,
+    );
 
     await runDatabaseMigrations();
 
@@ -108,7 +112,7 @@ describe('consolidated database migrations', () => {
 
     expect(createCurrentIndexes.up).toHaveBeenCalledTimes(1);
 
-    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(11);
+    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(12);
   });
 
   it('does not record an unsuccessful baseline as applied', async () => {
@@ -130,6 +134,10 @@ describe('consolidated database migrations', () => {
 
     expect(createCurrentIndexes.up).not.toHaveBeenCalled();
 
-    expect(DatabaseMigration.updateOne).not.toHaveBeenCalled();
+    expect(DatabaseMigration.updateOne).not.toHaveBeenCalledWith(
+      { name: upgradeIndexes.name },
+      expect.anything(),
+      expect.anything(),
+    );
   });
 });
