@@ -10,6 +10,7 @@ import getLaunchTeam from './team/get';
 import putLaunchTeamMember from './team/put';
 import getLaunchImageRoute from './getImage';
 import postPrelaunchRoute from './postPrelaunch';
+import postConfirmation from './postConfirmation';
 import deleteLaunchTeamMember from './team/delete';
 import getTeamCandidates from './team/getCandidates';
 import getTeamInvitations from './team/getInvitations';
@@ -27,12 +28,18 @@ import requireLaunchOwner from '../../middleware/requireLaunchOwner';
 const launchRoutes = Router();
 
 launchRoutes.get('/', getLaunchesRoute);
+launchRoutes.post('/confirm', requireSession, postConfirmation);
 launchRoutes.get('/team/invitations', requireSession, getTeamInvitations);
 
 launchRoutes.get('/prelaunch/:imageId', requireSession, getLaunchImageRoute);
 launchRoutes.post('/prelaunch', requireSession, tokenImageUpload, postPrelaunchRoute);
 
-launchRoutes.patch('/:slug/team/invitation', requireSession, resolveLaunchSlug, patchTeamInvitation);
+launchRoutes.patch(
+  '/:slug/team/invitation',
+  requireSession,
+  resolveLaunchSlug,
+  patchTeamInvitation,
+);
 
 launchRoutes.get(
   '/:slug/team/candidates',
@@ -41,7 +48,13 @@ launchRoutes.get(
   requireLaunchOwner,
   getTeamCandidates,
 );
-launchRoutes.get('/:slug/team', requireSession, resolveLaunchSlug, requireLaunchOwner, getLaunchTeam);
+launchRoutes.get(
+  '/:slug/team',
+  requireSession,
+  resolveLaunchSlug,
+  requireLaunchOwner,
+  getLaunchTeam,
+);
 launchRoutes.post(
   '/:slug/team/external',
   requireSession,

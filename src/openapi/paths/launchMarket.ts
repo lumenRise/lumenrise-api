@@ -17,6 +17,62 @@ const errors = {
 };
 
 const launchMarketPaths = {
+  '/v1/launches/confirm': {
+    post: {
+      tags: ['Launches'],
+      operationId: 'confirmLaunchCreation',
+      summary: 'Verify a successful factory transaction and index its launch immediately',
+      description:
+        'Call after the final create_bonding_curve transaction, not after token deployment or approval. Requires the normal authenticated session for the selected chain. Submit only transactionHash; the server derives launch identity, verifies the configured factory and reads on-chain metadata. Base accepts a 0x-prefixed hash and ingests canonical receipt events, including an initial trade. Stellar accepts a 64-character hash and verifies a direct factory call, its returned contract and factory registry. Repeating the same hash or later scanner discovery reuses the same launch and trade identities. Receipt ingestion never advances the scanner cursor. Retry the same hash on 202 or 503, honoring Retry-After. Retry API registration only; do not resubmit the blockchain transaction. The response includes actual persisted slugs in launches.',
+      parameters: [
+        { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['transactionHash'],
+              properties: {
+                transactionHash: { type: 'string', pattern: '^(0x)?[a-fA-F0-9]{64}$' },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        '200': jsonResponse('Launch recorded.', {
+          type: 'object',
+          required: ['launches'],
+          properties: {
+            launches: { type: 'array', items: { $ref: '#/components/schemas/Launch' } },
+          },
+        }),
+        '202': {
+          description: 'Transaction or indexing is pending; retry the same hash.',
+          headers: {
+            'Retry-After': { schema: { type: 'string' }, description: 'Retry delay in seconds.' },
+          },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['status', 'message', 'result'],
+                properties: {
+                  status: { type: 'string', enum: ['pending'] },
+                  message: { type: 'string' },
+                  result: { type: 'object' },
+                },
+              },
+            },
+          },
+        },
+        '409': { $ref: '#/components/responses/Conflict' },
+        ...errors,
+      },
+    },
+  },
   '/v1/launches/{slug}/holders': {
     get: {
       tags: ['Launches'],
