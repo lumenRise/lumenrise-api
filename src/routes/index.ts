@@ -3,6 +3,7 @@ import { Router } from 'express';
 import authRoutes from './auth/index';
 import userRoutes from './user/index';
 import docsRoutes from './docs/index';
+import statsRoutes from './stats/index';
 import oauthRoutes from './oauth/index';
 import configRoutes from './config/index';
 import healthRoutes from './health/index';
@@ -32,6 +33,8 @@ router.use('/v1', docsRoutes);
 router.use('/v1/oauth', requireStellarChain, oauthRoutes);
 
 router.use('/v1/health', healthRoutes);
+
+router.use('/v1/stats', statsRoutes);
 
 router.use('/v1/migrations', migrationRoutes);
 
