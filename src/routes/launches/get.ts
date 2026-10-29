@@ -32,7 +32,7 @@ const getLaunchesRoute: RequestHandler = async (req, res): Promise<unknown> => {
         launches: (result?.launches ?? []).map((launch) => ({
           ...toLaunchResult(launch, now),
           category: 'bonding-curve',
-          amountScale: getLaunchScales(launch).amountScale,
+          ...getLaunchScales(launch),
           volume24h: toLaunchVolume(launch.volume24h),
           volumeTotal: toLaunchVolume(launch.volumeTotal),
         })),

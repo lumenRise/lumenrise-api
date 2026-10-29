@@ -65,7 +65,10 @@ const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineSta
         $ifNull: [{ $arrayElemAt: ['$_market.volume24h.tradeCount', 0] }, 0],
       },
       '_listing.grossVolume': {
-        $toDecimal: { $ifNull: [{ $arrayElemAt: ['$_market.volume24h.grossPairAmount', 0] }, '0'] },
+        $ifNull: [{ $arrayElemAt: ['$_market.volume24h.grossPairAmount', 0] }, '0'],
+      },
+      '_listing.grossVolumeLength': {
+        $strLenCP: { $ifNull: [{ $arrayElemAt: ['$_market.volume24h.grossPairAmount', 0] }, '0'] },
       },
       volume24h: { $ifNull: [{ $arrayElemAt: ['$_market.volume24h', 0] }, emptyVolume] },
       volumeTotal: { $ifNull: [{ $arrayElemAt: ['$_market.volumeTotal', 0] }, emptyVolume] },
@@ -168,7 +171,14 @@ const buildLaunchListPipeline = (query: LaunchListQuery, now: Date): PipelineSta
   });
 
   const pagePipeline: PipelineStage.Facet['$facet'][string] = [
-    { $sort: { '_listing.missing': 1, [sortField]: direction, contractId: 1 } },
+    {
+      $sort: {
+        '_listing.missing': 1,
+        ...(query.sort === 'topVolume' ? { '_listing.grossVolumeLength': direction } : {}),
+        [sortField]: direction,
+        contractId: 1,
+      },
+    },
     { $skip: (query.page - 1) * query.limit },
     { $limit: query.limit },
   ];

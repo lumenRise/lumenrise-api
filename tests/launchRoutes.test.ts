@@ -130,7 +130,7 @@ describe('public launch handlers', () => {
               contractId,
               asOfLedger: 123,
               volumeTotal: {
-                grossPairAmount: '9007199254740993',
+                grossPairAmount: '18014398509481986',
                 assetAmount: '100',
                 tradeCount: 2,
                 buyCount: 1,
