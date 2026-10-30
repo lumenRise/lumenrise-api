@@ -11,7 +11,11 @@ const processAvatarCleanup = async (): Promise<void> => {
     try {
       await deleteAvatarObject(item.objectKey);
 
-      await AvatarCleanup.deleteOne({ objectKey: item.objectKey });
+      const removed = await AvatarCleanup.deleteOne({ objectKey: item.objectKey });
+
+      if (removed.deletedCount === 1) {
+        log.info({ cleanupId: item._id }, 'Avatar deleted');
+      }
     } catch (error) {
       log.warn({ error, objectKey: item.objectKey }, 'Avatar cleanup retry failed');
 
