@@ -50,7 +50,7 @@ vi.mock('../src/env', () => ({
     BASE_PUBLIC_RPC_URL: 'https://private-base-rpc.example/private-rpc-key',
     BASE_PUBLIC_FACTORY_ADDRESS: '0x1111111111111111111111111111111111111111',
     BASE_PUBLIC_DEPLOYMENT_BLOCK: '100',
-    BASE_LOG_BATCH_SIZE: 500,
+    BASE_LOG_BLOCK_RANGE: 500,
   },
 }));
 
