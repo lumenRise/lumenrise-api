@@ -205,6 +205,9 @@ const postBaseRegistration: RequestHandler = async (req, res) => {
       });
     }
 
+    res.locals.registeredIdentityId = result.identityId;
+    res.locals.registeredUserId = result.userId;
+
     return res.status(200).json({ status: 'success', message: 'Privy user registered', result });
   } catch (error) {
     if (uploaded) {

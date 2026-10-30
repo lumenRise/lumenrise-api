@@ -199,6 +199,9 @@ const postRegistration: RequestHandler = async (req, res, next) => {
       });
     }
 
+    res.locals.registeredIdentityId = result.identityId;
+    res.locals.registeredUserId = result.userId;
+
     return res
       .status(200)
       .json({ status: 'success', message: 'Auth provider user registered', result });
