@@ -35,7 +35,7 @@ const statsPaths = {
           type: 'object',
           required: ['network', 'currency', 'multiplier', 'asOf', 'volumeTotal', 'volume24h'],
           properties: {
-            network: { type: 'string', enum: ['testnet', 'public'] },
+            network: { type: 'string', enum: ['testnet', 'public', 'all'] },
             currency: { type: 'string', enum: ['USDC'] },
             multiplier: { type: 'integer', enum: [2] },
             asOf: { type: 'string', format: 'date-time' },
@@ -49,4 +49,17 @@ const statsPaths = {
   },
 };
 
-export default statsPaths;
+const allNetworkPaths = {
+  '/v1/stats/volume/all': {
+    get: {
+      ...statsPaths['/v1/stats/volume'].get,
+      operationId: 'getAllNetworksProjectVolume',
+      summary: 'Read project-wide USDC volume across both chains and all environments',
+      description:
+        'Includes Stellar and Base, testnet and public together. Both total and trailing 24-hour amounts are normalized using each launch pair decimals and multiplied by 2 exactly once. Amounts are decimal strings in whole USDC units, not raw token units. No price oracle or USD conversion is applied; the application uses USDC as the payment token. Trade counts remain real. Valid chain and environment headers do not restrict this aggregate. network is all in the response.',
+      parameters: [],
+    },
+  },
+};
+
+export default { ...statsPaths, ...allNetworkPaths };

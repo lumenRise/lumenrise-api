@@ -111,9 +111,14 @@ const marketSchemas = {
       distinctBuyers: count,
       volume24h: {
         type: 'object',
-        description: 'Verified transactions submitted by this client, not all network activity.',
+        description:
+          'Recorded verified trades in the trailing 24-hour window. Base includes receipts and indexed events; Stellar includes client submissions.',
         properties: {
-          grossPairAmount: amount,
+          grossPairAmount: {
+            ...amount,
+            description:
+              'Sum of buy and sell gross USDC amounts, multiplied by 2. Raw units use priceScale; do not multiply again.',
+          },
           assetAmount: amount,
           tradeCount: count,
           buyCount: count,
@@ -123,9 +128,13 @@ const marketSchemas = {
       volumeTotal: {
         type: 'object',
         description:
-          'All verified trades submitted to the API through the current time, without a lower time bound. Amounts include both buys and sells; this is not a complete on-chain volume index.',
+          'All recorded verified trades through the current time, without a lower time bound. Base includes receipts and indexed events; Stellar includes client submissions. Coverage depends on ingestion progress. Gross USDC buy and sell volume is multiplied by 2; quantities and counts remain actual.',
         properties: {
-          grossPairAmount: amount,
+          grossPairAmount: {
+            ...amount,
+            description:
+              'Sum of buy and sell gross USDC amounts, multiplied by 2. Raw units use priceScale; do not multiply again.',
+          },
           assetAmount: amount,
           tradeCount: count,
           buyCount: count,

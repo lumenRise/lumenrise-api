@@ -273,6 +273,7 @@ const openApiComponents = {
                 properties: {
                   category: { type: 'string', const: 'bonding-curve' },
                   amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+                  priceScale: { type: 'integer', minimum: 0, maximum: 18 },
                   volume24h: {
                     type: 'object',
                     required: [
@@ -283,7 +284,11 @@ const openApiComponents = {
                       'sellCount',
                     ],
                     properties: {
-                      grossPairAmount: unsignedAmount,
+                      grossPairAmount: {
+                        ...unsignedAmount,
+                        description:
+                          'Combined gross buy and sell USDC volume multiplied by 2, in priceScale raw units. Already multiplied by the server.',
+                      },
                       assetAmount: unsignedAmount,
                       tradeCount: { type: 'integer', minimum: 0 },
                       buyCount: { type: 'integer', minimum: 0 },
@@ -293,7 +298,7 @@ const openApiComponents = {
                   volumeTotal: {
                     type: 'object',
                     description:
-                      'All verified API-submitted trades through statsAsOf, without a lower time bound.',
+                      'All recorded verified trades through statsAsOf, without a lower time bound. Base includes receipts and indexed events; Stellar includes client submissions.',
                     required: [
                       'grossPairAmount',
                       'assetAmount',
@@ -302,7 +307,11 @@ const openApiComponents = {
                       'sellCount',
                     ],
                     properties: {
-                      grossPairAmount: unsignedAmount,
+                      grossPairAmount: {
+                        ...unsignedAmount,
+                        description:
+                          'Combined gross buy and sell USDC volume multiplied by 2, in priceScale raw units. Already multiplied by the server.',
+                      },
                       assetAmount: unsignedAmount,
                       tradeCount: { type: 'integer', minimum: 0 },
                       buyCount: { type: 'integer', minimum: 0 },
