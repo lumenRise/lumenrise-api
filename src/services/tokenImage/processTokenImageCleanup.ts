@@ -41,7 +41,7 @@ const processTokenImageCleanup = async (now = new Date()): Promise<void> => {
         .lean();
 
       if (launch) {
-        await TokenImage.updateOne(
+        const finalized = await TokenImage.updateOne(
           { _id: claimed._id, status: 'deleting' },
           {
             $set: {
@@ -54,6 +54,18 @@ const processTokenImageCleanup = async (now = new Date()): Promise<void> => {
             },
           },
         );
+
+        if (finalized?.modifiedCount === 1) {
+          log.info(
+            {
+              chain: claimed.chain ?? 'stellar',
+              network: claimed.network,
+              imageId: claimed._id,
+              contractId: launch.contractId,
+            },
+            'Token image finalized',
+          );
+        }
 
         continue;
       }
@@ -90,12 +102,19 @@ const processTokenImageCleanup = async (now = new Date()): Promise<void> => {
 
       await deleteTokenImageObject(claimed.objectKey);
 
-      await TokenImage.updateOne(
+      const expired = await TokenImage.updateOne(
         { _id: claimed._id, status: 'deleting' },
         {
           $set: { status: 'expired', expiredAt: now, cleanupNextAt: null },
         },
       );
+
+      if (expired?.modifiedCount === 1) {
+        log.info(
+          { chain: claimed.chain ?? 'stellar', network: claimed.network, imageId: claimed._id },
+          'Token image deleted',
+        );
+      }
     } catch (error) {
       log.warn({ error, imageId: claimed._id }, 'Token image cleanup will retry');
 
