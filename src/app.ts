@@ -10,6 +10,7 @@ import notFound from './middleware/notFound';
 import resolveChain from './middleware/resolveChain';
 import errorHandler from './middleware/errorHandler';
 import resolveNetwork from './middleware/resolveNetwork';
+import logServerActivity from './middleware/logServerActivity';
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(resolveNetwork);
 app.use(cookieParser());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: false }));
+app.use(logServerActivity);
 app.use(router);
 app.use(notFound);
 app.use(errorHandler);
