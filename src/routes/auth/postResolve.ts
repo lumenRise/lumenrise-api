@@ -3,12 +3,17 @@ import type { RequestHandler } from 'express';
 
 import log from '../../logger';
 import Identity from '../../models/Identity';
+import postBaseResolve from './postBaseResolve';
 import { withDatabaseTransaction } from '../../db';
 import StellarAccount from '../../models/StellarAccount';
 import { parseExternalUserId } from '../../services/auth/provider';
 import verifyProviderAddress from '../../services/auth/verifyProviderAddress';
 
-const postResolve: RequestHandler = async (req, res) => {
+const postResolve: RequestHandler = async (req, res, next) => {
+  if (req.chain === 'base') {
+    return postBaseResolve(req, res, next);
+  }
+
   res.set('Cache-Control', 'no-store');
 
   const userId = parseExternalUserId(req.body?.userId);

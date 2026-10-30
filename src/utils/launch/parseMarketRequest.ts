@@ -1,6 +1,7 @@
 import type { Request } from 'express';
 import { StrKey } from '@stellar/stellar-sdk';
 
+import isBaseAddress from '../base/isBaseAddress';
 import type { MarketIdentity } from '../../types/launch/market';
 
 const parseMarketRequest = (req: Request): MarketIdentity | null => {
@@ -13,12 +14,16 @@ const parseMarketRequest = (req: Request): MarketIdentity | null => {
 
   if (
     typeof contractId !== 'string' ||
-    !StrKey.isValidContract(contractId)
+    (req.chain === 'base' ? !isBaseAddress(contractId) : !StrKey.isValidContract(contractId))
   ) {
     return null;
   }
 
-  return { network, contractId };
+  return {
+    chain: req.chain ?? 'stellar',
+    network,
+    contractId: req.chain === 'base' ? contractId.toLowerCase() : contractId,
+  };
 };
 
 export default parseMarketRequest;

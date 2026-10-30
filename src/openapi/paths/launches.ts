@@ -6,7 +6,7 @@ const launchPaths = {
       tags: ['Launches'],
       summary: 'Search, filter and rank confirmed launches before pagination',
       description:
-        'All filters and sorting apply globally before pagination. Newest/date use verified contract creation time, never startsAt or observedAt; unknown dates sort last in both directions. Categories currently contain only bonding-curve launches; auction and pre-sale return empty results. Trending counts verified client-submitted trades in the rolling 24-hour window. Top volume requires pair (payment asset contract ID). Almost graduated includes only open, ungraduated curves with valid positive targets, ordered by net reserve / target; no minimum progress threshold. Equal sort values use contractId ascending. 24-hour and total statistics cover verified client-submitted trades, not all chain activity. volumeTotal includes all recorded buys and sells through statsAsOf, without a lower time bound. statsSince applies only to volume24h.',
+        'All filters and sorting apply globally before pagination. Newest/date use verified contract creation time, never startsAt or observedAt; unknown dates sort last in both directions. Categories currently contain only bonding-curve launches; auction and pre-sale return empty results. Trending counts recorded verified trades in the rolling 24-hour window. Top volume requires pair (payment asset contract ID). Almost graduated includes only open, ungraduated curves with valid positive targets, ordered by net reserve / target; no minimum progress threshold. Equal sort values use contractId ascending. Base statistics include verified receipts and indexed events; Stellar statistics include verified client submissions. Coverage depends on ingestion progress. volumeTotal includes all recorded buys and sells through statsAsOf, without a lower time bound. statsSince applies only to volume24h. grossPairAmount sums buy and sell USDC amounts and is multiplied by 2 by the server; use priceScale for raw quote units. Token quantities and trade counts are not multiplied.',
       operationId: 'getLaunches',
       security: [],
       parameters: [
@@ -64,7 +64,7 @@ const launchPaths = {
           name: 'pair',
           description:
             'Payment asset contract ID. Required for topVolume and figure to avoid comparing different currencies.',
-          schema: { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+          schema: { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
         },
         {
           in: 'query',
@@ -72,7 +72,7 @@ const launchPaths = {
           schema: {
             oneOf: [
               { $ref: '#/components/schemas/StellarAddress' },
-              { type: 'string', pattern: '^C[A-Z2-7]{55}$' },
+              { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
             ],
           },
         },
@@ -123,7 +123,7 @@ const launchPaths = {
                   description:
                     'Required project description stored by the server. The contract description is ignored.',
                 },
-                ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
+                ownerAddress: { type: 'string', pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
                 image: { type: 'string', format: 'binary' },
                 website: { type: 'string', maxLength: 2048 },
                 xAccount: { type: 'string', maxLength: 2048 },
@@ -187,7 +187,7 @@ const launchPaths = {
             name: { type: ['string', 'null'] },
             description: { type: ['string', 'null'] },
             network: { type: 'string', enum: ['testnet', 'public'] },
-            ownerAddress: { $ref: '#/components/schemas/StellarAddress' },
+            ownerAddress: { type: 'string', pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
             publicUrl: { type: 'string', format: 'uri' },
             website: { type: 'string', format: 'uri' },
             xAccount: { type: 'string', format: 'uri' },

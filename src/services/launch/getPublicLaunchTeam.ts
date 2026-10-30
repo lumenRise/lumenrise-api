@@ -1,5 +1,6 @@
 import Identity from '../../models/Identity';
 import getTeamProfiles from './getTeamProfiles';
+import EvmAccount from '../../models/EvmAccount';
 import StellarAccount from '../../models/StellarAccount';
 import LaunchTeamMember from '../../models/LaunchTeamMember';
 import type { LaunchRecord } from '../../types/launch/model';
@@ -10,18 +11,21 @@ const getPublicLaunchTeam = async (
   launch: LaunchRecord,
 ): Promise<PublicLaunchTeamMemberResult[]> => {
   const members = await LaunchTeamMember.find({
+    chain: launch.chain ?? 'stellar',
     network: launch.network,
     contractId: launch.contractId,
   })
     .sort({ createdAt: 1, _id: 1 })
     .lean();
 
-  const ownerAccount = await StellarAccount.findOne({
-    address: launch.owner,
-    disconnectedAt: null,
-  })
-    .select('identity')
-    .lean();
+  const ownerAccount =
+    launch.chain === 'base'
+      ? await EvmAccount.findOne({ address: launch.owner, disconnectedAt: null })
+          .select('identity')
+          .lean()
+      : await StellarAccount.findOne({ address: launch.owner, disconnectedAt: null })
+          .select('identity')
+          .lean();
 
   const identityIds = members
     .filter((member) => member.kind !== 'external')
@@ -35,7 +39,9 @@ const getPublicLaunchTeam = async (
     _id: { $in: identityIds },
     status: 'active',
     deletedAt: null,
-    'externalUserIds.0': { $exists: true },
+    ...(launch.chain === 'base'
+      ? { name: { $type: 'string', $ne: '' } }
+      : { 'externalUserIds.0': { $exists: true } }),
   })
     .select('name avatarUrl')
     .lean();

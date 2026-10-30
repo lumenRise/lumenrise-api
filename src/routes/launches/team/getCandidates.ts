@@ -3,7 +3,9 @@ import type { RequestHandler } from 'express';
 
 import log from '../../../logger';
 import Identity from '../../../models/Identity';
+import EvmAccount from '../../../models/EvmAccount';
 import StellarAccount from '../../../models/StellarAccount';
+import isBaseAddress from '../../../utils/base/isBaseAddress';
 import applicationRules from '../../../constants/applicationRules';
 
 const getTeamCandidates: RequestHandler = async (req, res) => {
@@ -22,13 +24,20 @@ const getTeamCandidates: RequestHandler = async (req, res) => {
   const query = search.trim();
 
   try {
-    const account = StrKey.isValidEd25519PublicKey(query)
-      ? await StellarAccount.findOne({ address: query, disconnectedAt: null })
-          .select('identity')
-          .lean()
-      : null;
+    const isAddress =
+      req.chain === 'base' ? isBaseAddress(query) : StrKey.isValidEd25519PublicKey(query);
 
-    const filter = StrKey.isValidEd25519PublicKey(query)
+    const account = !isAddress
+      ? null
+      : req.chain === 'base'
+        ? await EvmAccount.findOne({ address: query.toLowerCase(), disconnectedAt: null })
+            .select('identity')
+            .lean()
+        : await StellarAccount.findOne({ address: query, disconnectedAt: null })
+            .select('identity')
+            .lean();
+
+    const filter = isAddress
       ? { _id: account?.identity ?? null }
       : { name: { $regex: query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } };
 
@@ -36,7 +45,9 @@ const getTeamCandidates: RequestHandler = async (req, res) => {
       ...filter,
       status: 'active',
       deletedAt: null,
-      'externalUserIds.0': { $exists: true },
+      ...(req.chain === 'base'
+        ? { name: { $type: 'string', $ne: '' } }
+        : { 'externalUserIds.0': { $exists: true } }),
     })
       .select('name avatarUrl')
       .sort({ name: 1, _id: 1 })

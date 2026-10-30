@@ -27,6 +27,8 @@ const callbackXOAuthRoute: RequestHandler = async (req, res) => {
   try {
     const result = await completeXAuthorization(code, state);
 
+    log.info({ provider: 'x' }, 'X account connected');
+
     return res.redirect(302, createClientRedirect('success', result.connection.username));
   } catch (error) {
     log.warn({ error }, 'X OAuth callback failed');

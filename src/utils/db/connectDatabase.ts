@@ -4,7 +4,7 @@ import env from '../../env';
 import log from '../../logger';
 
 const connectDatabase = async (): Promise<void> => {
-  mongoose.set('autoIndex', env.NODE_ENV !== 'production');
+  mongoose.set('autoIndex', false);
 
   await mongoose.connect(env.DB_URI, { dbName: env.DB_NAME });
 

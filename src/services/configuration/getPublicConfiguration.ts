@@ -1,6 +1,7 @@
 import env from '../../env';
 import isR2Configured from '../../storage/isR2Configured';
 import applicationRules from '../../constants/applicationRules';
+import getPublicBaseConfiguration from './getPublicBaseConfiguration';
 import type { PublicConfiguration } from '../../types/configuration/public';
 import getPublicNetworkConfiguration from './getPublicNetworkConfiguration';
 import {
@@ -11,6 +12,7 @@ import {
 
 const getPublicConfiguration = (): PublicConfiguration => ({
   version: 1,
+  base: getPublicBaseConfiguration(),
   auth: { appId: env.AUTH_PROVIDER_APP_ID || '' },
   network: {
     default: defaultStellarNetwork,

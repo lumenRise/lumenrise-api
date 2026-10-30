@@ -1,5 +1,8 @@
 import type { PipelineStage } from 'mongoose';
 
+import volumeAmountLimb from './volumeAmountLimb';
+import volumeAmountString from './volumeAmountString';
+
 const buildLaunchVolumePipeline = (
   now: Date,
 ): (PipelineStage.Match | PipelineStage.Group | PipelineStage.Project)[] => {
@@ -7,6 +10,7 @@ const buildLaunchVolumePipeline = (
   const recent = { $gte: ['$tradedAt', since] };
   const buy = { $eq: ['$side', 'buy'] };
 
+  // Split uint128 strings before conversion so Decimal128 cannot round their low digits.
   return [
     { $match: { tradedAt: { $lte: now } } },
     {
@@ -14,12 +18,16 @@ const buildLaunchVolumePipeline = (
         _id: null,
         tradeCount: { $sum: { $cond: [recent, 1, 0] } },
         buyCount: { $sum: { $cond: [{ $and: [recent, buy] }, 1, 0] } },
-        grossAmount: { $sum: { $cond: [recent, { $toDecimal: '$grossAmount' }, 0] } },
-        assetAmount: { $sum: { $cond: [recent, { $toDecimal: '$assetAmount' }, 0] } },
+        grossHigh: { $sum: { $cond: [recent, volumeAmountLimb('$grossAmount', 'high'), 0] } },
+        grossLow: { $sum: { $cond: [recent, volumeAmountLimb('$grossAmount', 'low'), 0] } },
+        assetHigh: { $sum: { $cond: [recent, volumeAmountLimb('$assetAmount', 'high'), 0] } },
+        assetLow: { $sum: { $cond: [recent, volumeAmountLimb('$assetAmount', 'low'), 0] } },
         totalTradeCount: { $sum: 1 },
         totalBuyCount: { $sum: { $cond: [buy, 1, 0] } },
-        totalGrossAmount: { $sum: { $toDecimal: '$grossAmount' } },
-        totalAssetAmount: { $sum: { $toDecimal: '$assetAmount' } },
+        totalGrossHigh: { $sum: volumeAmountLimb('$grossAmount', 'high') },
+        totalGrossLow: { $sum: volumeAmountLimb('$grossAmount', 'low') },
+        totalAssetHigh: { $sum: volumeAmountLimb('$assetAmount', 'high') },
+        totalAssetLow: { $sum: volumeAmountLimb('$assetAmount', 'low') },
       },
     },
     {
@@ -29,15 +37,15 @@ const buildLaunchVolumePipeline = (
           tradeCount: '$tradeCount',
           buyCount: '$buyCount',
           sellCount: { $subtract: ['$tradeCount', '$buyCount'] },
-          grossPairAmount: { $toString: '$grossAmount' },
-          assetAmount: { $toString: '$assetAmount' },
+          grossPairAmount: volumeAmountString('$grossHigh', '$grossLow'),
+          assetAmount: volumeAmountString('$assetHigh', '$assetLow'),
         },
         volumeTotal: {
           tradeCount: '$totalTradeCount',
           buyCount: '$totalBuyCount',
           sellCount: { $subtract: ['$totalTradeCount', '$totalBuyCount'] },
-          grossPairAmount: { $toString: '$totalGrossAmount' },
-          assetAmount: { $toString: '$totalAssetAmount' },
+          grossPairAmount: volumeAmountString('$totalGrossHigh', '$totalGrossLow'),
+          assetAmount: volumeAmountString('$totalAssetHigh', '$totalAssetLow'),
         },
       },
     },

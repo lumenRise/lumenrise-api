@@ -6,7 +6,9 @@ import launchTeamIndexes from './20261017LaunchTeamIndexes';
 import DatabaseMigration from '../models/DatabaseMigration';
 import manualXReputation from './20261013ManualXReputation';
 import launchHolderIndexes from './20261014LaunchHolderIndexes';
+import launchChainIsolation from './20261028LaunchChainIsolation';
 import createCurrentIndexes from './20261012CreateCurrentIndexes';
+import repairLaunchSlugs from './20261029RepairIndexedLaunchSlugs';
 import launchTeamInvitations from './20261022LaunchTeamInvitations';
 import type { MigrationDefinition } from '../types/database/migration';
 import priceObservationIndexes from './20261014PriceObservationIndexes';
@@ -14,6 +16,7 @@ import stellarNetworkIsolation from './20261019StellarNetworkIsolation';
 import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
 
 const migrations: readonly MigrationDefinition[] = [
+  repairLaunchSlugs,
   authProviderAndTokenImageIndexes,
   createCurrentIndexes,
   manualXReputation,
@@ -25,6 +28,7 @@ const migrations: readonly MigrationDefinition[] = [
   launchTeamInvitations,
   launchSlugs,
   identityUserIds,
+  launchChainIsolation,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {

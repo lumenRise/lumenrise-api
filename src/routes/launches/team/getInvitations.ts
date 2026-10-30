@@ -7,6 +7,7 @@ import LaunchTeamMember from '../../../models/LaunchTeamMember';
 const getTeamInvitations: RequestHandler = async (req, res) => {
   try {
     const invitations = await LaunchTeamMember.find({
+      chain: req.chain ?? 'stellar',
       network: req.network,
       identity: req.auth!.identityId,
       kind: 'registered',
@@ -16,9 +17,12 @@ const getTeamInvitations: RequestHandler = async (req, res) => {
       .lean();
 
     const launches = await Launch.find({
+      chain: req.chain ?? 'stellar',
       network: req.network,
       contractId: { $in: invitations.map((member) => member.contractId) },
-    }).select('contractId slug').lean();
+    })
+      .select('contractId slug')
+      .lean();
 
     const slugs = new Map(launches.map((launch) => [launch.contractId, launch.slug]));
 
@@ -27,6 +31,7 @@ const getTeamInvitations: RequestHandler = async (req, res) => {
       message: 'Team invitations retrieved',
       result: {
         invitations: invitations.map((member) => ({
+          ...(member.chain === 'base' ? { chain: 'base' } : {}),
           memberId: member._id.toString(),
           network: member.network,
           contractId: member.contractId,

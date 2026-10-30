@@ -9,6 +9,7 @@ const identity = [
   },
   { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
 ];
+
 const errors = {
   '400': { $ref: '#/components/responses/BadRequest' },
   '404': { $ref: '#/components/responses/NotFound' },
@@ -16,6 +17,62 @@ const errors = {
 };
 
 const launchMarketPaths = {
+  '/v1/launches/confirm': {
+    post: {
+      tags: ['Launches'],
+      operationId: 'confirmLaunchCreation',
+      summary: 'Verify a successful factory transaction and index its launch immediately',
+      description:
+        'Call after the final create_bonding_curve transaction, not after token deployment or approval. Requires the normal authenticated session for the selected chain. Submit only transactionHash; the server derives launch identity, verifies the configured factory and reads on-chain metadata. Base accepts a 0x-prefixed hash and ingests canonical receipt events, including an initial trade. Stellar accepts a 64-character hash and verifies a direct factory call, its returned contract and factory registry. Repeating the same hash or later scanner discovery reuses the same launch and trade identities. Receipt ingestion never advances the scanner cursor. Retry the same hash on 202 or 503, honoring Retry-After. Retry API registration only; do not resubmit the blockchain transaction. The response includes actual persisted slugs in launches.',
+      parameters: [
+        { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['transactionHash'],
+              properties: {
+                transactionHash: { type: 'string', pattern: '^(0x)?[a-fA-F0-9]{64}$' },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        '200': jsonResponse('Launch recorded.', {
+          type: 'object',
+          required: ['launches'],
+          properties: {
+            launches: { type: 'array', items: { $ref: '#/components/schemas/Launch' } },
+          },
+        }),
+        '202': {
+          description: 'Transaction or indexing is pending; retry the same hash.',
+          headers: {
+            'Retry-After': { schema: { type: 'string' }, description: 'Retry delay in seconds.' },
+          },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['status', 'message', 'result'],
+                properties: {
+                  status: { type: 'string', enum: ['pending'] },
+                  message: { type: 'string' },
+                  result: { type: 'object' },
+                },
+              },
+            },
+          },
+        },
+        '409': { $ref: '#/components/responses/Conflict' },
+        ...errors,
+      },
+    },
+  },
   '/v1/launches/{slug}/holders': {
     get: {
       tags: ['Launches'],
@@ -48,7 +105,7 @@ const launchMarketPaths = {
       operationId: 'getLaunchTrades',
       summary: 'List client-submitted successful curve trades',
       description:
-        'Reads verified client-submitted direct buy/sell transactions, newest first with cursor pagination. Each item contains wallet, time, token, side, amount and average execution price before fees. Amounts and prices use 7 decimals.',
+        'Reads verified client-submitted direct buy/sell transactions, newest first with cursor pagination. Each item contains wallet, time, token, side, amount and average execution price before fees. Stellar amounts and prices use 7 decimals. Base asset amounts use amountScale and pair amounts and prices use priceScale from native ERC-20 decimals. Base trades decode Bought and Sold events from canonical receipts and indexed blocks.',
       parameters: [
         ...identity,
         {
@@ -57,7 +114,11 @@ const launchMarketPaths = {
           schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
         },
         { in: 'query', name: 'cursor', schema: { type: 'string', maxLength: 512 } },
-        { in: 'query', name: 'trader', schema: { type: 'string', pattern: '^G[A-Z2-7]{55}$' } },
+        {
+          in: 'query',
+          name: 'trader',
+          schema: { type: 'string', pattern: '^(G[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
+        },
         { in: 'query', name: 'side', schema: { type: 'string', enum: ['buy', 'sell'] } },
       ],
       responses: {
@@ -79,7 +140,9 @@ const launchMarketPaths = {
             schema: {
               type: 'object',
               required: ['transactionHash'],
-              properties: { transactionHash: { type: 'string', pattern: '^[a-fA-F0-9]{64}$' } },
+              properties: {
+                transactionHash: { type: 'string', pattern: '^(0x)?[a-fA-F0-9]{64}$' },
+              },
             },
           },
         },

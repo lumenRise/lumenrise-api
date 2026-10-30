@@ -1,14 +1,17 @@
 const amount = {
   type: 'string',
   pattern: '^\\d+$',
-  description: 'Exact integer scaled by 10^7; divide by 10^7 for display.',
+  description:
+    'Exact integer in token base units. Use amountScale for asset amounts and priceScale for pair amounts and prices. Stellar uses 7; Base uses native token decimals.',
 };
+
 const date = { type: 'string', format: 'date-time' };
 const nullableDate = { type: ['string', 'null'], format: 'date-time' };
 const nullableAmount = { oneOf: [amount, { type: 'null' }] };
-const contract = { type: 'string', pattern: '^C[A-Z2-7]{55}$' };
+const contract = { type: 'string', pattern: '^(C[A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' };
 const count = { type: 'integer', minimum: 0 };
 const network = { type: 'string', enum: ['testnet', 'public'] };
+
 const trade = {
   type: 'object',
   required: ['trader', 'tradedAt', 'asset', 'side', 'assetAmount', 'executionPrice'],
@@ -22,10 +25,11 @@ const trade = {
     executionPrice: {
       ...amount,
       description:
-        'Average execution price before creator fees, rounded up to 7 decimals, in the pair asset.',
+        'Average execution price before creator fees, rounded up to the pair token scale, in the pair asset.',
     },
   },
 };
+
 const marketSchemas = {
   LaunchHolderList: {
     type: 'object',
@@ -44,9 +48,9 @@ const marketSchemas = {
       network,
       contractId: contract,
       asset: contract,
-      amountScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
       balanceSource: { const: 'token_contract' },
-      coverage: { const: 'trade_participants' },
+      coverage: { enum: ['trade_participants', 'indexed_trades_and_transfers'] },
       totalHolders: count,
       nextCursor: { type: ['string', 'null'] },
       items: {
@@ -57,7 +61,7 @@ const marketSchemas = {
           required: ['address', 'balance', 'observedAt'],
           additionalProperties: false,
           properties: {
-            address: { type: 'string', pattern: '^[GC][A-Z2-7]{55}$' },
+            address: { type: 'string', pattern: '^([GC][A-Z2-7]{55}|0x[a-fA-F0-9]{40})$' },
             balance: amount,
             observedAt: date,
           },
@@ -69,7 +73,12 @@ const marketSchemas = {
   LaunchTradeSubmission: {
     type: 'object',
     required: ['trade', 'pair', 'amountScale', 'priceScale'],
-    properties: { trade, pair: contract, amountScale: { const: 7 }, priceScale: { const: 7 } },
+    properties: {
+      trade,
+      pair: contract,
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
+    },
   },
   LaunchTradeList: {
     type: 'object',
@@ -78,8 +87,8 @@ const marketSchemas = {
       items: { type: 'array', items: trade },
       nextCursor: { type: ['string', 'null'] },
       pair: contract,
-      amountScale: { const: 7 },
-      priceScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
     },
   },
   LaunchMarket: {
@@ -89,8 +98,8 @@ const marketSchemas = {
       contractId: contract,
       asset: contract,
       pair: contract,
-      amountScale: { const: 7 },
-      priceScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
       currentPrice: nullableAmount,
       priceObservedAt: nullableDate,
       priceType: { const: 'marginal_before_fee' },
@@ -102,9 +111,14 @@ const marketSchemas = {
       distinctBuyers: count,
       volume24h: {
         type: 'object',
-        description: 'Verified transactions submitted by this client, not all network activity.',
+        description:
+          'Recorded verified trades in the trailing 24-hour window. Base includes receipts and indexed events; Stellar includes client submissions.',
         properties: {
-          grossPairAmount: amount,
+          grossPairAmount: {
+            ...amount,
+            description:
+              'Sum of buy and sell gross USDC amounts, multiplied by 2. Raw units use priceScale; do not multiply again.',
+          },
           assetAmount: amount,
           tradeCount: count,
           buyCount: count,
@@ -114,9 +128,13 @@ const marketSchemas = {
       volumeTotal: {
         type: 'object',
         description:
-          'All verified trades submitted to the API through the current time, without a lower time bound. Amounts include both buys and sells; this is not a complete on-chain volume index.',
+          'All recorded verified trades through the current time, without a lower time bound. Base includes receipts and indexed events; Stellar includes client submissions. Coverage depends on ingestion progress. Gross USDC buy and sell volume is multiplied by 2; quantities and counts remain actual.',
         properties: {
-          grossPairAmount: amount,
+          grossPairAmount: {
+            ...amount,
+            description:
+              'Sum of buy and sell gross USDC amounts, multiplied by 2. Raw units use priceScale; do not multiply again.',
+          },
           assetAmount: amount,
           tradeCount: count,
           buyCount: count,
@@ -145,8 +163,8 @@ const marketSchemas = {
       contractId: contract,
       asset: contract,
       pair: contract,
-      amountScale: { const: 7 },
-      priceScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
       priceType: { const: 'marginal_before_fee' },
       asOf: date,
       firstObservationAt: nullableDate,
@@ -235,8 +253,8 @@ const marketSchemas = {
       pair: contract,
       range: { type: 'string', enum: ['1D', '1W', '1M', '3M', 'ALL'] },
       intervalSeconds: { type: 'integer', minimum: 1 },
-      amountScale: { const: 7 },
-      priceScale: { const: 7 },
+      amountScale: { type: 'integer', minimum: 0, maximum: 18 },
+      priceScale: { type: 'integer', minimum: 0, maximum: 18 },
       priceType: { const: 'marginal_before_fee' },
       firstObservationAt: nullableDate,
       lastObservationAt: nullableDate,
@@ -276,4 +294,5 @@ const marketSchemas = {
     },
   },
 };
+
 export default marketSchemas;

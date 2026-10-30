@@ -1,4 +1,6 @@
 interface RuntimeConfiguration {
+  PRIVY_APP_ID?: string;
+  PRIVY_APP_SECRET?: string;
   NODE_ENV: 'development' | 'test' | 'production';
   CLIENT_ORIGIN: string;
   GITHUB_CLIENT_ID: string;

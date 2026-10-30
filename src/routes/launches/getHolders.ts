@@ -3,7 +3,9 @@ import type { RequestHandler } from 'express';
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import LaunchHolder from '../../models/LaunchHolder';
+import getLaunchScales from '../../utils/launch/getLaunchScales';
 import parseHolderRequest from '../../utils/launch/parseHolderRequest';
+import toPublicMarketIdentity from '../../utils/launch/toPublicMarketIdentity';
 
 const getHolders: RequestHandler = async (req, res) => {
   const request = parseHolderRequest(req);
@@ -30,11 +32,18 @@ const getHolders: RequestHandler = async (req, res) => {
       : {};
 
     const [rows, totalHolders] = await Promise.all([
-      LaunchHolder.find({ ...identity, ...pagination })
+      LaunchHolder.find({
+        ...identity,
+        ...(identity.chain === 'base' ? { balance: { $ne: '0' } } : {}),
+        ...pagination,
+      })
         .sort({ balanceSort: -1, address: 1 })
         .limit(limit + 1)
         .lean(),
-      LaunchHolder.countDocuments(identity),
+      LaunchHolder.countDocuments({
+        ...identity,
+        ...(identity.chain === 'base' ? { balance: { $ne: '0' } } : {}),
+      }),
     ]);
 
     const page = rows.slice(0, limit);
@@ -51,11 +60,11 @@ const getHolders: RequestHandler = async (req, res) => {
       status: 'success',
       message: 'Holders retrieved',
       result: {
-        ...identity,
+        ...toPublicMarketIdentity(identity),
         asset: launch.asset,
-        amountScale: 7,
+        amountScale: getLaunchScales(launch).amountScale,
         balanceSource: 'token_contract',
-        coverage: 'trade_participants',
+        coverage: identity.chain === 'base' ? 'indexed_trades_and_transfers' : 'trade_participants',
         totalHolders,
         nextCursor,
         items: page.map((holder) => ({

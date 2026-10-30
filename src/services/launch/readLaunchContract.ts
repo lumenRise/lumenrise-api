@@ -1,3 +1,4 @@
+import type { xdr } from '@stellar/stellar-sdk';
 import {
   Account,
   BASE_FEE,
@@ -16,14 +17,15 @@ const readLaunchContract = async (
   contractId: string,
   method: string,
   network: StellarNetwork,
-) => {
+  args: xdr.ScVal[] = [],
+): Promise<{ value: unknown; ledger: number }> => {
   const configuration = getNetworkConfig(network);
 
   const transaction = new TransactionBuilder(new Account(contract.NULL_ACCOUNT, '0'), {
     fee: BASE_FEE,
     networkPassphrase: configuration.networkPassphrase,
   })
-    .addOperation(new Contract(contractId).call(method))
+    .addOperation(new Contract(contractId).call(method, ...args))
     .setTimeout(30)
     .build();
 

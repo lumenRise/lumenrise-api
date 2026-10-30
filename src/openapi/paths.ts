@@ -1,6 +1,7 @@
 import authPaths from './paths/auth';
 import userPaths from './paths/user';
 import docsPaths from './paths/docs';
+import statsPaths from './paths/stats';
 import oauthPaths from './paths/oauth';
 import healthPaths from './paths/health';
 import configPaths from './paths/config';
@@ -25,6 +26,7 @@ const openApiPaths = withNetworkHeader(
     ...docsPaths,
     ...oauthPaths,
     ...healthPaths,
+    ...statsPaths,
     ...migrationPaths,
     ...configPaths,
     ...stellarPaths,

@@ -2,6 +2,9 @@ import toBondingSummary from './toBondingSummary';
 import type { LaunchRecord } from '../../types/launch/model';
 
 const toLaunchResult = (launch: LaunchRecord, now = new Date()) => ({
+  ...(launch.chain === 'base'
+    ? { chain: 'base', assetDecimals: launch.assetDecimals, pairDecimals: launch.pairDecimals }
+    : {}),
   network: launch.network,
   factoryContractId: launch.factoryContractId,
   factoryIndex: launch.factoryIndex,

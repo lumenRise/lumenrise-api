@@ -27,6 +27,8 @@ const callbackGitHubOAuthRoute: RequestHandler = async (req, res) => {
   try {
     const result = await completeGitHubAuthorization(code, state);
 
+    log.info({ provider: 'github' }, 'GitHub account connected');
+
     return res.redirect(
       302,
       createClientRedirect('success', result.connection.username, result.connection.syncJobId),

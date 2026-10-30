@@ -1,12 +1,15 @@
 import amqp from 'amqplib';
 
 import env from '../../env';
-import { LAUNCH_HOLDER_QUEUE } from '../../constants/launch/holderQueue';
+import log from '../../logger';
 import type { StellarNetwork } from '../../types/network/configuration';
+import { LAUNCH_HOLDER_QUEUE } from '../../constants/launch/holderQueue';
 
 const publishLaunchHolderJob = async (jobId: string, network: StellarNetwork): Promise<void> => {
   const queue = `${LAUNCH_HOLDER_QUEUE}.${network}`;
   const connection = await amqp.connect(env.RABBITMQ_URL, { timeout: 2000 });
+
+  log.info({ queue }, 'API RabbitMQ publisher connected');
 
   try {
     const channel = await connection.createConfirmChannel();
@@ -20,9 +23,12 @@ const publishLaunchHolderJob = async (jobId: string, network: StellarNetwork): P
     });
 
     await channel.waitForConfirms();
+
     await channel.close();
   } finally {
     await connection.close();
+
+    log.info({ queue }, 'API RabbitMQ publisher disconnected');
   }
 };
 

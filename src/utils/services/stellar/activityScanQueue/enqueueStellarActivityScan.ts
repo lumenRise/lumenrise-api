@@ -2,10 +2,10 @@ import type { Types } from 'mongoose';
 
 import { wakeStellarScan } from './wakeStellarScan';
 import StellarActivityScan from '../../../../models/StellarActivityScan';
-import type { StellarActivityScanEnqueueResult } from '../../../../types/stellar/scan';
-import { createEmptyStellarActivityAggregate } from '../mergeActivityPage/createEmptyStellarActivityAggregate';
 import getNetworkConfig from '../../../../services/network/getNetworkConfig';
 import type { StellarNetwork } from '../../../../types/network/configuration';
+import type { StellarActivityScanEnqueueResult } from '../../../../types/stellar/scan';
+import { createEmptyStellarActivityAggregate } from '../mergeActivityPage/createEmptyStellarActivityAggregate';
 
 const enqueueStellarActivityScan = async (
   identity: Types.ObjectId,
@@ -19,6 +19,7 @@ const enqueueStellarActivityScan = async (
     if (existing.status === 'queued') {
       await wakeStellarScan(existing._id.toString());
     }
+
     return {
       scan: existing,
       conflict: existing.address !== address,
@@ -41,6 +42,7 @@ const enqueueStellarActivityScan = async (
     });
 
     await wakeStellarScan(scan._id.toString());
+
     return { scan, conflict: false };
   } catch (error) {
     if (typeof error !== 'object' || error === null || Reflect.get(error, 'code') !== 11_000) {
@@ -56,6 +58,7 @@ const enqueueStellarActivityScan = async (
     if (scan.status === 'queued') {
       await wakeStellarScan(scan._id.toString());
     }
+
     return { scan, conflict: scan.address !== address };
   }
 };

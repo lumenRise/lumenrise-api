@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express';
 
 import log from '../logger';
 import Launch from '../models/Launch';
+import EvmAccount from '../models/EvmAccount';
 import StellarAccount from '../models/StellarAccount';
 import parseMarketRequest from '../utils/launch/parseMarketRequest';
 
@@ -19,20 +20,20 @@ const requireLaunchOwner: RequestHandler = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Launch not found', result: {} });
     }
 
-    const owner = await StellarAccount.exists({
+    const accountModel = req.chain === 'base' ? EvmAccount : StellarAccount;
+
+    const owner = await accountModel.exists({
       identity: req.auth!.identityId,
       address: launch.owner,
       disconnectedAt: null,
     });
 
     if (!owner) {
-      return res
-        .status(403)
-        .json({
-          status: 'error',
-          message: 'Only the launch owner can manage the team',
-          result: {},
-        });
+      return res.status(403).json({
+        status: 'error',
+        message: 'Only the launch owner can manage the team',
+        result: {},
+      });
     }
 
     res.locals.launchIdentity = identity;

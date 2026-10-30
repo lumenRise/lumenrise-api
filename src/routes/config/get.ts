@@ -1,10 +1,15 @@
 import type { RequestHandler } from 'express';
 
+import getBaseConfiguration from './getBase';
 import type { ApiResponse } from '../../types/response';
 import type { PublicConfiguration } from '../../types/configuration/public';
 import getPublicConfiguration from '../../services/configuration/getPublicConfiguration';
 
-const getConfiguration: RequestHandler = (_req, res) => {
+const getConfiguration: RequestHandler = (req, res, next) => {
+  if (req.chain === 'base') {
+    return getBaseConfiguration(req, res, next);
+  }
+
   const response: ApiResponse<PublicConfiguration> = {
     status: 'success',
     message: 'Public application configuration retrieved',

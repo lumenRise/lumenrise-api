@@ -3,24 +3,26 @@ import TokenImage from '../../models/TokenImage';
 import AssetIdentity from '../../models/AssetIdentity';
 
 const getManagedTomlCurrencies = async (network: 'testnet' | 'public') => {
-  const launches = await Launch.find({ network })
+  const launches = await Launch.find({ chain: 'stellar', network })
     .sort({ factoryIndex: 1 })
     .select('contractId asset metadata')
     .lean();
+
   const identities = await AssetIdentity.find({
     network,
     assetContractId: { $in: launches.map((launch) => launch.asset) },
     status: 'verified',
   }).lean();
+
   const images = await TokenImage.find({
+    chain: 'stellar',
     network,
     status: 'finalized',
     assetContractId: { $in: launches.map((launch) => launch.asset) },
   }).lean();
+
   const byContract = new Map(identities.map((identity) => [identity.assetContractId, identity]));
-  const imageByContract = new Map(
-    images.map((image) => [image.launchContractId, image.publicUrl]),
-  );
+  const imageByContract = new Map(images.map((image) => [image.launchContractId, image.publicUrl]));
   const publishedAssets = new Set<string>();
 
   return launches.flatMap((launch) => {
@@ -36,6 +38,7 @@ const getManagedTomlCurrencies = async (network: 'testnet' | 'public') => {
     }
 
     publishedAssets.add(launch.asset);
+
     const logo = imageByContract.get(launch.contractId) ?? '';
     let image: string | undefined;
 

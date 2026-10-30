@@ -4,10 +4,10 @@ import Identity from '../../models/Identity';
 import StellarAccount from '../../models/StellarAccount';
 import getCurrentReputationSnapshot from './currentSnapshot';
 import StellarActivityScan from '../../models/StellarActivityScan';
+import type { StellarNetwork } from '../../types/network/configuration';
 import type { ReputationProfileResult } from '../../types/reputation/profile';
 import toStellarReputationResult from '../../utils/reputation/toStellarReputationResult';
 import toReputationSnapshotResult from '../../utils/reputation/toReputationSnapshotResult';
-import type { StellarNetwork } from '../../types/network/configuration';
 
 const getReputationProfile = async (
   identityId: Types.ObjectId,

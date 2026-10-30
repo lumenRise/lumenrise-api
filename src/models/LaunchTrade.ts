@@ -4,6 +4,13 @@ import type { TradeRecord } from '../types/launch/market';
 
 const schema = new Schema<TradeRecord>(
   {
+    chain: {
+      type: String,
+      enum: ['stellar', 'base'],
+      required: true,
+      default: 'stellar',
+      immutable: true,
+    },
     network: { type: String, enum: ['testnet', 'public'], required: true },
     contractId: { type: String, required: true },
     transactionHash: { type: String, required: true },
@@ -22,17 +29,26 @@ const schema = new Schema<TradeRecord>(
 );
 
 schema.index(
-  { network: 1, transactionHash: 1, operationIndex: 1 },
-  { unique: true, name: 'launch_trades_transaction_unique' },
-);
-
-schema.index(
-  { network: 1, contractId: 1, tradedAt: -1, ledger: -1, transactionIndex: -1, operationIndex: -1 },
-  { name: 'launch_trades_market_time' },
+  { chain: 1, network: 1, transactionHash: 1, operationIndex: 1 },
+  { unique: true, name: 'launch_trades_transaction_unique_chain' },
 );
 
 schema.index(
   {
+    chain: 1,
+    network: 1,
+    contractId: 1,
+    tradedAt: -1,
+    ledger: -1,
+    transactionIndex: -1,
+    operationIndex: -1,
+  },
+  { name: 'launch_trades_market_time_chain' },
+);
+
+schema.index(
+  {
+    chain: 1,
     network: 1,
     contractId: 1,
     trader: 1,
@@ -41,7 +57,7 @@ schema.index(
     transactionIndex: -1,
     operationIndex: -1,
   },
-  { name: 'launch_trades_wallet_time' },
+  { name: 'launch_trades_wallet_time_chain' },
 );
 
 const LaunchTrade = model<TradeRecord>('LaunchTrade', schema);

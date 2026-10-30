@@ -1,4 +1,7 @@
+import type { Chain } from '../network/chain';
+
 interface TradeRecord {
+  chain?: Chain;
   network: 'testnet' | 'public';
   contractId: string;
   transactionHash: string;
@@ -16,6 +19,7 @@ interface TradeRecord {
 
 interface PriceSampleRecord {
   observationKey?: string;
+  chain?: Chain;
   network: 'testnet' | 'public';
   contractId: string;
   bucket: Date;
@@ -26,7 +30,14 @@ interface PriceSampleRecord {
 }
 
 interface MarketIdentity {
+  chain?: Chain;
   network: TradeRecord['network'];
+  contractId: string;
+}
+
+interface PublicMarketIdentity {
+  chain?: 'base';
+  network: 'testnet' | 'public';
   contractId: string;
 }
 
@@ -39,4 +50,11 @@ interface TradePosition {
 
 type ChartRange = '1D' | '1W' | '1M' | '3M' | 'ALL';
 
-export type { TradeRecord, PriceSampleRecord, MarketIdentity, TradePosition, ChartRange };
+export type {
+  PublicMarketIdentity,
+  TradeRecord,
+  PriceSampleRecord,
+  MarketIdentity,
+  TradePosition,
+  ChartRange,
+};

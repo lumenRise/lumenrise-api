@@ -1,6 +1,9 @@
 import type { Types } from 'mongoose';
 
+import type { Chain } from '../network/chain';
+
 interface LaunchTeamMemberRecord {
+  chain?: Chain;
   network: 'testnet' | 'public';
   contractId: string;
   kind: 'registered' | 'external';

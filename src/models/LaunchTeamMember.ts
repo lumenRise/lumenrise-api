@@ -5,6 +5,13 @@ import type { LaunchTeamMemberRecord } from '../types/launch/team';
 
 const schema = new Schema<LaunchTeamMemberRecord>(
   {
+    chain: {
+      type: String,
+      enum: ['stellar', 'base'],
+      required: true,
+      default: 'stellar',
+      immutable: true,
+    },
     network: { type: String, enum: ['testnet', 'public'], required: true, immutable: true },
     contractId: { type: String, required: true, immutable: true },
     kind: {
@@ -32,24 +39,27 @@ const schema = new Schema<LaunchTeamMemberRecord>(
 );
 
 schema.index(
-  { network: 1, contractId: 1, identity: 1 },
+  { chain: 1, network: 1, contractId: 1, identity: 1 },
   {
     unique: true,
     partialFilterExpression: { identity: { $type: 'objectId' } },
-    name: 'launch_team_member_unique',
+    name: 'launch_team_member_unique_chain',
   },
 );
 
 schema.index(
-  { network: 1, contractId: 1, slot: 1 },
+  { chain: 1, network: 1, contractId: 1, slot: 1 },
   {
     unique: true,
     partialFilterExpression: { slot: { $type: 'number' } },
-    name: 'launch_team_slot_unique',
+    name: 'launch_team_slot_unique_chain',
   },
 );
 
-schema.index({ identity: 1, network: 1, status: 1 }, { name: 'launch_team_invitations' });
+schema.index(
+  { chain: 1, identity: 1, network: 1, status: 1 },
+  { name: 'launch_team_invitations_chain' },
+);
 
 const LaunchTeamMember = model<LaunchTeamMemberRecord>('LaunchTeamMember', schema);
 

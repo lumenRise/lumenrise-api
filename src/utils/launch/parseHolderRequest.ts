@@ -1,12 +1,14 @@
 import type { Request } from 'express';
 import { StrKey } from '@stellar/stellar-sdk';
 
+import isBaseAddress from '../base/isBaseAddress';
 import parseMarketRequest from './parseMarketRequest';
 import applicationRules from '../../constants/applicationRules';
 import type { HolderPosition, HolderRequest } from '../../types/launch/holder';
 
 const parseHolderRequest = (req: Request): HolderRequest | null => {
   const identity = parseMarketRequest(req);
+
   const limit =
     req.query.limit === undefined
       ? applicationRules.holders.defaultLimit
@@ -44,7 +46,9 @@ const parseHolderRequest = (req: Request): HolderRequest | null => {
         typeof value[0] !== 'string' ||
         !/^[1-9]\d{0,38}$/.test(value[0]) ||
         typeof value[1] !== 'string' ||
-        (!StrKey.isValidEd25519PublicKey(value[1]) && !StrKey.isValidContract(value[1]))
+        (req.chain === 'base'
+          ? !isBaseAddress(value[1])
+          : !StrKey.isValidEd25519PublicKey(value[1]) && !StrKey.isValidContract(value[1]))
       ) {
         return null;
       }

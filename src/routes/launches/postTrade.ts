@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express';
 
 import log from '../../logger';
 import Launch from '../../models/Launch';
+import postBaseTrade from './postBaseTrade';
 import LaunchTrade from '../../models/LaunchTrade';
 import type { TradeRecord } from '../../types/launch/market';
 import toTradeResult from '../../utils/launch/toTradeResult';
@@ -14,7 +15,11 @@ import readLaunchContract from '../../services/launch/readLaunchContract';
 import decodeTradeTransaction from '../../utils/launch/decodeTradeTransaction';
 import enqueueLaunchHolderRefresh from '../../services/launch/enqueueLaunchHolderRefresh';
 
-const postTrade: RequestHandler = async (req, res) => {
+const postTrade: RequestHandler = async (req, res, next) => {
+  if (req.chain === 'base') {
+    return postBaseTrade(req, res, next);
+  }
+
   const identity = parseMarketRequest(req);
   const hash: unknown = req.body?.transactionHash;
 
@@ -39,7 +44,6 @@ const postTrade: RequestHandler = async (req, res) => {
     }
 
     const key = { ...identity, transactionHash, operationIndex: 0 };
-
     let trade: TradeRecord | null = await LaunchTrade.findOne(key).lean();
 
     const respond = () =>
@@ -56,6 +60,7 @@ const postTrade: RequestHandler = async (req, res) => {
 
     if (trade?.priceRecordedAt) {
       await enqueueLaunchHolderRefresh(identity, launch.asset, trade.trader);
+
       return respond();
     }
 
@@ -107,7 +112,7 @@ const postTrade: RequestHandler = async (req, res) => {
               amountScale: 7,
               priceScale: 7,
             },
-            'Launch trade recorded',
+            trade.side === 'buy' ? 'Stellar buy indexed' : 'Stellar sell indexed',
           );
         }
       } catch (error) {
@@ -119,8 +124,19 @@ const postTrade: RequestHandler = async (req, res) => {
 
     await enqueueLaunchHolderRefresh(identity, launch.asset, trade.trader);
 
-    const stateRead = await readLaunchContract(server, identity.contractId, 'get_state', identity.network);
-    const priceRead = await readLaunchContract(server, identity.contractId, 'current_price', identity.network);
+    const stateRead = await readLaunchContract(
+      server,
+      identity.contractId,
+      'get_state',
+      identity.network,
+    );
+
+    const priceRead = await readLaunchContract(
+      server,
+      identity.contractId,
+      'current_price',
+      identity.network,
+    );
 
     if (stateRead.ledger < trade.ledger || priceRead.ledger < stateRead.ledger) {
       throw new Error('RPC observation is behind the trade');

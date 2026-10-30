@@ -7,7 +7,7 @@ import type { MarketIdentity } from '../../../types/launch/market';
 import getTeamProfiles from '../../../services/launch/getTeamProfiles';
 import toTeamMemberResult from '../../../utils/launch/toTeamMemberResult';
 
-const getLaunchTeam: RequestHandler = async (_req, res) => {
+const getLaunchTeam: RequestHandler = async (req, res) => {
   const identity = res.locals.launchIdentity as MarketIdentity;
 
   try {
@@ -21,7 +21,9 @@ const getLaunchTeam: RequestHandler = async (_req, res) => {
       },
       status: 'active',
       deletedAt: null,
-      'externalUserIds.0': { $exists: true },
+      ...(req.chain === 'base'
+        ? { name: { $type: 'string', $ne: '' } }
+        : { 'externalUserIds.0': { $exists: true } }),
     })
       .select('name avatarUrl')
       .lean();

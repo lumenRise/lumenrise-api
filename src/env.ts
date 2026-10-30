@@ -27,6 +27,13 @@ const schema = defineConfig({
   CLIENT_ORIGIN: {
     default: 'http://localhost:5173',
   },
+  PRIVY_APP_ID: {
+    example: 'application-id',
+  },
+  PRIVY_APP_SECRET: {
+    example: 'application-secret',
+    secret: true,
+  },
   AUTH_PROVIDER_API_URL: {
     example: 'https://identity.example',
   },
@@ -77,8 +84,29 @@ const schema = defineConfig({
     default: 2_097_152,
   },
   CREDENTIAL_ENCRYPTION_KEY: {
-    default: '',
     example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
+  },
+  BASE_LOG_BLOCK_RANGE: {
+    type: 'number',
+    default: 100,
+  },
+  BASE_TESTNET_RPC_URL: {
+    example: 'https://base-sepolia-rpc.example',
+  },
+  BASE_PUBLIC_RPC_URL: {
+    example: 'https://base-mainnet-rpc.example',
+  },
+  BASE_TESTNET_FACTORY_ADDRESS: {
+    example: '0x1111111111111111111111111111111111111111',
+  },
+  BASE_PUBLIC_FACTORY_ADDRESS: {
+    example: '0x1111111111111111111111111111111111111111',
+  },
+  BASE_TESTNET_DEPLOYMENT_BLOCK: {
+    example: '1',
+  },
+  BASE_PUBLIC_DEPLOYMENT_BLOCK: {
+    example: '1',
   },
   STELLAR_TESTNET_RPC_URL: {
     default: 'https://soroban-testnet.stellar.org',
@@ -87,10 +115,10 @@ const schema = defineConfig({
     default: 'https://horizon-testnet.stellar.org',
   },
   LAUNCH_TESTNET_FACTORY_CONTRACT_ID: {
-    default: '',
+    example: 'CAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC526',
   },
   STELLAR_TESTNET_HOME_DOMAIN: {
-    default: '',
+    example: 'testnet.example',
   },
   STELLAR_TESTNET_TOML_DIRNAME: {
     default: './storage/testnet',
@@ -99,19 +127,20 @@ const schema = defineConfig({
     default: 'stellar.toml',
   },
   TESTNET_TOML: {
-    default: '',
+    example: './storage/testnet/stellar.toml',
+    required: false,
   },
   STELLAR_PUBLIC_RPC_URL: {
-    default: '',
+    example: 'https://stellar-mainnet-rpc.example',
   },
   STELLAR_PUBLIC_HORIZON_URL: {
     default: 'https://horizon.stellar.org',
   },
   LAUNCH_PUBLIC_FACTORY_CONTRACT_ID: {
-    default: '',
+    example: 'CAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC526',
   },
   STELLAR_PUBLIC_HOME_DOMAIN: {
-    default: '',
+    example: 'mainnet.example',
   },
   STELLAR_PUBLIC_TOML_DIRNAME: {
     default: './storage/public',
@@ -120,7 +149,8 @@ const schema = defineConfig({
     default: 'stellar.toml',
   },
   PUBLIC_TOML: {
-    default: '',
+    example: './storage/public/stellar.toml',
+    required: false,
   },
   STELLAR_LEGACY_NETWORK: {
     type: 'enum',

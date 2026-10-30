@@ -1,3 +1,5 @@
+import type { Chain } from '../network/chain';
+
 interface LaunchMetadata {
   name: string;
   description: string;
@@ -8,14 +10,18 @@ interface LaunchMetadata {
 }
 
 interface LaunchRecord {
+  chain?: Chain;
   network: 'testnet' | 'public';
   factoryContractId: string;
+  prelaunchId?: string | null;
   factoryIndex: number;
   contractId: string;
   slug: string;
   owner: string;
   asset: string;
   pair: string;
+  assetDecimals?: number;
+  pairDecimals?: number;
   metadata: LaunchMetadata;
   config: Record<string, unknown>;
   state: Record<string, unknown>;

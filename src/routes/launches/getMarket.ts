@@ -5,7 +5,9 @@ import Launch from '../../models/Launch';
 import LaunchTrade from '../../models/LaunchTrade';
 import LaunchPriceSample from '../../models/LaunchPriceSample';
 import toLaunchVolume from '../../utils/launch/toLaunchVolume';
+import getLaunchScales from '../../utils/launch/getLaunchScales';
 import parseMarketRequest from '../../utils/launch/parseMarketRequest';
+import toPublicMarketIdentity from '../../utils/launch/toPublicMarketIdentity';
 import buildLaunchVolumePipeline from '../../utils/launch/buildLaunchVolumePipeline';
 
 const getMarket: RequestHandler = async (req, res): Promise<unknown> => {
@@ -17,6 +19,7 @@ const getMarket: RequestHandler = async (req, res): Promise<unknown> => {
 
   try {
     const now = new Date();
+
     const [launch, price, totals] = await Promise.all([
       Launch.findOne(identity).lean(),
       LaunchPriceSample.findOne(identity).sort({ ledger: -1, sampledAt: -1 }).lean(),
@@ -35,11 +38,10 @@ const getMarket: RequestHandler = async (req, res): Promise<unknown> => {
       status: 'success',
       message: 'Market retrieved',
       result: {
-        ...identity,
+        ...toPublicMarketIdentity(identity),
         asset: launch.asset,
         pair: launch.pair,
-        amountScale: 7,
-        priceScale: 7,
+        ...getLaunchScales(launch),
         currentPrice: price?.price ?? null,
         priceObservedAt: price?.sampledAt.toISOString() ?? null,
         priceType: 'marginal_before_fee',

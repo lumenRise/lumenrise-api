@@ -60,12 +60,12 @@ describe('submitted trades and observed price reads', () => {
     await getMarket(request(), res as unknown as Response, vi.fn());
     expect(res.json.mock.calls[0]![0].result).toMatchObject({
       currentPrice: '12345678',
-      volume24h: { sellCount: 1, grossPairAmount: '9007199254740993' },
+      volume24h: { sellCount: 1, grossPairAmount: '18014398509481986' },
       volumeTotal: {
         tradeCount: 5,
         buyCount: 3,
         sellCount: 2,
-        grossPairAmount: '19007199254740993',
+        grossPairAmount: '38014398509481986',
         assetAmount: '40000000',
       },
     });

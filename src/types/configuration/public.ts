@@ -1,3 +1,4 @@
+import type { BasePublicConfiguration } from '../base/public';
 import type { StellarNetwork } from '../network/configuration';
 import type applicationRules from '../../constants/applicationRules';
 
@@ -13,6 +14,7 @@ interface PublicNetworkConfiguration {
 
 interface PublicConfiguration {
   version: 1;
+  base: BasePublicConfiguration;
   auth: { appId: string };
   network: {
     default: StellarNetwork;
