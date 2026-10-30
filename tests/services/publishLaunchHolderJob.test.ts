@@ -5,6 +5,7 @@ import publishLaunchHolderJob from '../../src/services/launch/publishLaunchHolde
 
 vi.mock('../../src/env', () => ({ default: { RABBITMQ_URL: 'amqp://shared-broker' } }));
 vi.mock('amqplib', () => ({ default: { connect: vi.fn() } }));
+vi.mock('../../src/logger', () => ({ default: { info: vi.fn() } }));
 
 const channel = {
   assertQueue: vi.fn(),

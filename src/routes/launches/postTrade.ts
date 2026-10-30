@@ -112,7 +112,7 @@ const postTrade: RequestHandler = async (req, res, next) => {
               amountScale: 7,
               priceScale: 7,
             },
-            'Launch trade recorded',
+            trade.side === 'buy' ? 'Stellar buy indexed' : 'Stellar sell indexed',
           );
         }
       } catch (error) {

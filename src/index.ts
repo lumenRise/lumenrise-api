@@ -27,7 +27,7 @@ const bootstrap = async (): Promise<void> => {
   await runDatabaseMigrations();
   await syncManagedStellarToml();
 
-  serverState.server = app.listen(env.PORT, () => {
+  serverState.server = app.listen(env.PORT, (): void => {
     log.info({ port: env.PORT }, 'Lumenrise API started');
   });
 
