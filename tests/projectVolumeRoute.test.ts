@@ -43,6 +43,16 @@ it('rejects invalid environments before reading trades', async (): Promise<void>
   expect(getProjectVolume).not.toHaveBeenCalled();
 });
 
+it('combines all chains and environments only on the explicit all route', async (): Promise<void> => {
+  const response = await request(app)
+    .get('/v1/stats/volume/all')
+    .set('X-Chain', 'base')
+    .set('X-Network', 'public');
+
+  expect(response.status).toBe(200);
+  expect(getProjectVolume).toHaveBeenCalledWith('all', expect.any(Date));
+});
+
 it('returns 503 when stored amounts cannot be read safely', async (): Promise<void> => {
   vi.mocked(getProjectVolume).mockRejectedValue(new Error('Invalid decimals'));
 
