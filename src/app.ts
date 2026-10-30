@@ -20,7 +20,7 @@ app.use(compression());
 
 app.use(
   cors({
-    origin: env.CLIENT_ORIGIN,
+    origin: [env.CLIENT_ORIGIN, 'http://localhost:3000'],
     credentials: true,
     exposedHeaders: ['X-Chain', 'X-Network', 'X-Stellar-Network'],
   }),
