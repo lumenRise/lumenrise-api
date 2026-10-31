@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DatabaseMigration from '../../src/models/DatabaseMigration';
 import runDatabaseMigrations from '../../src/migrations/runDatabaseMigrations';
-import launchChainIsolation from '../../src/migrations/20261028LaunchChainIsolation';
 import createCurrentIndexes from '../../src/migrations/20261012CreateCurrentIndexes';
 import upgradeIndexes from '../../src/migrations/20261012AuthProviderAndTokenImageIndexes';
+import priceSampleBucketUniqueness from '../../src/migrations/20261031PriceSampleBucketUniqueness';
 
 vi.mock('../../src/migrations/20261028LaunchChainIsolation', () => ({
   default: { name: '20261028-launch-chain-isolation', up: vi.fn() },
@@ -28,6 +28,10 @@ vi.mock('../../src/migrations/20261022LaunchTeamInvitations', () => ({
 
 vi.mock('../../src/migrations/20261029RepairIndexedLaunchSlugs', () => ({
   default: { name: '20261029-repair-indexed-launch-slugs', up: vi.fn() },
+}));
+
+vi.mock('../../src/migrations/20261031PriceSampleBucketUniqueness', () => ({
+  default: { name: '20261031-price-sample-bucket-uniqueness', up: vi.fn() },
 }));
 
 vi.mock('../../src/logger', () => ({ default: { info: vi.fn() } }));
@@ -80,11 +84,11 @@ describe('consolidated database migrations', () => {
       vi.mocked(createCurrentIndexes.up).mock.invocationCallOrder[0]!,
     );
 
-    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(13);
+    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(14);
 
     expect(DatabaseMigration.updateOne).toHaveBeenLastCalledWith(
-      { name: launchChainIsolation.name },
-      { $setOnInsert: { name: launchChainIsolation.name, appliedAt: expect.any(Date) } },
+      { name: priceSampleBucketUniqueness.name },
+      { $setOnInsert: { name: priceSampleBucketUniqueness.name, appliedAt: expect.any(Date) } },
       { upsert: true },
     );
   });
@@ -112,7 +116,7 @@ describe('consolidated database migrations', () => {
 
     expect(createCurrentIndexes.up).toHaveBeenCalledTimes(1);
 
-    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(12);
+    expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(13);
   });
 
   it('does not record an unsuccessful baseline as applied', async () => {
