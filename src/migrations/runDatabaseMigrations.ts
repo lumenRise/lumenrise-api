@@ -13,6 +13,7 @@ import launchTeamInvitations from './20261022LaunchTeamInvitations';
 import type { MigrationDefinition } from '../types/database/migration';
 import priceObservationIndexes from './20261014PriceObservationIndexes';
 import stellarNetworkIsolation from './20261019StellarNetworkIsolation';
+import priceSampleBucketUniqueness from './20261031PriceSampleBucketUniqueness';
 import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
 
 const migrations: readonly MigrationDefinition[] = [
@@ -29,6 +30,7 @@ const migrations: readonly MigrationDefinition[] = [
   launchSlugs,
   identityUserIds,
   launchChainIsolation,
+  priceSampleBucketUniqueness,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {
