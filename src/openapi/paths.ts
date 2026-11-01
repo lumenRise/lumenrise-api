@@ -14,6 +14,7 @@ import reputationPaths from './paths/reputation';
 import launchTeamPaths from './paths/launchTeam';
 import connectionPaths from './paths/connections';
 import launchMarketPaths from './paths/launchMarket';
+import statsActivityPaths from './paths/statsActivity';
 import withNetworkHeader from '../utils/openapi/withNetworkHeader';
 import withCommonResponses from '../utils/openapi/withCommonResponses';
 
@@ -27,6 +28,7 @@ const openApiPaths = withNetworkHeader(
     ...oauthPaths,
     ...healthPaths,
     ...statsPaths,
+    ...statsActivityPaths,
     ...migrationPaths,
     ...configPaths,
     ...stellarPaths,
