@@ -33,6 +33,7 @@ const trade = {
   tradedAt: new Date('2026-10-08T08:47:42Z'),
   side: 'buy',
   assetAmount: '100000000',
+  grossAmount: '100558650',
   executionPrice: '10055866',
 };
 const server = { getTransaction: vi.fn() };
@@ -83,6 +84,7 @@ describe('client hash submission', () => {
       asset: 'token',
       side: 'buy',
       assetAmount: '100000000',
+      grossAmount: '100558650',
       executionPrice: '10055866',
     });
     expect(Launch.updateOne).toHaveBeenCalledWith(
