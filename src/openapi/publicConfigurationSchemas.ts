@@ -54,12 +54,27 @@ const publicConfigurationSchemas = {
             required: ['testnet', 'public'],
             additionalProperties: {
               type: 'object',
-              required: ['network', 'chainId', 'factoryContractId', 'launchConfigured'],
+              required: [
+                'network',
+                'chainId',
+                'factoryContractId',
+                'launchConfigured',
+                'uniswapV4',
+              ],
               properties: {
                 network: { enum: ['testnet', 'public'] },
                 chainId: { enum: [8453, 84532] },
                 factoryContractId: stringSchema,
                 launchConfigured: booleanSchema,
+                uniswapV4: {
+                  type: 'object',
+                  required: ['poolManager', 'stateView', 'positionManager'],
+                  properties: {
+                    poolManager: stringSchema,
+                    stateView: stringSchema,
+                    positionManager: stringSchema,
+                  },
+                },
               },
             },
           },

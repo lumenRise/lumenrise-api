@@ -29,7 +29,9 @@ const getStatsTradePage = async (
   })
     .sort({ tradedAt: -1, _id: -1 })
     .limit(query.limit + 1)
-    .select('chain network contractId trader tradedAt side assetAmount grossAmount executionPrice')
+    .select(
+      'chain network contractId transactionHash trader tradedAt side assetAmount grossAmount executionPrice',
+    )
     .lean();
 
   const page = rows.slice(0, query.limit);
@@ -78,6 +80,7 @@ const getStatsTradePage = async (
 
     result.items.push({
       id: trade._id.toString(),
+      hash: trade.transactionHash,
       chain,
       network: trade.network,
       launch: {

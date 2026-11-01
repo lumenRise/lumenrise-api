@@ -20,6 +20,7 @@ interface StatsTradeQuery {
 
 interface StatsTradeItem {
   id: string;
+  hash: string;
   chain: Chain;
   network: MarketNetwork;
   launch: { slug: string; name: string; symbol: string; logo: string };
