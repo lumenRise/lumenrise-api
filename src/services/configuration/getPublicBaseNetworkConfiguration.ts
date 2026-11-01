@@ -1,4 +1,5 @@
 import getBaseConfiguration from '../base/getBaseConfiguration';
+import uniswapDeployments from '../../constants/base/uniswapDeployments';
 import type { BasePublicNetworkConfiguration } from '../../types/base/public';
 
 const getPublicBaseNetworkConfiguration = (
@@ -9,6 +10,7 @@ const getPublicBaseNetworkConfiguration = (
     chainId: network === 'testnet' ? 84532 : 8453,
     factoryContractId: '',
     launchConfigured: false,
+    uniswapV4: uniswapDeployments[network],
   };
 
   try {
