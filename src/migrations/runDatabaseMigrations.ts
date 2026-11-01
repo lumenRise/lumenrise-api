@@ -1,38 +1,14 @@
 import log from '../logger';
-import launchSlugs from './20261022LaunchSlugs';
-import identityUserIds from './20261023IdentityUserIds';
-import statsTradeIndexes from './20261101StatsTradeIndexes';
-import launchListIndexes from './20261019LaunchListIndexes';
-import launchTeamIndexes from './20261017LaunchTeamIndexes';
 import DatabaseMigration from '../models/DatabaseMigration';
-import manualXReputation from './20261013ManualXReputation';
-import launchHolderIndexes from './20261014LaunchHolderIndexes';
-import launchChainIsolation from './20261028LaunchChainIsolation';
+import statsTradeIndexes from './20261101StatsTradeIndexes';
 import createCurrentIndexes from './20261012CreateCurrentIndexes';
-import repairLaunchSlugs from './20261029RepairIndexedLaunchSlugs';
-import launchTeamInvitations from './20261022LaunchTeamInvitations';
+import basePoolHistoryReplay from './20261101BasePoolHistoryReplay';
 import type { MigrationDefinition } from '../types/database/migration';
-import priceObservationIndexes from './20261014PriceObservationIndexes';
-import stellarNetworkIsolation from './20261019StellarNetworkIsolation';
-import priceSampleBucketUniqueness from './20261031PriceSampleBucketUniqueness';
-import authProviderAndTokenImageIndexes from './20261012AuthProviderAndTokenImageIndexes';
 
 const migrations: readonly MigrationDefinition[] = [
-  repairLaunchSlugs,
-  authProviderAndTokenImageIndexes,
   createCurrentIndexes,
-  manualXReputation,
-  priceObservationIndexes,
-  launchHolderIndexes,
-  launchTeamIndexes,
-  launchListIndexes,
-  stellarNetworkIsolation,
-  launchTeamInvitations,
-  launchSlugs,
-  identityUserIds,
-  launchChainIsolation,
-  priceSampleBucketUniqueness,
   statsTradeIndexes,
+  basePoolHistoryReplay,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {

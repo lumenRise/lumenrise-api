@@ -11,7 +11,6 @@ import StellarPaymentFact from '../../src/models/StellarPaymentFact';
 import StellarActivityScan from '../../src/models/StellarActivityScan';
 import ManualRefreshCooldown from '../../src/models/ManualRefreshCooldown';
 import SorobanTransactionEvidence from '../../src/models/SorobanTransactionEvidence';
-import stellarNetworkIsolation from '../../src/migrations/20261019StellarNetworkIsolation';
 
 vi.mock('../../src/env', async (load) => {
   const original = await load<{ default: Record<string, unknown> }>();
@@ -44,79 +43,12 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB network isol
     await mongoose.disconnect();
   });
 
-  it('backfills both networks from Horizon and propagates network to linked evidence', async () => {
-    const identity = new mongoose.Types.ObjectId();
-    const testnetScan = new mongoose.Types.ObjectId();
-    const publicScan = new mongoose.Types.ObjectId();
-
-    await StellarActivityScan.collection.insertMany([
-      {
-        _id: testnetScan,
-        identity,
-        address,
-        sourceUrl: 'https://horizon-testnet.stellar.org',
-        active: false,
-      },
-      {
-        _id: publicScan,
-        identity,
-        address,
-        sourceUrl: 'https://horizon.stellar.org',
-        active: false,
-      },
-    ] as never);
-
-    await StellarActivityScan.collection.createIndex(
-      { identity: 1, active: 1 },
-      {
-        name: 'stellar_activity_one_active_per_identity',
-        unique: true,
-        partialFilterExpression: { active: true },
-      },
-    );
-
-    await StellarPaymentFact.collection.insertMany([
-      { scan: testnetScan, operationId: '1' },
-      { scan: publicScan, operationId: '1' },
-    ] as never);
-
-    await SorobanTransactionEvidence.collection.insertMany([
-      { scan: testnetScan, transactionHash: 'same-hash' },
-      { scan: publicScan, transactionHash: 'same-hash' },
-    ] as never);
-
-    await stellarNetworkIsolation.up();
-    await stellarNetworkIsolation.up();
-
-    expect(await StellarActivityScan.countDocuments({ network: 'testnet' })).toBe(1);
-    expect(await StellarActivityScan.countDocuments({ network: 'public' })).toBe(1);
-    expect(await StellarPaymentFact.countDocuments({ network: 'testnet' })).toBe(1);
-    expect(await StellarPaymentFact.countDocuments({ network: 'public' })).toBe(1);
-    expect(await SorobanTransactionEvidence.countDocuments({ network: 'testnet' })).toBe(1);
-    expect(await SorobanTransactionEvidence.countDocuments({ network: 'public' })).toBe(1);
-    expect(
-      (await StellarActivityScan.collection.indexes()).map((index) => index.name),
-    ).not.toContain('stellar_activity_one_active_per_identity');
-  });
-
-  it('rejects unknown legacy sources before modifying scans', async () => {
-    await StellarActivityScan.collection.insertOne({
-      sourceUrl: 'https://unknown.example',
-    } as never);
-
-    await expect(stellarNetworkIsolation.up()).rejects.toThrow('STELLAR_LEGACY_NETWORK');
-
-    expect(await StellarActivityScan.countDocuments({ network: { $exists: true } })).toBe(0);
-
-    env.STELLAR_LEGACY_NETWORK = 'testnet';
-
-    await stellarNetworkIsolation.up();
-
-    expect(await StellarActivityScan.countDocuments({ network: 'testnet' })).toBe(1);
-  });
-
   it('keeps active scans, results and refresh cooldowns separate for the same wallet', async () => {
-    await stellarNetworkIsolation.up();
+    await Promise.all([
+      StellarActivityScan.createIndexes(),
+      StellarPaymentFact.createIndexes(),
+      SorobanTransactionEvidence.createIndexes(),
+    ]);
     await Identity.createIndexes();
     await ManualRefreshCooldown.createIndexes();
     await Identity.create({ externalUserIds: ['42'], status: 'active' });

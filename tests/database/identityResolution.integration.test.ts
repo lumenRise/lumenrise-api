@@ -7,7 +7,6 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import app from '../../src/app';
 import Identity from '../../src/models/Identity';
 import StellarAccount from '../../src/models/StellarAccount';
-import identityUserIds from '../../src/migrations/20261023IdentityUserIds';
 
 vi.mock('../../src/services/auth/verifyProviderAddress', () => ({
   default: vi.fn(async () => true),
@@ -30,46 +29,6 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB identity res
   afterAll(async () => {
     await mongoose.connection.dropDatabase();
     await mongoose.disconnect();
-  });
-
-  it('migrates legacy identities, preserves aliases, and can run again safely', async () => {
-    const legacyId = new mongoose.Types.ObjectId();
-    const linkedId = new mongoose.Types.ObjectId();
-
-    await Identity.collection.insertMany([
-      { _id: legacyId, externalUserId: '42', name: 'Alice', status: 'active' },
-      { _id: linkedId, externalUserId: '87', externalUserIds: ['91'], status: 'active' },
-      { externalUserId: null, status: 'active' },
-      { status: 'active' },
-    ] as never);
-
-    await Identity.collection.createIndex(
-      { externalUserId: 1 },
-      {
-        unique: true,
-        partialFilterExpression: { externalUserId: { $type: 'string' } },
-        name: 'identities_external_user_unique',
-      },
-    );
-
-    await identityUserIds.up();
-    await identityUserIds.up();
-
-    expect((await Identity.findById(legacyId))?.externalUserIds).toEqual(['42']);
-    expect((await Identity.findById(linkedId))?.externalUserIds).toEqual(
-      expect.arrayContaining(['87', '91']),
-    );
-    expect(await Identity.collection.countDocuments({ externalUserId: { $exists: true } })).toBe(0);
-    expect(
-      (await Identity.collection.indexes()).some(
-        (index) => index.name === 'identities_external_user_unique',
-      ),
-    ).toBe(false);
-    await expect(Identity.create({ externalUserIds: ['100', '42'] })).rejects.toMatchObject({
-      code: 11000,
-    });
-    await expect(Identity.create({ externalUserIds: [] })).resolves.toBeDefined();
-    await expect(Identity.create({ externalUserIds: [] })).resolves.toBeDefined();
   });
 
   it('keeps both login methods on one identity and uses either ID for subsequent requests', async () => {
