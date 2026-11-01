@@ -1,3 +1,4 @@
+import type { BasePool } from '../base/pool';
 import type { Chain } from '../network/chain';
 
 interface LaunchMetadata {
@@ -25,6 +26,8 @@ interface LaunchRecord {
   metadata: LaunchMetadata;
   config: Record<string, unknown>;
   state: Record<string, unknown>;
+  pool?: BasePool | null;
+  graduationState?: Record<string, unknown> | null;
   asOfLedger: number;
   observedAt: Date;
   createdAt?: Date | null;

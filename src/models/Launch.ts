@@ -37,6 +37,8 @@ const launchSchema = new Schema<LaunchRecord>(
     metadata: { type: metadataSchema, required: true },
     config: { type: Schema.Types.Mixed, required: true, immutable: true },
     state: { type: Schema.Types.Mixed, required: true },
+    pool: { type: Schema.Types.Mixed, default: null },
+    graduationState: { type: Schema.Types.Mixed, default: null },
     asOfLedger: { type: Number, required: true, min: 1 },
     observedAt: { type: Date, required: true },
     createdAt: { type: Date, default: null },
@@ -52,6 +54,11 @@ const launchSchema = new Schema<LaunchRecord>(
 launchSchema.index(
   { chain: 1, network: 1, factoryContractId: 1, factoryIndex: 1 },
   { unique: true, name: 'launches_factory_index_unique_chain' },
+);
+
+launchSchema.index(
+  { chain: 1, network: 1, factoryContractId: 1, 'pool.poolId': 1 },
+  { name: 'launches_base_pool_lookup' },
 );
 
 launchSchema.index(
