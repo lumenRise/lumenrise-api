@@ -105,7 +105,7 @@ const launchMarketPaths = {
       operationId: 'getLaunchTrades',
       summary: 'List client-submitted successful curve trades',
       description:
-        'Reads verified client-submitted direct buy/sell transactions, newest first with cursor pagination. Each item contains wallet, time, token, side, amount and average execution price before fees. Stellar amounts and prices use 7 decimals. Base asset amounts use amountScale and pair amounts and prices use priceScale from native ERC-20 decimals. Base trades decode Bought and Sold events from canonical receipts and indexed blocks.',
+        'Reads verified client-submitted direct buy/sell transactions, newest first with cursor pagination. Each item contains wallet, time, token, side, assetAmount, exact grossAmount and average execution price before creator fees. Use grossAmount for trade value; executionPrice is rounded and must not be used to reconstruct payments. Stellar amounts and prices use 7 decimals. Base asset amounts use amountScale and pair amounts and prices use priceScale from native ERC-20 decimals. Base trades decode Bought and Sold events from canonical receipts and indexed blocks.',
       parameters: [
         ...identity,
         {

@@ -14,7 +14,7 @@ const network = { type: 'string', enum: ['testnet', 'public'] };
 
 const trade = {
   type: 'object',
-  required: ['trader', 'tradedAt', 'asset', 'side', 'assetAmount', 'executionPrice'],
+  required: ['trader', 'tradedAt', 'asset', 'side', 'assetAmount', 'grossAmount', 'executionPrice'],
   additionalProperties: false,
   properties: {
     trader: { type: 'string' },
@@ -22,6 +22,11 @@ const trade = {
     asset: contract,
     side: { type: 'string', enum: ['buy', 'sell'] },
     assetAmount: amount,
+    grossAmount: {
+      ...amount,
+      description:
+        'Exact traded pair amount before creator fees, in priceScale base units. For buys, payment minus creator fee; for sells, received amount plus creator fee. Use this for trade value instead of multiplying by the rounded executionPrice.',
+    },
     executionPrice: {
       ...amount,
       description:
