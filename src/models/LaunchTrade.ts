@@ -60,6 +60,13 @@ schema.index(
   { name: 'launch_trades_wallet_time_chain' },
 );
 
+schema.index(
+  { chain: 1, network: 1, tradedAt: -1, _id: -1 },
+  { name: 'launch_trades_stats_chain_time' },
+);
+
+schema.index({ network: 1, tradedAt: -1, _id: -1 }, { name: 'launch_trades_stats_network_time' });
+
 const LaunchTrade = model<TradeRecord>('LaunchTrade', schema);
 
 export default LaunchTrade;
