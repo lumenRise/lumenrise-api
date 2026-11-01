@@ -15,6 +15,7 @@ const trade = {
   additionalProperties: false,
   required: [
     'id',
+    'hash',
     'chain',
     'network',
     'launch',
@@ -27,6 +28,7 @@ const trade = {
   ],
   properties: {
     id: { type: 'string', description: 'Stable list item key.' },
+    hash: { type: 'string', description: 'Original blockchain transaction hash.' },
     chain: { type: 'string', enum: ['stellar', 'base'] },
     network: scopeProperties.network,
     launch: {
@@ -128,7 +130,7 @@ const statsActivityPaths = {
       operationId: 'getStatsTrades',
       summary: 'List display-ready trades in four chain scopes and two combined scopes',
       description:
-        'Returns chains (Stellar/Base testnet/public) and combined (both chains testnet/public). public means mainnet. Valid chain/network headers do not restrict these scopes. Each group has independent newest-first cursor pagination ordered by tradedAt and a unique ID. limit applies per group. Pass a group nextCursor in its corresponding cursor query parameter; omit it to read that group from the beginning. Cursors are scope-bound and retain their original asOf upper time bound. This is a live indexed feed, not a frozen database snapshot: late-ingested historical trades may appear on later pages. Empty groups have items=[], hasMore=false and nextCursor=null. Values are exact decimal strings in whole display units, with no multiplier applied. Only launch display metadata, trading wallet, time, side, quantity, price, gross amount and a stable list key are returned. No transaction hashes, ledgers, raw base units or token decimal scales. Reflects indexed history only.',
+        'Returns chains (Stellar/Base testnet/public) and combined (both chains testnet/public). public means mainnet. Valid chain/network headers do not restrict these scopes. Each group has independent newest-first cursor pagination ordered by tradedAt and a unique ID. limit applies per group. Pass a group nextCursor in its corresponding cursor query parameter; omit it to read that group from the beginning. Cursors are scope-bound and retain their original asOf upper time bound. This is a live indexed feed, not a frozen database snapshot: late-ingested historical trades may appear on later pages. Empty groups have items=[], hasMore=false and nextCursor=null. Values are exact decimal strings in whole display units, with no multiplier applied. Only launch display metadata, trading wallet, time, side, quantity, price, gross amount, transaction hash and a stable list key are returned. No ledgers, raw base units or token decimal scales. Reflects indexed history only.',
       parameters: [
         {
           in: 'query',

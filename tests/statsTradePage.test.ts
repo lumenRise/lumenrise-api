@@ -22,6 +22,7 @@ it('paginates mixed-chain trades with a stable tie-breaker, native decimals and 
   const records = [
     {
       _id: new Types.ObjectId('000000000000000000000003'),
+      transactionHash: 'a'.repeat(64),
       chain: 'stellar',
       network: 'testnet',
       contractId: 'same',
@@ -34,6 +35,7 @@ it('paginates mixed-chain trades with a stable tie-breaker, native decimals and 
     },
     {
       _id: new Types.ObjectId('000000000000000000000002'),
+      transactionHash: `0x${'b'.repeat(64)}`,
       chain: 'base',
       network: 'testnet',
       contractId: 'same',
@@ -46,6 +48,7 @@ it('paginates mixed-chain trades with a stable tie-breaker, native decimals and 
     },
     {
       _id: new Types.ObjectId('000000000000000000000001'),
+      transactionHash: `0x${'c'.repeat(64)}`,
       chain: 'base',
       network: 'testnet',
       contractId: 'same',
@@ -92,10 +95,14 @@ it('paginates mixed-chain trades with a stable tie-breaker, native decimals and 
 
   expect(sort).toHaveBeenCalledWith({ tradedAt: -1, _id: -1 });
   expect(limit).toHaveBeenCalledWith(3);
+  expect(select).toHaveBeenCalledWith(
+    'chain network contractId transactionHash trader tradedAt side assetAmount grossAmount executionPrice',
+  );
   expect(page.hasMore).toBe(true);
   expect(page.items).toHaveLength(2);
   expect(page.items[0]).toEqual({
     id: '000000000000000000000003',
+    hash: 'a'.repeat(64),
     chain: 'stellar',
     network: 'testnet',
     launch: { slug: 'stellar-token', name: 'Stellar Token', symbol: 'ST', logo: '/stellar.png' },
@@ -107,6 +114,7 @@ it('paginates mixed-chain trades with a stable tie-breaker, native decimals and 
     amount: '1.2345678',
   });
   expect(page.items[1]).toMatchObject({
+    hash: `0x${'b'.repeat(64)}`,
     assetAmount: '2',
     price: '2',
     amount: '4',
