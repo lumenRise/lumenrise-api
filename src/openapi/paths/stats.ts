@@ -14,7 +14,67 @@ const bucket = {
   },
 };
 
+const marketLaunch = {
+  type: 'object',
+  required: ['chain', 'network', 'contractId', 'slug', 'volumeTotal', 'participantCount'],
+  properties: {
+    chain: { type: 'string', enum: ['stellar', 'base'] },
+    network: { type: 'string', enum: ['testnet', 'public'] },
+    contractId: { type: 'string' },
+    slug: { type: 'string' },
+    volumeTotal: bucket,
+    participantCount: { type: 'integer', minimum: 0 },
+  },
+};
+
+const marketGroup = {
+  type: 'object',
+  required: [
+    'chain',
+    'network',
+    'volumeTotal',
+    'launchCount',
+    'participantCount',
+    'userCount',
+    'launches',
+  ],
+  properties: {
+    chain: { type: 'string', enum: ['stellar', 'base', 'all'] },
+    network: { type: 'string', enum: ['testnet', 'public'] },
+    volumeTotal: bucket,
+    launchCount: { type: 'integer', minimum: 0 },
+    participantCount: { type: 'integer', minimum: 0 },
+    userCount: { type: 'integer', minimum: 0 },
+    launches: { type: 'array', items: marketLaunch },
+  },
+};
+
 const statsPaths = {
+  '/v1/stats/market': {
+    get: {
+      tags: ['Launches'],
+      security: [],
+      operationId: 'getMarketStats',
+      summary: 'Read launch and market statistics for four chain scopes and two cross-chain scopes',
+      description:
+        'Always returns Stellar testnet, Base testnet, Stellar public and Base public in chains, and the cross-chain testnet and public totals in combined. public means mainnet. Valid chain and network headers do not restrict these groups. Each group includes every indexed launch with its own volumeTotal and participantCount, plus group totals, launchCount and userCount. Amounts are exact whole-USDC decimal strings: sum of nonnegative buy and sell grossAmount values, normalized by launch pair decimals and multiplied by 2 exactly once. Trade counts include buys and sells without multiplication. Participants are distinct trading wallets, deduplicated across launches within each group; Base addresses are case-insensitive. Combined groups count chain-qualified wallets separately, without claiming to identify the same person across chains. Users are globally active, non-deleted registered identities, independent of chain or network, and are repeated without doubling in every group. Launches without trades are included with zero statistics. Future trades are excluded. Statistics reflect indexed history, not guaranteed complete on-chain history.',
+      responses: {
+        '200': jsonResponse('Market statistics retrieved.', {
+          type: 'object',
+          required: ['currency', 'multiplier', 'asOf', 'userCountScope', 'chains', 'combined'],
+          properties: {
+            currency: { type: 'string', enum: ['USDC'] },
+            multiplier: { type: 'integer', enum: [2] },
+            asOf: { type: 'string', format: 'date-time' },
+            userCountScope: { type: 'string', enum: ['global_active_identities'] },
+            chains: { type: 'array', minItems: 4, maxItems: 4, items: marketGroup },
+            combined: { type: 'array', minItems: 2, maxItems: 2, items: marketGroup },
+          },
+        }),
+        '503': { $ref: '#/components/responses/ServiceUnavailable' },
+      },
+    },
+  },
   '/v1/stats/volume': {
     get: {
       tags: ['Launches'],
