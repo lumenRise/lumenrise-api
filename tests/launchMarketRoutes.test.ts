@@ -123,7 +123,7 @@ describe('submitted trades and observed price reads', () => {
     }
     expect(Launch.findOne).not.toHaveBeenCalled();
   });
-  it('returns only the six trade fields while retaining stable pagination', async () => {
+  it('returns exact trade amounts while retaining stable pagination', async () => {
     const row = {
       tradedAt: now,
       ledger: 200,
@@ -150,6 +150,7 @@ describe('submitted trades and observed price reads', () => {
         asset: 'token',
         side: 'buy',
         assetAmount: '123',
+        grossAmount: '500',
         executionPrice: '40000000',
       },
     ]);

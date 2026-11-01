@@ -103,6 +103,10 @@ it('verifies the receipt quickly and records every trade through shared ingestio
 
   expect(response.body.result.trades).toHaveLength(2);
 
+  expect(response.body.result.trade.grossAmount).toBe('20000000');
+
+  expect(response.body.result.trades[1].grossAmount).toBe('20000000');
+
   expect(response.body.result).toMatchObject({ amountScale: 18, priceScale: 6 });
 
   expect(processBaseBlock).toHaveBeenCalledWith(
