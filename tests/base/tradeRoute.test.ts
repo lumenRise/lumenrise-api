@@ -5,13 +5,18 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import app from '../../src/app';
 import Launch from '../../src/models/Launch';
 import createBaseLog from '../helpers/createBaseLog';
+import createBaseSwapLog from '../helpers/createBaseSwapLog';
+import readBaseLaunch from '../../src/services/base/readBaseLaunch';
 import getBaseContext from '../../src/services/base/getBaseContext';
 import type { BaseWriteContext } from '../../src/types/base/launch';
 import acquireBaseLease from '../../src/services/base/acquireBaseLease';
 import releaseBaseLease from '../../src/services/base/releaseBaseLease';
 import processBaseBlock from '../../src/services/base/processBaseBlock';
 import verifyPrivyUser from '../../src/services/auth/privy/verifyPrivyUser';
+import { pool, asset, pair, curve, trader } from '../helpers/basePoolFixture';
 import findPrivyIdentity from '../../src/services/auth/privy/findPrivyIdentity';
+
+vi.mock('../../src/services/base/readBaseLaunch', () => ({ default: vi.fn() }));
 
 vi.mock('../../src/services/base/getBaseContext', () => ({ default: vi.fn() }));
 
@@ -33,11 +38,13 @@ const route = '/v1/launches/blue-project/trades';
 const context = {
   leaseOwner: 'receipt-worker',
   configuration: { network: 'testnet', factoryAddress: 'factory' },
-  client: { getTransactionReceipt: vi.fn(), getBlock: vi.fn() },
+  client: { getTransactionReceipt: vi.fn(), getBlock: vi.fn(), readContract: vi.fn() },
 } as unknown as BaseWriteContext;
 
 beforeEach((): void => {
   vi.resetAllMocks();
+
+  vi.mocked(context.client.readContract).mockResolvedValue({ graduated: false } as never);
 
   vi.mocked(verifyPrivyUser).mockResolvedValue(true);
 
@@ -180,4 +187,48 @@ it('defers a launch removed during reorg recovery instead of claiming a trade wa
   expect(response.status).toBe(202);
   expect(processBaseBlock).not.toHaveBeenCalled();
   expect(releaseBaseLease).toHaveBeenCalledWith(context);
+});
+
+it('accepts a graduated pool swap through the existing trade submission endpoint', async (): Promise<void> => {
+  const swap = createBaseSwapLog();
+
+  vi.mocked(Launch.findOne).mockReturnValue({
+    lean: vi
+      .fn()
+      .mockResolvedValue({
+        chain: 'base',
+        contractId: curve,
+        asset,
+        pair,
+        assetDecimals: 18,
+        pairDecimals: 6,
+      }),
+    select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue({ contractId: curve }) }),
+  } as never);
+
+  vi.mocked(readBaseLaunch).mockResolvedValue({ pool } as never);
+
+  vi.mocked(context.client.getTransactionReceipt).mockResolvedValue({
+    status: 'success',
+    transactionHash: swap.transactionHash,
+    blockNumber: 20n,
+    blockHash: swap.blockHash,
+    from: trader,
+    logs: [swap],
+  } as never);
+
+  const response = await request(app)
+    .post(route)
+    .set('X-Chain', 'base')
+    .set('X-User-Id', 'did:privy:testuser')
+    .send({ transactionHash: swap.transactionHash });
+
+  expect(response.status).toBe(200);
+  expect(response.body.result.trade).toMatchObject({
+    side: 'buy',
+    grossAmount: '2000000',
+    executionPrice: '2000000',
+    trader,
+  });
+  expect(processBaseBlock).toHaveBeenCalledWith(expect.objectContaining({ logs: [swap] }));
 });

@@ -1,13 +1,12 @@
 import type { Hex } from 'viem';
-import { toEventSelector } from 'viem';
 import type { RequestHandler } from 'express';
 
 import log from '../../logger';
 import Launch from '../../models/Launch';
 import toTradeResult from '../../utils/launch/toTradeResult';
 import getBaseContext from '../../services/base/getBaseContext';
+import readBaseTrades from '../../services/base/readBaseTrades';
 import getLaunchScales from '../../utils/launch/getLaunchScales';
-import decodeBaseTrade from '../../services/base/decodeBaseTrade';
 import acquireBaseLease from '../../services/base/acquireBaseLease';
 import releaseBaseLease from '../../services/base/releaseBaseLease';
 import processBaseBlock from '../../services/base/processBaseBlock';
@@ -62,21 +61,8 @@ const postBaseTrade: RequestHandler = async (req, res) => {
       throw new Error('Base receipt is no longer canonical');
     }
 
-    const logs = receipt.logs.filter(
-      (event): boolean =>
-        event.address.toLowerCase() === launch.contractId &&
-        (event.topics[0] === toEventSelector('Bought(address,uint256,uint256,uint256)') ||
-          event.topics[0] === toEventSelector('Sold(address,uint256,uint256,uint256)')),
-    );
-
-    const trades = logs.map((event) =>
-      decodeBaseTrade({
-        network: req.network,
-        log: event,
-        timestamp: block.timestamp,
-        assetDecimals: launch.assetDecimals!,
-      }),
-    );
+    const logs = receipt.logs;
+    const trades = await readBaseTrades(context, launch, logs, block.timestamp);
 
     if (trades.length === 0) {
       return res
