@@ -56,13 +56,7 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
     );
   }
 
-  const clientOrigins = parseClientOrigins(configuration.CLIENT_ORIGIN);
-
-  for (const origin of clientOrigins) {
-    if (configuration.NODE_ENV === 'production' && new URL(origin).protocol !== 'https:') {
-      throw new Error('Client, callback, and provider URLs must use HTTPS in production');
-    }
-  }
+  parseClientOrigins(configuration.CLIENT_ORIGIN);
 
   const stellarHorizonUrls = [
     parseUrl(configuration.STELLAR_TESTNET_HORIZON_URL, 'STELLAR_TESTNET_HORIZON_URL'),
@@ -78,7 +72,7 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
       githubCallbackUrl.protocol !== 'https:' ||
       xCallbackUrl.protocol !== 'https:')
   ) {
-    throw new Error('Client, callback, and provider URLs must use HTTPS in production');
+    throw new Error('Callback and provider URLs must use HTTPS in production');
   }
 
   if (stellarHorizonUrls.some((url: URL): boolean => !['http:', 'https:'].includes(url.protocol))) {
