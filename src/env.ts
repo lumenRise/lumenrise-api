@@ -25,7 +25,9 @@ const schema = defineConfig({
     default: 'amqp://127.0.0.1:5672',
   },
   CLIENT_ORIGIN: {
-    default: 'http://localhost:5173',
+    default: 'http://localhost:3000',
+    description:
+      'Comma-separated allowed client origins. The first origin is used for OAuth redirects.',
   },
   PRIVY_APP_ID: {
     example: 'application-id',
