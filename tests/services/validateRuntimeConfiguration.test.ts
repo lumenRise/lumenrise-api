@@ -43,6 +43,43 @@ describe('runtime configuration validation', () => {
     expect(() => validateRuntimeConfiguration(validConfiguration)).not.toThrow();
   });
 
+  it.each([
+    ['development', 'http://app.example:5173'],
+    ['development', 'https://app.example'],
+    ['development', 'http://app.example:5173,https://app.example'],
+    ['production', 'http://app.example:5173'],
+    ['production', 'https://app.example'],
+    ['production', 'http://app.example:5173,https://app.example'],
+  ] as const)(
+    'accepts %s client origins: %s',
+    (nodeEnv: RuntimeConfiguration['NODE_ENV'], clientOrigin: string): void => {
+      expect(() =>
+        validateRuntimeConfiguration({
+          ...validConfiguration,
+          NODE_ENV: nodeEnv,
+          CLIENT_ORIGIN: clientOrigin,
+          GITHUB_CALLBACK_URL: 'https://api.example/v1/oauth/github/callback',
+          X_CALLBACK_URL: 'https://api.example/v1/oauth/x/callback',
+        }),
+      ).not.toThrow();
+    },
+  );
+
+  it.each(['ftp://app.example', 'http://app.example/path', 'http://user:pass@app.example'])(
+    'rejects invalid client origins in production: %s',
+    (clientOrigin: string): void => {
+      expect(() =>
+        validateRuntimeConfiguration({
+          ...validConfiguration,
+          NODE_ENV: 'production',
+          CLIENT_ORIGIN: clientOrigin,
+          GITHUB_CALLBACK_URL: 'https://api.example/v1/oauth/github/callback',
+          X_CALLBACK_URL: 'https://api.example/v1/oauth/x/callback',
+        }),
+      ).toThrow('CLIENT_ORIGIN must contain comma-separated HTTP or HTTPS origins');
+    },
+  );
+
   it('rejects incomplete GitHub credentials', () => {
     expect(() =>
       validateRuntimeConfiguration({ ...validConfiguration, GITHUB_CLIENT_SECRET: '' }),
@@ -149,10 +186,21 @@ describe('runtime configuration validation', () => {
     ).toThrow('public image domain');
   });
 
-  it('requires HTTPS URLs in production', () => {
+  it.each([
+    'GITHUB_CALLBACK_URL',
+    'X_CALLBACK_URL',
+    'STELLAR_TESTNET_HORIZON_URL',
+    'STELLAR_PUBLIC_HORIZON_URL',
+  ] as const)('requires HTTPS for %s in production', (field: keyof RuntimeConfiguration): void => {
     expect(() =>
-      validateRuntimeConfiguration({ ...validConfiguration, NODE_ENV: 'production' }),
-    ).toThrow('must use HTTPS in production');
+      validateRuntimeConfiguration({
+        ...validConfiguration,
+        NODE_ENV: 'production',
+        GITHUB_CALLBACK_URL: 'https://api.example/v1/oauth/github/callback',
+        X_CALLBACK_URL: 'https://api.example/v1/oauth/x/callback',
+        [field]: 'http://provider.example',
+      }),
+    ).toThrow('Callback and provider URLs must use HTTPS in production');
   });
 
   it('requires Auth provider credentials in production', () => {
