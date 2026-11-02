@@ -11,6 +11,7 @@ import resolveChain from './middleware/resolveChain';
 import errorHandler from './middleware/errorHandler';
 import resolveNetwork from './middleware/resolveNetwork';
 import logServerActivity from './middleware/logServerActivity';
+import parseClientOrigins from './utils/configuration/parseClientOrigins';
 
 const app = express();
 
@@ -20,7 +21,7 @@ app.use(compression());
 
 app.use(
   cors({
-    origin: [env.CLIENT_ORIGIN, 'http://localhost:3000'],
+    origin: parseClientOrigins(env.CLIENT_ORIGIN),
     credentials: true,
     exposedHeaders: ['X-Chain', 'X-Network', 'X-Stellar-Network'],
   }),

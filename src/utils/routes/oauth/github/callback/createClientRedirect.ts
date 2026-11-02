@@ -1,4 +1,5 @@
 import env from '../../../../../env';
+import parseClientOrigins from '../../../../configuration/parseClientOrigins';
 import type { GitHubOAuthResultStatus } from '../../../../../types/integration/github';
 
 const createClientRedirect = (
@@ -6,7 +7,7 @@ const createClientRedirect = (
   username?: string,
   syncJobId?: string,
 ): string => {
-  const redirectUrl = new URL('/onboarding', env.CLIENT_ORIGIN);
+  const redirectUrl = new URL('/onboarding', parseClientOrigins(env.CLIENT_ORIGIN)[0]);
 
   redirectUrl.searchParams.set('provider', 'github');
   redirectUrl.searchParams.set('status', status);

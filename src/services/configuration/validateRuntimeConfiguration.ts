@@ -1,5 +1,6 @@
 import parseDomain from '../stellar/parseDomain';
 import type { RuntimeConfiguration } from '../../types/configuration';
+import parseClientOrigins from '../../utils/configuration/parseClientOrigins';
 import { parseUrl } from '../../utils/services/configuration/validateRuntimeConfiguration/parseUrl';
 
 const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void => {
@@ -55,7 +56,13 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
     );
   }
 
-  const clientOrigin = parseUrl(configuration.CLIENT_ORIGIN, 'CLIENT_ORIGIN');
+  const clientOrigins = parseClientOrigins(configuration.CLIENT_ORIGIN);
+
+  for (const origin of clientOrigins) {
+    if (configuration.NODE_ENV === 'production' && new URL(origin).protocol !== 'https:') {
+      throw new Error('Client, callback, and provider URLs must use HTTPS in production');
+    }
+  }
 
   const stellarHorizonUrls = [
     parseUrl(configuration.STELLAR_TESTNET_HORIZON_URL, 'STELLAR_TESTNET_HORIZON_URL'),
@@ -67,8 +74,7 @@ const validateRuntimeConfiguration = (configuration: RuntimeConfiguration): void
 
   if (
     configuration.NODE_ENV === 'production' &&
-    (clientOrigin.protocol !== 'https:' ||
-      stellarHorizonUrls.some((url: URL): boolean => url.protocol !== 'https:') ||
+    (stellarHorizonUrls.some((url: URL): boolean => url.protocol !== 'https:') ||
       githubCallbackUrl.protocol !== 'https:' ||
       xCallbackUrl.protocol !== 'https:')
   ) {
