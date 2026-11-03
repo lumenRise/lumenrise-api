@@ -1,0 +1,28 @@
+import amqp from 'amqplib';
+
+import env from '../../env';
+
+const publishBaseTransactionJob = async (jobId: string, network: string): Promise<void> => {
+  const connection = await amqp.connect(env.RABBITMQ_URL, { timeout: 2000 });
+
+  try {
+    const channel = await connection.createConfirmChannel();
+    const queue = `launch.base.transactions.${network}`;
+
+    await channel.assertQueue(queue, { durable: true });
+
+    channel.sendToQueue(queue, Buffer.from(JSON.stringify({ jobId })), {
+      persistent: true,
+      contentType: 'application/json',
+      messageId: jobId,
+    });
+
+    await channel.waitForConfirms();
+
+    await channel.close();
+  } finally {
+    await connection.close();
+  }
+};
+
+export default publishBaseTransactionJob;
