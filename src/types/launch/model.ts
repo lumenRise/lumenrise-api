@@ -33,7 +33,14 @@ interface LaunchRecord {
   createdAt?: Date | null;
   creationLedger?: number | null;
   creationTransactionHash?: string | null;
+  tradeCoverageFrom?: number;
+  graduationBlock?: number | null;
+  graduationLogIndex?: number | null;
+  poolNextBlock?: string | null;
+  holderSource?: string;
   stateAsOfLedger: number;
+  priceAsOfLedger?: number;
+  recordedHoldingsVersion?: number;
   stateObservedAt: Date;
   nextStatePollAt?: Date | null;
 }
