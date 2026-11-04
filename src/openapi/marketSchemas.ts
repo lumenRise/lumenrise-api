@@ -54,8 +54,8 @@ const marketSchemas = {
       contractId: contract,
       asset: contract,
       amountScale: { type: 'integer', minimum: 0, maximum: 18 },
-      balanceSource: { const: 'token_contract' },
-      coverage: { enum: ['trade_participants', 'indexed_trades_and_transfers'] },
+      balanceSource: { const: 'recorded_trades' },
+      coverage: { const: 'recorded_trades' },
       totalHolders: count,
       nextCursor: { type: ['string', 'null'] },
       items: {

@@ -34,7 +34,8 @@ const getHolders: RequestHandler = async (req, res) => {
     const [rows, totalHolders] = await Promise.all([
       LaunchHolder.find({
         ...identity,
-        ...(identity.chain === 'base' ? { balance: { $ne: '0' } } : {}),
+        balance: { $ne: '0' },
+        balanceSource: 'recorded_trades',
         ...pagination,
       })
         .sort({ balanceSort: -1, address: 1 })
@@ -42,7 +43,8 @@ const getHolders: RequestHandler = async (req, res) => {
         .lean(),
       LaunchHolder.countDocuments({
         ...identity,
-        ...(identity.chain === 'base' ? { balance: { $ne: '0' } } : {}),
+        balance: { $ne: '0' },
+        balanceSource: 'recorded_trades',
       }),
     ]);
 
@@ -63,8 +65,8 @@ const getHolders: RequestHandler = async (req, res) => {
         ...toPublicMarketIdentity(identity),
         asset: launch.asset,
         amountScale: getLaunchScales(launch).amountScale,
-        balanceSource: 'token_contract',
-        coverage: identity.chain === 'base' ? 'indexed_trades_and_transfers' : 'trade_participants',
+        balanceSource: 'recorded_trades',
+        coverage: 'recorded_trades',
         totalHolders,
         nextCursor,
         items: page.map((holder) => ({
