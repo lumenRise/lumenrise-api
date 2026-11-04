@@ -23,7 +23,7 @@ const launchMarketPaths = {
       operationId: 'confirmLaunchCreation',
       summary: 'Verify a successful factory transaction and index its launch immediately',
       description:
-        'Call after the final create_bonding_curve transaction, not after token deployment or approval. Requires the normal authenticated session for the selected chain. Submit only transactionHash; the server derives launch identity, verifies the configured factory and reads on-chain metadata. Base accepts a 0x-prefixed hash and ingests canonical receipt events, including an initial trade. Stellar accepts a 64-character hash and verifies a direct factory call, its returned contract and factory registry. Repeating the same hash or later scanner discovery reuses the same launch and trade identities. Receipt ingestion never advances the scanner cursor. Retry the same hash on 202 or 503, honoring Retry-After. Retry API registration only; do not resubmit the blockchain transaction. The response includes actual persisted slugs in launches.',
+        'Call after the final create_bonding_curve transaction, not after token deployment or approval. Requires the normal authenticated session for the selected chain. Submit only transactionHash; the server derives launch identity, verifies the configured factory and reads on-chain metadata. Both chains durably queue verification through RabbitMQ to the launch worker. Base accepts a 0x-prefixed hash. A 202 response means pending, not completed. The worker ingests canonical receipt events, including an initial trade. Stellar accepts a 64-character hash; its worker verifies a direct factory call, returned contract and factory registry. Repeating the same hash or later scanner discovery reuses the same launch and trade identities. Receipt ingestion never advances the scanner cursor. Retry the same hash on 202 or 503, honoring Retry-After. Retry API registration only; do not resubmit the blockchain transaction. The response includes actual persisted slugs in launches.',
       parameters: [
         { in: 'query', name: 'network', schema: { type: 'string', enum: ['testnet', 'public'] } },
       ],
@@ -78,9 +78,9 @@ const launchMarketPaths = {
       tags: ['Launches'],
       security: [],
       operationId: 'getLaunchHolders',
-      summary: 'List known trading wallets holding the launch token',
+      summary: 'List positive net recorded trade amounts',
       description:
-        'Reads token-contract balance snapshots refreshed asynchronously by the launch worker after verified client-submitted trades, highest balance first (address breaks ties). Zero balances remove the wallet. Balances are replaced, never accumulated. This is not a complete on-chain holder index: transfer-only recipients, creator allocations and trades not submitted to the API are not discovered; transfers after the last refresh can make a stored snapshot outdated. Re-submit a previously verified trade hash to refresh its trader. Pagination follows current balances and can change while wallets trade.',
+        'For both chains, reads exact recorded token purchases minus recorded sales, highest positive net amount first, with address as the tie breaker. These values are not current wallet balances. Transfers, allocations and unrecorded trades are excluded. Pagination can change as trades are recorded. Coverage is limited to persisted verified trades; Stellar has no background trade event scanner',
       parameters: [
         ...identity,
         {
@@ -131,7 +131,7 @@ const launchMarketPaths = {
       operationId: 'postLaunchTrade',
       summary: 'Verify a submitted trade hash and record the current contract price',
       description:
-        'Requires the existing x-user-id session header. Only successful direct buy/sell calls on this launch are accepted. Retry the same hash on 202 or 503; trade records are idempotent. Every verified submission, including a repeated hash, queues a holder refresh through RabbitMQ for the launch worker. The worker replaces the balance from the token contract and removes zero balances. Retrying a completed hash queues another holder refresh without re-reading its price. Holder processing is asynchronous; trade success does not mean the balance snapshot has finished updating. The sampled price is observed at read time and may include subsequent trades.',
+        'Requires the existing x-user-id session header. Submissions on both chains are durably queued through RabbitMQ for the launch worker. Retry the same hash on 202 or 503, honoring Retry-After. Publishing is not completion. Stellar accepts successful direct buy/sell calls verified from transaction evidence. Base verifies canonical receipt events. Repeated submissions are idempotent and completed jobs return persisted results without new RPC reads. Displayed net token quantities are derived from recorded trades without holder balance RPC reads. The current sampled price may include subsequent trades',
       parameters: identity,
       requestBody: {
         required: true,
@@ -163,7 +163,7 @@ const launchMarketPaths = {
                 properties: {
                   status: { const: 'pending' },
                   message: { type: 'string' },
-                  result: { $ref: '#/components/schemas/EmptyResult' },
+                  result: { type: 'object', properties: { jobId: { type: 'string' } } },
                 },
               },
             },
