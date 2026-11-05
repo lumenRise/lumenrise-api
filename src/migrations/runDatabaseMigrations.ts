@@ -1,14 +1,18 @@
 import log from '../logger';
 import DatabaseMigration from '../models/DatabaseMigration';
 import statsTradeIndexes from './20261101StatsTradeIndexes';
+import baseTransactionJobs from './20261104BaseTransactionJobs';
 import createCurrentIndexes from './20261012CreateCurrentIndexes';
 import basePoolHistoryReplay from './20261101BasePoolHistoryReplay';
+import stellarTransactionJobs from './20261105StellarTransactionJobs';
 import type { MigrationDefinition } from '../types/database/migration';
 
 const migrations: readonly MigrationDefinition[] = [
   createCurrentIndexes,
   statsTradeIndexes,
   basePoolHistoryReplay,
+  baseTransactionJobs,
+  stellarTransactionJobs,
 ];
 
 const runDatabaseMigrations = async (): Promise<void> => {

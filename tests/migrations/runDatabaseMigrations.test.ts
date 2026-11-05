@@ -5,6 +5,7 @@ import runDatabaseMigrations from '../../src/migrations/runDatabaseMigrations';
 import statsTradeIndexes from '../../src/migrations/20261101StatsTradeIndexes';
 import createCurrentIndexes from '../../src/migrations/20261012CreateCurrentIndexes';
 import basePoolHistoryReplay from '../../src/migrations/20261101BasePoolHistoryReplay';
+import stellarTransactionJobs from '../../src/migrations/20261105StellarTransactionJobs';
 
 vi.mock('../../src/logger', () => ({ default: { info: vi.fn() } }));
 
@@ -24,6 +25,14 @@ vi.mock('../../src/migrations/20261101BasePoolHistoryReplay', () => ({
   default: { name: '20261101-base-pool-history-replay', up: vi.fn() },
 }));
 
+vi.mock('../../src/migrations/20261104BaseTransactionJobs', () => ({
+  default: { name: '20261104-base-transaction-jobs', up: vi.fn() },
+}));
+
+vi.mock('../../src/migrations/20261105StellarTransactionJobs', () => ({
+  default: { name: '20261105-stellar-transaction-jobs', up: vi.fn() },
+}));
+
 beforeEach((): void => {
   vi.resetAllMocks();
 });
@@ -39,11 +48,11 @@ it('installs indexes before scheduling replay and records each successful migrat
     vi.mocked(basePoolHistoryReplay.up).mock.invocationCallOrder[0]!,
   );
 
-  expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(3);
+  expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(5);
 
   expect(DatabaseMigration.updateOne).toHaveBeenLastCalledWith(
-    { name: basePoolHistoryReplay.name },
-    { $setOnInsert: { name: basePoolHistoryReplay.name, appliedAt: expect.any(Date) } },
+    { name: stellarTransactionJobs.name },
+    { $setOnInsert: { name: stellarTransactionJobs.name, appliedAt: expect.any(Date) } },
     { upsert: true },
   );
 });
@@ -54,10 +63,14 @@ it('retains the applied baseline name and runs only the two pending migrations',
   await runDatabaseMigrations();
 
   expect(createCurrentIndexes.name).toBe('20261012-create-current-indexes');
+
   expect(createCurrentIndexes.up).not.toHaveBeenCalled();
+
   expect(statsTradeIndexes.up).toHaveBeenCalledOnce();
+
   expect(basePoolHistoryReplay.up).toHaveBeenCalledOnce();
-  expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(2);
+
+  expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(4);
 });
 
 it('does not repeat replay or index migrations recorded in database history', async (): Promise<void> => {
@@ -66,8 +79,11 @@ it('does not repeat replay or index migrations recorded in database history', as
   await runDatabaseMigrations();
 
   expect(createCurrentIndexes.up).not.toHaveBeenCalled();
+
   expect(statsTradeIndexes.up).not.toHaveBeenCalled();
+
   expect(basePoolHistoryReplay.up).not.toHaveBeenCalled();
+
   expect(DatabaseMigration.updateOne).not.toHaveBeenCalled();
 });
 

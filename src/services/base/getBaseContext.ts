@@ -14,10 +14,6 @@ const getBaseContext = async (network: 'testnet' | 'public'): Promise<BaseContex
     transport: http(configuration.rpcUrl, { timeout: 15_000, retryCount: 2 }),
   });
 
-  if ((await client.getChainId()) !== configuration.chainId) {
-    throw new Error('Base RPC chain ID mismatch');
-  }
-
   return { configuration, client };
 };
 
