@@ -42,10 +42,10 @@ vi.mock('../src/env', () => ({
     FUTURE_SECRET: 'secret-added-later',
     PRIVY_APP_ID: 'base-public-app-id',
     PRIVY_APP_SECRET: 'secret-base-auth-value',
-    BASE_TESTNET_RPC_URL: 'https://private-base-rpc.example/private-rpc-key',
+    BASE_TESTNET_RPC_URL: 'https://rpc.example/base-sepolia',
     BASE_TESTNET_FACTORY_ADDRESS: '0x1111111111111111111111111111111111111111',
     BASE_TESTNET_DEPLOYMENT_BLOCK: '100',
-    BASE_PUBLIC_RPC_URL: 'https://private-base-rpc.example/private-rpc-key',
+    BASE_PUBLIC_RPC_URL: 'https://rpc.example/base-mainnet',
     BASE_PUBLIC_FACTORY_ADDRESS: '0x1111111111111111111111111111111111111111',
     BASE_PUBLIC_DEPLOYMENT_BLOCK: '100',
   },
@@ -242,8 +242,16 @@ it('includes Base discovery without a chain header and exposes native decimal ru
     network: {
       header: 'X-Network',
       configurations: {
-        testnet: { chainId: 84532, launchConfigured: true },
-        public: { chainId: 8453, launchConfigured: true },
+        testnet: {
+          chainId: 84532,
+          rpcUrl: 'https://rpc.example/base-sepolia',
+          launchConfigured: true,
+        },
+        public: {
+          chainId: 8453,
+          rpcUrl: 'https://rpc.example/base-mainnet',
+          launchConfigured: true,
+        },
       },
     },
     rules: {
@@ -253,8 +261,6 @@ it('includes Base discovery without a chain header and exposes native decimal ru
   });
 
   expect(response.body.result.rules.launches).toMatchObject({ amountScale: 7, priceScale: 7 });
-
-  expect(response.text).not.toContain('private-rpc-key');
 
   expect(response.text).not.toContain('secret-base-auth-value');
 
@@ -285,7 +291,31 @@ it('keeps Stellar discovery available when an optional Base deployment is incomp
   expect(response.body.result.base.network.configurations.testnet).toMatchObject({
     launchConfigured: false,
     factoryContractId: '',
+    rpcUrl: 'https://rpc.example/base-sepolia',
   });
 
   expect(response.body.result.base.network.configurations.public.launchConfigured).toBe(true);
+});
+
+it.each([
+  '',
+  'invalid',
+  'http://rpc.example',
+  'https://user:password@rpc.example',
+  'https://rpc.example/#fragment',
+])('does not publish an unusable Base RPC URL: %s', async (rpcUrl: string): Promise<void> => {
+  Object.assign(env, { BASE_PUBLIC_RPC_URL: rpcUrl });
+
+  const response = await request(app).get('/v1/config').set('X-Chain', 'base');
+
+  expect(response.status).toBe(200);
+
+  expect(response.body.result.network.configurations.public).toMatchObject({
+    rpcUrl: '',
+    launchConfigured: false,
+  });
+
+  expect(response.body.result.network.configurations.testnet.rpcUrl).toBe(
+    'https://rpc.example/base-sepolia',
+  );
 });
