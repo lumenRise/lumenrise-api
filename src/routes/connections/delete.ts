@@ -1,15 +1,13 @@
 import type { RequestHandler } from 'express';
 
 import log from '../../logger';
-import XDataSnapshot from '../../models/XDataSnapshot';
-import ExternalAccount from '../../models/ExternalAccount';
 import { revokeXAccessToken } from '../../services/oauth/x';
-import IntegrationSyncJob from '../../models/IntegrationSyncJob';
 import ProviderCredential from '../../models/ProviderCredential';
-import ReputationSnapshot from '../../models/ReputationSnapshot';
 import type { ApiResponse, EmptyResult } from '../../types/response';
 import { revokeGitHubAccessToken } from '../../services/oauth/github';
 import { getProviderCredential } from '../../services/integration/providerCredential';
+import { publishReputationJob } from '../../services/integration/publishReputationJob';
+import disconnectExternalAccount from '../../services/integration/disconnectExternalAccount';
 import { isExternalAccountProvider } from '../../utils/routes/connections/delete/isExternalAccountProvider';
 
 const deleteConnectionRoute: RequestHandler = async (req, res) => {
@@ -27,25 +25,15 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
   }
 
   const disconnectedAt = new Date();
-
   let providerAccessToken: string | null = null;
 
-  const account = await ExternalAccount.findOneAndUpdate(
-    {
-      identity: req.auth?.identityId,
-      provider,
-      status: 'connected',
-    },
-    {
-      $set: {
-        status: 'disconnected',
-        syncLeaseUntil: null,
-        disconnectedAt,
-        ...(provider === 'x' ? { lastSyncedAt: null } : {}),
-      },
-    },
-    { runValidators: true, returnDocument: 'after' },
+  const disconnected = await disconnectExternalAccount(
+    req.auth!.identityId,
+    provider,
+    disconnectedAt,
   );
+
+  const account = disconnected?.account;
 
   if (!account) {
     const response: ApiResponse<EmptyResult> = {
@@ -87,35 +75,18 @@ const deleteConnectionRoute: RequestHandler = async (req, res) => {
     }
   }
 
-  await IntegrationSyncJob.updateMany(
-    { externalAccount: account._id, active: true },
-    {
-      $set: {
-        status: 'cancelled',
-        active: false,
-        completedAt: disconnectedAt,
-        leaseUntil: null,
-        lastError: 'Connection was disconnected',
-      },
-    },
-    { runValidators: true },
-  );
-
   await ProviderCredential.deleteOne({ externalAccount: account._id });
 
-  if (provider === 'x') {
-    await Promise.all([
-      XDataSnapshot.deleteMany({ externalAccount: account._id }),
-      ReputationSnapshot.deleteMany({ identity: account.identity, category: 'social' }),
-      IntegrationSyncJob.updateMany(
-        { externalAccount: account._id, provider: 'x', resultSnapshot: { $ne: null } },
-        { $set: { resultSnapshot: null } },
-      ),
-    ]);
-  }
-
-  if (provider === 'github') {
-    await ReputationSnapshot.deleteMany({ identity: account.identity, category: 'developer' });
+  try {
+    await publishReputationJob(
+      'lumenrise.reputation.connection-cleanup.v1',
+      disconnected!.cleanupJobId,
+    );
+  } catch (error) {
+    log.warn(
+      { err: error, externalAccountId: account._id },
+      'Disconnected account cleanup will be reconciled by the reputation worker',
+    );
   }
 
   const response: ApiResponse<EmptyResult> = {

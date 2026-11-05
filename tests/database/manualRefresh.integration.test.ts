@@ -19,8 +19,19 @@ const databaseName = `lumenrise_integration_${randomUUID().replaceAll('-', '')}`
 const wallet = Keypair.random();
 const userId = '42';
 
+vi.mock('../../src/services/sybil/getSybilEvidence', () => ({
+  default: vi.fn().mockResolvedValue({
+    assessment: 'not_assessed',
+    observations: [
+      { source: 'stellar', ownership: 'wallet_registration' },
+      { source: 'github', ownership: 'oauth_connection', coverage: 'missing' },
+    ],
+  }),
+}));
+
 vi.mock('../../src/env', async (original) => {
   const module = await original<{ default: Record<string, unknown> }>();
+
   return {
     default: {
       ...module.default,
@@ -30,10 +41,12 @@ vi.mock('../../src/env', async (original) => {
     },
   };
 });
+
 vi.mock('../../src/services/auth/provider', async (original) => ({
   ...(await original<Record<string, unknown>>()),
   getVerifiedProviderAddresses: vi.fn(async () => [wallet.publicKey()]),
 }));
+
 let identityId: string;
 
 describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refresh flows', () => {
@@ -42,6 +55,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
       dbName: databaseName,
       serverSelectionTimeoutMS: 5_000,
     });
+
     await Promise.all([
       Policy.createIndexes(),
       Identity.createIndexes(),
@@ -66,7 +80,9 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
       userId,
       name: 'Integration Test',
     });
+
     expect(registered.status, registered.body.message).toBe(200);
+
     identityId = registered.body.result.identityId;
 
     const session = await request(app).get('/v1/auth/session').set('X-User-Id', userId);
@@ -87,8 +103,11 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
     const second = await request(app).post('/v1/connections/github/sync').set('X-User-Id', userId);
 
     expect(first.status).toBe(202);
+
     expect(second.status).toBe(429);
+
     expect(Number(second.headers['retry-after'])).toBeGreaterThan(0);
+
     expect(await IntegrationSyncJob.countDocuments({ identity: identityId })).toBe(1);
   });
 
@@ -110,6 +129,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
       .set('X-User-Id', userId);
 
     expect(conflict.status).toBe(409);
+
     expect(
       await ManualRefreshCooldown.countDocuments({
         identity: identityId,
@@ -140,13 +160,17 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
     const first = await request(app)
       .post('/v1/policies/developer-minimum/evaluate')
       .set('X-User-Id', userId);
+
     const second = await request(app)
       .post('/v1/policies/developer-minimum/evaluate')
       .set('X-User-Id', userId);
 
     expect(first.status).toBe(200);
+
     expect(first.body.result.decision).toBe('insufficient_data');
+
     expect(second.status).toBe(429);
+
     expect(Number(second.headers['retry-after'])).toBeGreaterThan(0);
   });
 
@@ -156,11 +180,14 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
       .set('X-User-Id', userId);
 
     expect(response.status).toBe(200);
+
     expect(response.body.result.assessment).toBe('not_assessed');
+
     expect(response.body.result.observations).toMatchObject([
       { source: 'stellar', ownership: 'wallet_registration' },
       { source: 'github', ownership: 'oauth_connection', coverage: 'missing' },
     ]);
+
     expect(response.body.result).not.toHaveProperty('score');
   });
 
@@ -168,20 +195,26 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB manual refre
     const identity = new mongoose.Types.ObjectId(identityId);
     const target = 'concurrent-integration-test';
     const now = new Date();
+
     const [first, second] = await Promise.all([
       reserveManualRefresh(identity, target, now),
       reserveManualRefresh(identity, target, now),
     ]);
+
     const winner = first.allowed ? first : second;
 
     expect([first.allowed, second.allowed].filter(Boolean)).toHaveLength(1);
+
     expect(winner.reservedUntil).toBeInstanceOf(Date);
 
     await releaseManualRefresh(identity, target, winner.reservedUntil!);
+
     const successor = await reserveManualRefresh(identity, target, new Date(now.getTime() + 1_000));
 
     expect(successor.allowed).toBe(true);
+
     await releaseManualRefresh(identity, target, winner.reservedUntil!);
+
     expect(await ManualRefreshCooldown.countDocuments({ identity, target })).toBe(1);
   });
 });

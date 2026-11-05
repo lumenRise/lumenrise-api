@@ -7,9 +7,6 @@ import { handleShutdown } from './utils/index/handleShutdown';
 import getNetworkConfig from './services/network/getNetworkConfig';
 import runDatabaseMigrations from './migrations/runDatabaseMigrations';
 import refreshAvatarCleanup from './services/avatar/refreshAvatarCleanup';
-import syncManagedStellarToml from './services/stellar/syncManagedStellarToml';
-import refreshManagedStellarToml from './services/stellar/refreshManagedStellarToml';
-import refreshTokenImageCleanup from './services/tokenImage/refreshTokenImageCleanup';
 import validateNetworkConfiguration from './services/network/validateNetworkConfiguration';
 import validateRuntimeConfiguration from './services/configuration/validateRuntimeConfiguration';
 
@@ -24,8 +21,6 @@ const bootstrap = async (): Promise<void> => {
 
   await runDatabaseMigrations();
 
-  await syncManagedStellarToml();
-
   serverState.server = app.listen(env.PORT, (): void => {
     log.info({ port: env.PORT }, 'Lumenrise API started');
   });
@@ -33,12 +28,6 @@ const bootstrap = async (): Promise<void> => {
   void refreshAvatarCleanup();
 
   setInterval(() => void refreshAvatarCleanup(), 5 * 60_000).unref();
-
-  void refreshTokenImageCleanup();
-
-  setInterval(() => void refreshTokenImageCleanup(), 60 * 60_000).unref();
-
-  setInterval(() => void refreshManagedStellarToml(), 5_000).unref();
 
   process.once('SIGINT', handleShutdown);
 

@@ -7,7 +7,6 @@ interface NetworkConfiguration {
   networkPassphrase: string;
   factoryContractId: string;
   homeDomain: string;
-  tomlPath: string;
 }
 
 export type { StellarNetwork, NetworkConfiguration };

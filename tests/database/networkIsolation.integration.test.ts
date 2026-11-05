@@ -5,7 +5,6 @@ import { Keypair } from '@stellar/stellar-sdk';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import app from '../../src/app';
-import env from '../../src/env';
 import Identity from '../../src/models/Identity';
 import StellarPaymentFact from '../../src/models/StellarPaymentFact';
 import StellarActivityScan from '../../src/models/StellarActivityScan';
@@ -34,12 +33,11 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB network isol
 
   beforeEach(async () => {
     await mongoose.connection.dropDatabase();
-
-    env.STELLAR_LEGACY_NETWORK = undefined;
   });
 
   afterAll(async () => {
     await mongoose.connection.dropDatabase();
+
     await mongoose.disconnect();
   });
 
@@ -49,8 +47,11 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB network isol
       StellarPaymentFact.createIndexes(),
       SorobanTransactionEvidence.createIndexes(),
     ]);
+
     await Identity.createIndexes();
+
     await ManualRefreshCooldown.createIndexes();
+
     await Identity.create({ externalUserIds: ['42'], status: 'active' });
 
     const [testnet, publicNetwork] = await Promise.all([
@@ -62,11 +63,17 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB network isol
     ]);
 
     expect(testnet.status).toBe(202);
+
     expect(publicNetwork.status).toBe(202);
+
     expect(testnet.body.result.network).toBe('testnet');
+
     expect(publicNetwork.body.result.network).toBe('public');
+
     expect(testnet.body.result.id).not.toBe(publicNetwork.body.result.id);
+
     expect(await StellarActivityScan.countDocuments({ active: true })).toBe(2);
+
     expect(await ManualRefreshCooldown.countDocuments()).toBe(2);
 
     for (const network of ['testnet', 'public']) {
@@ -76,6 +83,7 @@ describe.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))('MongoDB network isol
         .set('X-Stellar-Network', network);
 
       expect(response.status).toBe(200);
+
       expect(response.body.result.network).toBe(network);
 
       const repeated = await request(app)

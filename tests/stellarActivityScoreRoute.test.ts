@@ -5,12 +5,36 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import app from '../src/app';
 import StellarActivityScan from '../src/models/StellarActivityScan';
 
+vi.mock('../src/services/messaging/requestDomainRead', () => ({
+  default: vi.fn(
+    async (
+      _owner: string,
+      _operation: string,
+      parameters: Record<string, unknown>,
+    ): Promise<unknown> => ({
+      scanId: parameters.scanId,
+      address: 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR',
+      ownershipVerified: false,
+      eligibilityProof: false,
+      source: 'horizon',
+      score: 1,
+      algorithmVersion: 'stellar-activity-v1',
+      availableHistoryScanned: true,
+      pagesProcessed: 1,
+      signals: [],
+      calculatedAt: '2026-09-24T12:00:00.000Z',
+    }),
+  ),
+}));
+
 vi.mock('../src/middleware/requireSession', () => ({
   default: (req: object, _res: unknown, next: () => void) => {
     Object.assign(req, { auth: { identityId: new Types.ObjectId() } });
+
     next();
   },
 }));
+
 vi.mock('../src/models/StellarActivityScan', () => ({
   default: { findOne: vi.fn() },
 }));
@@ -26,6 +50,7 @@ describe('Stellar activity score route', () => {
     const response = await request(app).get('/v1/stellar/accounts/invalid/activity-score');
 
     expect(response.status).toBe(400);
+
     expect(StellarActivityScan.findOne).not.toHaveBeenCalled();
   });
 
@@ -37,12 +62,15 @@ describe('Stellar activity score route', () => {
     const response = await request(app).get(`/v1/stellar/accounts/${address}/activity-score`);
 
     expect(response.status).toBe(409);
+
     expect(response.body.message).toBe('Stellar activity scan is not completed');
   });
 
   it('returns an unverified address score only for the requested identity and Horizon', async () => {
     vi.mocked(StellarActivityScan.findOne).mockReturnValue({
       sort: vi.fn().mockResolvedValue({
+        identity: new Types.ObjectId(),
+        network: 'testnet',
         _id: new Types.ObjectId(),
         address,
         status: 'completed',
@@ -60,12 +88,14 @@ describe('Stellar activity score route', () => {
     const response = await request(app).get(`/v1/stellar/accounts/${address}/activity-score`);
 
     expect(response.status).toBe(200);
+
     expect(response.body.result).toMatchObject({
       address,
       ownershipVerified: false,
       eligibilityProof: false,
       availableHistoryScanned: true,
     });
+
     expect(StellarActivityScan.findOne).toHaveBeenCalledWith({
       identity: expect.any(Types.ObjectId),
       address,

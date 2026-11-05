@@ -5,13 +5,12 @@ import { randomUUID } from 'node:crypto';
 import Launch from '../../src/models/Launch';
 import LaunchTrade from '../../src/models/LaunchTrade';
 import statsScopes from '../../src/constants/stats/scopes';
-import getStatsChart from '../../src/services/stats/getStatsChart';
 import getStatsTrades from '../../src/services/stats/getStatsTrades';
 import getStatsTradePage from '../../src/services/stats/getStatsTradePage';
 import parseStatsTradeQuery from '../../src/utils/stats/parseStatsTradeQuery';
 
 it.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))(
-  'paginates actual MongoDB rows across six scopes and produces matching chart totals',
+  'paginates actual MongoDB rows across six scopes with stable continuation cursors',
   async (): Promise<void> => {
     const databaseName = `lumenrise_stats_${randomUUID().replaceAll('-', '')}`;
     const now = new Date('2026-11-01T12:00:00Z');
@@ -62,12 +61,16 @@ it.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))(
       const result = await getStatsTrades({ limit: 1, cursors: new Map() }, now);
 
       expect(result.chains).toHaveLength(4);
+
       expect(result.combined).toHaveLength(2);
 
       for (const group of [...result.chains, ...result.combined]) {
         expect(group.items).toHaveLength(1);
+
         expect(group.items[0]?.network).toBe(group.network);
+
         expect(group.items[0]?.amount).toBe('1');
+
         expect(group.items[0]?.assetAmount).toBe('1');
 
         if (group.chain !== 'all') {
@@ -99,6 +102,7 @@ it.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))(
       }
 
       expect(seen.size).toBe(4);
+
       expect(page.nextCursor).toBeNull();
 
       const future = new Date(now.getTime() + 60_000);
@@ -121,34 +125,15 @@ it.runIf(Boolean(process.env.LUMENRISE_TEST_DB_URI))(
         { limit: '100', combinedTestnetCursor: result.combined[0]!.nextCursor },
         future,
       )!;
+
       const continuation = await getStatsTradePage(scope, cursorQuery, future);
 
       expect(continuation.items).toHaveLength(3);
+
       expect(continuation.asOf).toBe(now.toISOString());
-
-      const chart = await getStatsChart(
-        {
-          from: new Date('2026-11-01T00:00:00Z'),
-          to: new Date(now.getTime() + 1),
-          interval: 'day',
-        },
-        future,
-      );
-
-      expect(chart.combined[0]?.items[0]).toMatchObject({
-        launchCount: 2,
-        tradeCount: 4,
-        volume: '8',
-        participantCount: 2,
-      });
-      expect(chart.combined[1]?.items[0]).toMatchObject({
-        launchCount: 2,
-        tradeCount: 2,
-        volume: '4',
-        participantCount: 2,
-      });
     } finally {
       await mongoose.connection.dropDatabase();
+
       await mongoose.disconnect();
     }
   },

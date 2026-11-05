@@ -8,14 +8,10 @@ vi.mock('../../src/env', () => ({
     STELLAR_TESTNET_RPC_URL: 'https://test-rpc.example',
     STELLAR_TESTNET_HORIZON_URL: 'https://test-horizon.example',
     STELLAR_TESTNET_HOME_DOMAIN: 'test.example',
-    STELLAR_TESTNET_TOML_DIRNAME: '/tmp/testnet',
-    STELLAR_TESTNET_TOML_FILENAME: 'stellar.toml',
     LAUNCH_TESTNET_FACTORY_CONTRACT_ID: 'test-factory',
     STELLAR_PUBLIC_RPC_URL: 'https://public-rpc.example',
     STELLAR_PUBLIC_HORIZON_URL: 'https://public-horizon.example',
     STELLAR_PUBLIC_HOME_DOMAIN: 'public.example',
-    STELLAR_PUBLIC_TOML_DIRNAME: '/tmp/public',
-    STELLAR_PUBLIC_TOML_FILENAME: 'stellar.toml',
     LAUNCH_PUBLIC_FACTORY_CONTRACT_ID: 'public-factory',
   },
 }));
@@ -37,7 +33,6 @@ describe('network configuration isolation', () => {
         factoryContractId: `${prefix}-factory`,
         homeDomain: `${prefix}.example`,
         networkPassphrase: index % 2 === 0 ? Networks.TESTNET : Networks.PUBLIC,
-        tomlPath: index % 2 === 0 ? '/tmp/testnet/stellar.toml' : '/tmp/public/stellar.toml',
       });
     }
   });

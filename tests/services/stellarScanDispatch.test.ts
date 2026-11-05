@@ -13,20 +13,20 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../src/models/StellarActivityScan', () => ({
   default: { findOne: mocks.findOne, create: mocks.create },
 }));
+
 vi.mock('../../src/services/integration/publishReputationJob', () => ({
   publishReputationJob: mocks.publish,
 }));
+
 vi.mock('../../src/env', () => ({
   default: {
-    STELLAR_TESTNET_TOML_DIRNAME: '.',
-    STELLAR_TESTNET_TOML_FILENAME: 'testnet.toml',
-    STELLAR_PUBLIC_TOML_DIRNAME: '.',
-    STELLAR_PUBLIC_TOML_FILENAME: 'public.toml',
     STELLAR_PUBLIC_HORIZON_URL: 'https://horizon.stellar.org',
     STELLAR_PUBLIC_RPC_URL: 'https://rpc.example.com',
     STELLAR_TESTNET_RPC_URL: 'https://soroban-testnet.stellar.org',
-    STELLAR_TESTNET_HORIZON_URL: 'https://horizon-testnet.stellar.org' },
+    STELLAR_TESTNET_HORIZON_URL: 'https://horizon-testnet.stellar.org',
+  },
 }));
+
 vi.mock('../../src/logger', () => ({ default: { warn: mocks.warn } }));
 
 describe('Stellar scan dispatch', () => {
@@ -35,13 +35,16 @@ describe('Stellar scan dispatch', () => {
   it('publishes a wakeup after recording a scan', async () => {
     const identity = new Types.ObjectId();
     const scan = { _id: new Types.ObjectId(), address: 'G'.repeat(56), status: 'queued' };
+
     mocks.findOne.mockResolvedValue(null);
+
     mocks.create.mockResolvedValue(scan);
 
     await expect(enqueueStellarActivityScan(identity, scan.address, 'testnet')).resolves.toEqual({
       scan,
       conflict: false,
     });
+
     expect(mocks.publish).toHaveBeenCalledWith(
       'lumenrise.reputation.stellar-scan.v1',
       scan._id.toString(),
@@ -50,14 +53,20 @@ describe('Stellar scan dispatch', () => {
 
   it('keeps the MongoDB scan if RabbitMQ is unavailable', async () => {
     const scan = { _id: new Types.ObjectId(), address: 'G'.repeat(56), status: 'queued' };
+
     mocks.findOne.mockResolvedValue(null);
+
     mocks.create.mockResolvedValue(scan);
+
     mocks.publish.mockRejectedValue(new Error('broker unavailable'));
 
-    await expect(enqueueStellarActivityScan(new Types.ObjectId(), scan.address, 'testnet')).resolves.toEqual({
+    await expect(
+      enqueueStellarActivityScan(new Types.ObjectId(), scan.address, 'testnet'),
+    ).resolves.toEqual({
       scan,
       conflict: false,
     });
+
     expect(mocks.warn).toHaveBeenCalledOnce();
   });
 });

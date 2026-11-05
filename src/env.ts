@@ -88,10 +88,6 @@ const schema = defineConfig({
   CREDENTIAL_ENCRYPTION_KEY: {
     example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
   },
-  BASE_LOG_BLOCK_RANGE: {
-    type: 'number',
-    default: 100,
-  },
   BASE_TESTNET_RPC_URL: {
     example: 'https://base-sepolia-rpc.example',
   },
@@ -122,16 +118,6 @@ const schema = defineConfig({
   STELLAR_TESTNET_HOME_DOMAIN: {
     example: 'testnet.example',
   },
-  STELLAR_TESTNET_TOML_DIRNAME: {
-    default: './storage/testnet',
-  },
-  STELLAR_TESTNET_TOML_FILENAME: {
-    default: 'stellar.toml',
-  },
-  TESTNET_TOML: {
-    example: './storage/testnet/stellar.toml',
-    required: false,
-  },
   STELLAR_PUBLIC_RPC_URL: {
     example: 'https://stellar-mainnet-rpc.example',
   },
@@ -143,21 +129,6 @@ const schema = defineConfig({
   },
   STELLAR_PUBLIC_HOME_DOMAIN: {
     example: 'mainnet.example',
-  },
-  STELLAR_PUBLIC_TOML_DIRNAME: {
-    default: './storage/public',
-  },
-  STELLAR_PUBLIC_TOML_FILENAME: {
-    default: 'stellar.toml',
-  },
-  PUBLIC_TOML: {
-    example: './storage/public/stellar.toml',
-    required: false,
-  },
-  STELLAR_LEGACY_NETWORK: {
-    type: 'enum',
-    values: ['testnet', 'public'],
-    required: false,
   },
 });
 

@@ -50,7 +50,7 @@ const getStellarActivityScoreRoute: RequestHandler = async (req, res) => {
     const response: ApiResponse<StellarActivityScoreResult> = {
       status: 'success',
       message: 'Stellar activity score retrieved',
-      result: calculateStellarActivityScore(scan),
+      result: await calculateStellarActivityScore(scan),
     };
 
     return res.status(200).json(response);

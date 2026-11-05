@@ -6,15 +6,43 @@ import app from '../src/app';
 import StellarAccount from '../src/models/StellarAccount';
 import StellarActivityScan from '../src/models/StellarActivityScan';
 
+vi.mock('../src/services/messaging/requestDomainRead', () => ({
+  default: vi.fn(
+    async (
+      _owner: string,
+      _operation: string,
+      parameters: Record<string, unknown>,
+    ): Promise<unknown> => ({
+      scanId: parameters.scanId,
+      address: 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR',
+      ownershipVerified: false,
+      eligibilityProof: false,
+      source: 'horizon',
+      score: 1,
+      algorithmVersion: 'stellar-activity-v1',
+      availableHistoryScanned: true,
+      pagesProcessed: 1,
+      signals: ['activity', 'consistency', 'diversity', 'history'].map((name): object => ({
+        name,
+        score: 1,
+      })),
+      calculatedAt: '2026-09-24T12:00:00.000Z',
+    }),
+  ),
+}));
+
 vi.mock('../src/middleware/requireSession', () => ({
   default: (req: object, _res: unknown, next: () => void) => {
     Object.assign(req, { auth: { identityId: new Types.ObjectId() } });
+
     next();
   },
 }));
+
 vi.mock('../src/models/StellarAccount', () => ({
   default: { findOne: vi.fn() },
 }));
+
 vi.mock('../src/models/StellarActivityScan', () => ({
   default: { findOne: vi.fn() },
 }));
@@ -24,6 +52,7 @@ const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 describe('Stellar reputation route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
     vi.mocked(StellarAccount.findOne).mockResolvedValue({ address } as never);
   });
 
@@ -35,6 +64,7 @@ describe('Stellar reputation route', () => {
     const response = await request(app).get('/v1/reputation/stellar');
 
     expect(response.status).toBe(200);
+
     expect(response.body.result).toEqual({
       address,
       ownershipVerified: true,
@@ -42,11 +72,13 @@ describe('Stellar reputation route', () => {
       scan: null,
       score: null,
     });
+
     expect(StellarAccount.findOne).toHaveBeenCalledWith({
       identity: expect.any(Types.ObjectId),
       isPrimary: true,
       disconnectedAt: null,
     });
+
     expect(StellarActivityScan.findOne).toHaveBeenCalledWith({
       identity: expect.any(Types.ObjectId),
       address,
@@ -59,7 +91,11 @@ describe('Stellar reputation route', () => {
 
     vi.mocked(StellarActivityScan.findOne).mockReturnValue({
       sort: vi.fn().mockResolvedValue({
+        identity: new Types.ObjectId(),
+        network: 'testnet',
         _id: scanId,
+        identity: new Types.ObjectId(),
+        network: 'testnet',
         address,
         status: 'completed',
         cursor: null,
@@ -79,6 +115,7 @@ describe('Stellar reputation route', () => {
     const response = await request(app).get('/v1/reputation/stellar');
 
     expect(response.status).toBe(200);
+
     expect(response.body.result).toMatchObject({
       address,
       ownershipVerified: true,
@@ -91,12 +128,15 @@ describe('Stellar reputation route', () => {
         algorithmVersion: 'stellar-activity-v1',
       },
     });
+
     expect(response.body.result.score.signals).toHaveLength(4);
   });
 
   it('does not publish a score from a running scan', async () => {
     vi.mocked(StellarActivityScan.findOne).mockReturnValue({
       sort: vi.fn().mockResolvedValue({
+        identity: new Types.ObjectId(),
+        network: 'testnet',
         _id: new Types.ObjectId(),
         address,
         status: 'running',
@@ -112,7 +152,9 @@ describe('Stellar reputation route', () => {
     const response = await request(app).get('/v1/reputation/stellar');
 
     expect(response.status).toBe(200);
+
     expect(response.body.result.scanStatus).toBe('running');
+
     expect(response.body.result.score).toBeNull();
   });
 
@@ -122,6 +164,7 @@ describe('Stellar reputation route', () => {
     const response = await request(app).get('/v1/reputation/stellar');
 
     expect(response.status).toBe(404);
+
     expect(StellarActivityScan.findOne).not.toHaveBeenCalled();
   });
 });
