@@ -28,9 +28,7 @@ const getBaseConfiguration = (network: 'testnet' | 'public'): BaseConfiguration 
       !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))) ||
     url.username ||
     url.password ||
-    url.hash ||
-    !Number.isSafeInteger(env.BASE_LOG_BLOCK_RANGE) ||
-    env.BASE_LOG_BLOCK_RANGE < 1
+    url.hash
   ) {
     throw new Error('Invalid Base RPC configuration');
   }
@@ -39,8 +37,6 @@ const getBaseConfiguration = (network: 'testnet' | 'public'): BaseConfiguration 
     network,
     rpcUrl,
     factoryAddress: factory.toLowerCase() as BaseConfiguration['factoryAddress'],
-    deploymentBlock: BigInt(start),
-    batchSize: BigInt(env.BASE_LOG_BLOCK_RANGE),
   };
 };
 

@@ -35,12 +35,10 @@ vi.mock('../src/env', () => ({
     STELLAR_TESTNET_HORIZON_URL: 'https://horizon-testnet.example',
     STELLAR_TESTNET_HOME_DOMAIN: 'testnet.example',
     LAUNCH_TESTNET_FACTORY_CONTRACT_ID: 'testnet-factory',
-    TESTNET_TOML: '/private/testnet.toml',
     STELLAR_PUBLIC_RPC_URL: 'https://rpc-public.example',
     STELLAR_PUBLIC_HORIZON_URL: 'https://horizon-public.example',
     STELLAR_PUBLIC_HOME_DOMAIN: 'public.example',
     LAUNCH_PUBLIC_FACTORY_CONTRACT_ID: 'public-factory',
-    PUBLIC_TOML: '/private/public.toml',
     FUTURE_SECRET: 'secret-added-later',
     PRIVY_APP_ID: 'base-public-app-id',
     PRIVY_APP_SECRET: 'secret-base-auth-value',
@@ -50,7 +48,6 @@ vi.mock('../src/env', () => ({
     BASE_PUBLIC_RPC_URL: 'https://private-base-rpc.example/private-rpc-key',
     BASE_PUBLIC_FACTORY_ADDRESS: '0x1111111111111111111111111111111111111111',
     BASE_PUBLIC_DEPLOYMENT_BLOCK: '100',
-    BASE_LOG_BLOCK_RANGE: 500,
   },
 }));
 
@@ -68,9 +65,13 @@ describe('public application configuration', () => {
     const response = await request(app).get('/v1/config');
 
     expect(response.status).toBe(200);
+
     expect(response.headers['cache-control']).toBe('no-store');
+
     expect(response.headers['set-cookie']).toBeUndefined();
+
     expect(upstream).not.toHaveBeenCalled();
+
     expect(response.body.result).toMatchObject({
       version: 1,
       auth: { appId: 'public-app-id' },
@@ -128,6 +129,7 @@ describe('public application configuration', () => {
     const validate = createOpenApiValidator({ $ref: '#/components/schemas/PublicConfiguration' });
 
     expect(validate(response.body.result), JSON.stringify(validate.errors)).toBe(true);
+
     expect(Object.keys(response.body.result).sort()).toEqual([
       'auth',
       'base',
@@ -143,11 +145,13 @@ describe('public application configuration', () => {
         /SECRET|PRIVATE|DB_|RABBITMQ|CREDENTIAL|TOML|CALLBACK|R2_(ENDPOINT|ACCESS|BUCKET)/.test(key)
       ) {
         expect(response.text).not.toContain(key);
+
         expect(response.text).not.toContain(String(value));
       }
     }
 
     expect(response.body.result.network.configurations.testnet).not.toHaveProperty('tomlPath');
+
     expect(validate({ ...response.body.result, unexpectedSecret: 'secret' })).toBe(false);
   });
 
@@ -164,14 +168,18 @@ describe('public application configuration', () => {
     const response = await request(app).get('/v1/config').set('X-Stellar-Network', 'public');
 
     expect(response.status).toBe(200);
+
     expect(response.headers['x-stellar-network']).toBe('public');
+
     expect(response.body.result.network.default).toBe('testnet');
+
     expect(response.body.result.network.configurations.public).toMatchObject({
       launchConfigured: false,
       horizonUrl: 'https://horizon-public.example',
       rpcUrl: '',
       factoryContractId: '',
     });
+
     expect(response.body.result.features).toEqual({
       registration: false,
       imageUploads: false,
@@ -184,6 +192,7 @@ describe('public application configuration', () => {
     const response = await request(app).get('/v1/config').set('X-Stellar-Network', 'mainnet');
 
     expect(response.status).toBe(400);
+
     expect(response.body.status).toBe('error');
   });
 
@@ -201,7 +210,9 @@ describe('public application configuration', () => {
       });
 
     expect(valid.status).toBe(200);
+
     expect(valid.body.result.limit).toBe(rules.maxLimit);
+
     expect(aggregate).toHaveBeenCalledOnce();
 
     for (const query of [
@@ -224,6 +235,7 @@ it('includes Base discovery without a chain header and exposes native decimal ru
   const response = await request(app).get('/v1/config');
 
   expect(response.status).toBe(200);
+
   expect(response.body.result.base).toMatchObject({
     chain: 'base',
     auth: { appId: 'base-public-app-id' },
@@ -239,9 +251,13 @@ it('includes Base discovery without a chain header and exposes native decimal ru
       base: { maxTokenDecimals: 18, tradeEvents: ['Bought', 'Sold'], reputationRequired: false },
     },
   });
+
   expect(response.body.result.rules.launches).toMatchObject({ amountScale: 7, priceScale: 7 });
+
   expect(response.text).not.toContain('private-rpc-key');
+
   expect(response.text).not.toContain('secret-base-auth-value');
+
   expect(fetch).not.toHaveBeenCalled();
 });
 
@@ -251,7 +267,9 @@ it('keeps the explicit Base configuration response consistent with default disco
   const validate = createOpenApiValidator({ $ref: '#/components/schemas/BasePublicConfiguration' });
 
   expect(response.status).toBe(200);
+
   expect(response.body.result).toEqual(discovery.body.result.base);
+
   expect(validate(response.body.result), JSON.stringify(validate.errors)).toBe(true);
 });
 
@@ -261,10 +279,13 @@ it('keeps Stellar discovery available when an optional Base deployment is incomp
   const response = await request(app).get('/v1/config');
 
   expect(response.status).toBe(200);
+
   expect(response.body.result.network.configurations.testnet.launchConfigured).toBe(true);
+
   expect(response.body.result.base.network.configurations.testnet).toMatchObject({
     launchConfigured: false,
     factoryContractId: '',
   });
+
   expect(response.body.result.base.network.configurations.public.launchConfigured).toBe(true);
 });

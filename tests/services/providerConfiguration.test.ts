@@ -10,7 +10,6 @@ const configuration = {
   networkPassphrase: Networks.PUBLIC,
   factoryContractId: '',
   homeDomain: '',
-  tomlPath: '',
 };
 
 describe('provider configuration validation', () => {
@@ -19,14 +18,18 @@ describe('provider configuration validation', () => {
   });
 
   it('still rejects malformed or insecure provider URLs', (): void => {
-    expect(() => validateNetworkConfiguration({
-      ...configuration,
-      rpcUrl: 'invalid',
-    })).toThrow();
+    expect(() =>
+      validateNetworkConfiguration({
+        ...configuration,
+        rpcUrl: 'invalid',
+      }),
+    ).toThrow();
 
-    expect(() => validateNetworkConfiguration({
-      ...configuration,
-      rpcUrl: 'http://soroban-testnet.stellar.org',
-    })).toThrow('Invalid public provider URL');
+    expect(() =>
+      validateNetworkConfiguration({
+        ...configuration,
+        rpcUrl: 'http://soroban-testnet.stellar.org',
+      }),
+    ).toThrow('Invalid public provider URL');
   });
 });

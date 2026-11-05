@@ -5,7 +5,7 @@ import type { PublicNetworkConfiguration } from '../../types/configuration/publi
 const getPublicNetworkConfiguration = (network: StellarNetwork): PublicNetworkConfiguration => {
   const configuration = getNetworkConfig(network);
 
-  // Deliberately select browser-safe fields; configuration also contains filesystem paths.
+  // Select the fields in the public configuration contract.
   return {
     network: configuration.network,
     rpcUrl: configuration.rpcUrl,
