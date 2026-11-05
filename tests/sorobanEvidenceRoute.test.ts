@@ -1,79 +1,74 @@
 import request from 'supertest';
 import { Types } from 'mongoose';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
 
 import app from '../src/app';
-import StellarActivityScan from '../src/models/StellarActivityScan';
-import SorobanTransactionEvidence from '../src/models/SorobanTransactionEvidence';
+import requestDomainRead from '../src/services/messaging/requestDomainRead';
+
+vi.mock('../src/services/messaging/requestDomainRead', () => ({ default: vi.fn() }));
 
 vi.mock('../src/middleware/requireSession', () => ({
-  default: (req: object, _res: unknown, next: () => void) => {
+  default: (req: object, _res: unknown, next: () => void): void => {
     Object.assign(req, { auth: { identityId: new Types.ObjectId() } });
+
     next();
   },
-}));
-vi.mock('../src/models/StellarActivityScan', () => ({
-  default: { findOne: vi.fn() },
-}));
-vi.mock('../src/models/SorobanTransactionEvidence', () => ({
-  default: { find: vi.fn(), aggregate: vi.fn() },
 }));
 
 const address = 'GCFIRY65OQE7DFP5KLNS2PF2LVZMUZYJX4OZIEQ36N2IQANUB5XVYOJR';
 
-describe('Soroban evidence route', () => {
-  beforeEach(() => vi.clearAllMocks());
+beforeEach((): void => {
+  vi.resetAllMocks();
+});
 
-  it('rejects invalid cursors before database access', async () => {
-    const response = await request(app).get(
-      `/v1/stellar/accounts/${address}/soroban-evidence?cursor=wrong`,
-    );
-    expect(response.status).toBe(400);
-    expect(StellarActivityScan.findOne).not.toHaveBeenCalled();
-  });
+it('rejects malformed requests before contacting the worker', async (): Promise<void> => {
+  const response = await request(app).get(
+    `/v1/stellar/accounts/${address}/soroban-evidence?cursor=wrong`,
+  );
 
-  it('limits results to the latest scan owned by the requester and shows RPC gaps', async () => {
-    const scan = { _id: new Types.ObjectId(), status: 'completed' };
-    vi.mocked(StellarActivityScan.findOne).mockReturnValue({
-      sort: vi.fn().mockResolvedValue(scan),
-    } as never);
-    vi.mocked(SorobanTransactionEvidence.find).mockReturnValue({
-      sort: vi.fn().mockReturnValue({
-        limit: vi.fn().mockResolvedValue([
-          {
-            _id: new Types.ObjectId(),
-            transactionHash: 'a'.repeat(64),
-            operationIds: ['1'],
-            initiatedOperation: false,
-            observedAt: new Date('2026-09-26T12:00:00Z'),
-            rpcStatus: 'not_found',
-            attempts: 3,
-            ledger: null,
-            envelopeXdr: null,
-            returnValueXdr: null,
-            events: [],
-          },
-        ]),
-      }),
-    } as never);
-    vi.mocked(SorobanTransactionEvidence.aggregate).mockResolvedValue([
-      { _id: 'not_found', count: 1 },
-    ]);
+  expect(response.status).toBe(400);
 
-    const response = await request(app).get(`/v1/stellar/accounts/${address}/soroban-evidence`);
+  expect(requestDomainRead).not.toHaveBeenCalled();
+});
 
-    expect(response.status).toBe(200);
-    expect(response.body.result).toMatchObject({
-      ownershipVerified: false,
-      scanId: scan._id.toString(),
-      coverage: { discoveredTransactions: 1, rpcNotFound: 1, rpcSuccess: 0 },
-      items: [{ rpcStatus: 'not_found', initiatedOperation: false, envelope: null, events: [] }],
-    });
-    expect(StellarActivityScan.findOne).toHaveBeenCalledWith({
-      identity: expect.any(Types.ObjectId),
+it('preserves worker evidence payloads and binds requests to the authenticated identity', async (): Promise<void> => {
+  const result = {
+    ownershipVerified: false,
+    scanId: new Types.ObjectId().toString(),
+    coverage: { discoveredTransactions: 1, rpcNotFound: 1, rpcSuccess: 0 },
+    items: [{ rpcStatus: 'not_found', initiatedOperation: false, envelope: null, events: [] }],
+  };
+
+  vi.mocked(requestDomainRead).mockResolvedValue(result);
+
+  const response = await request(app).get(`/v1/stellar/accounts/${address}/soroban-evidence`);
+
+  expect(response.status).toBe(200);
+
+  expect(response.body.result).toEqual(result);
+
+  expect(requestDomainRead).toHaveBeenCalledWith(
+    'reputation',
+    'soroban.evidence',
+    expect.objectContaining({
+      identity: expect.stringMatching(/^[a-f0-9]{24}$/),
       address,
       network: 'testnet',
-    });
-    expect(SorobanTransactionEvidence.find).toHaveBeenCalledWith({ scan: scan._id });
-  });
+      limit: expect.any(Number),
+    }),
+  );
+});
+
+it('preserves not-found and unavailable HTTP responses', async (): Promise<void> => {
+  vi.mocked(requestDomainRead)
+    .mockResolvedValueOnce(null)
+    .mockRejectedValueOnce(new Error('Worker unavailable'));
+
+  expect((await request(app).get(`/v1/stellar/accounts/${address}/soroban-evidence`)).status).toBe(
+    404,
+  );
+
+  expect((await request(app).get(`/v1/stellar/accounts/${address}/soroban-evidence`)).status).toBe(
+    503,
+  );
 });

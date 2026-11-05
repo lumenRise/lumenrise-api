@@ -41,7 +41,7 @@ const getReputationProfile = async (
     },
     developer: developerSnapshot ? toReputationSnapshotResult(developerSnapshot) : null,
     social: socialSnapshot ? toReputationSnapshotResult(socialSnapshot) : null,
-    stellar: wallet ? toStellarReputationResult(wallet.address, scan) : null,
+    stellar: wallet ? await toStellarReputationResult(wallet.address, scan) : null,
   };
 };
 

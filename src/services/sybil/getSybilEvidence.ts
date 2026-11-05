@@ -1,28 +1,17 @@
 import type { Types } from 'mongoose';
 
-import getReputationProfile from '../reputation/profile';
-import ExternalAccount from '../../models/ExternalAccount';
+import requestDomainRead from '../messaging/requestDomainRead';
 import type { SybilEvidenceResult } from '../../types/sybil/evidence';
-import buildSybilEvidence from '../../utils/sybil/buildSybilEvidence';
-import getProviderEvidence from '../../utils/sybil/getProviderEvidence';
 import type { StellarNetwork } from '../../types/network/configuration';
 
 const getSybilEvidence = async (
   identityId: Types.ObjectId,
   network: StellarNetwork,
 ): Promise<SybilEvidenceResult | null> => {
-  const [profile, accounts] = await Promise.all([
-    getReputationProfile(identityId, network),
-    ExternalAccount.find({ identity: identityId, status: 'connected', provider: { $in: ['github', 'x'] } }),
-  ]);
-
-  if (!profile) {
-    return null;
-  }
-
-  const providers = await Promise.all(accounts.map(getProviderEvidence));
-
-  return buildSybilEvidence(profile, providers);
+  return requestDomainRead<SybilEvidenceResult | null>('reputation', 'sybil.evidence', {
+    identity: identityId.toString(),
+    network,
+  });
 };
 
 export default getSybilEvidence;

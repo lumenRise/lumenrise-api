@@ -34,7 +34,7 @@ const getStellarReputationRoute: RequestHandler = async (req, res) => {
     const response: ApiResponse<StellarReputationResult> = {
       status: 'success',
       message: 'Stellar reputation retrieved',
-      result: toStellarReputationResult(account.address, scan),
+      result: await toStellarReputationResult(account.address, scan),
     };
 
     return res.status(200).json(response);
