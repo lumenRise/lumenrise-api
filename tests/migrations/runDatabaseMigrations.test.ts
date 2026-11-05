@@ -4,8 +4,8 @@ import DatabaseMigration from '../../src/models/DatabaseMigration';
 import runDatabaseMigrations from '../../src/migrations/runDatabaseMigrations';
 import statsTradeIndexes from '../../src/migrations/20261101StatsTradeIndexes';
 import createCurrentIndexes from '../../src/migrations/20261012CreateCurrentIndexes';
+import reputationCleanupJobs from '../../src/migrations/20261105ReputationCleanupJobs';
 import basePoolHistoryReplay from '../../src/migrations/20261101BasePoolHistoryReplay';
-import stellarTransactionJobs from '../../src/migrations/20261105StellarTransactionJobs';
 
 vi.mock('../../src/logger', () => ({ default: { info: vi.fn() } }));
 
@@ -33,6 +33,10 @@ vi.mock('../../src/migrations/20261105StellarTransactionJobs', () => ({
   default: { name: '20261105-stellar-transaction-jobs', up: vi.fn() },
 }));
 
+vi.mock('../../src/migrations/20261105ReputationCleanupJobs', () => ({
+  default: { name: '20261105-reputation-cleanup-jobs', up: vi.fn() },
+}));
+
 beforeEach((): void => {
   vi.resetAllMocks();
 });
@@ -48,11 +52,11 @@ it('installs indexes before scheduling replay and records each successful migrat
     vi.mocked(basePoolHistoryReplay.up).mock.invocationCallOrder[0]!,
   );
 
-  expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(5);
+  expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(6);
 
   expect(DatabaseMigration.updateOne).toHaveBeenLastCalledWith(
-    { name: stellarTransactionJobs.name },
-    { $setOnInsert: { name: stellarTransactionJobs.name, appliedAt: expect.any(Date) } },
+    { name: reputationCleanupJobs.name },
+    { $setOnInsert: { name: reputationCleanupJobs.name, appliedAt: expect.any(Date) } },
     { upsert: true },
   );
 });
@@ -70,7 +74,7 @@ it('retains the applied baseline name and runs only the two pending migrations',
 
   expect(basePoolHistoryReplay.up).toHaveBeenCalledOnce();
 
-  expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(4);
+  expect(DatabaseMigration.updateOne).toHaveBeenCalledTimes(5);
 });
 
 it('does not repeat replay or index migrations recorded in database history', async (): Promise<void> => {
