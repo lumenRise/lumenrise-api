@@ -11,6 +11,7 @@ import resolveChain from './middleware/resolveChain';
 import errorHandler from './middleware/errorHandler';
 import resolveNetwork from './middleware/resolveNetwork';
 import logServerActivity from './middleware/logServerActivity';
+import trackTestnetActivity from './middleware/trackTestnetActivity';
 import parseClientOrigins from './utils/configuration/parseClientOrigins';
 
 const app = express();
@@ -28,12 +29,12 @@ app.use(
 );
 
 app.use(resolveChain);
-
 app.use(resolveNetwork);
 app.use(cookieParser());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(logServerActivity);
+app.use(trackTestnetActivity);
 app.use(router);
 app.use(notFound);
 app.use(errorHandler);

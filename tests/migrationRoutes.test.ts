@@ -7,6 +7,10 @@ import DatabaseMigration from '../src/models/DatabaseMigration';
 vi.mock('../src/logger', () => ({ default: { error: vi.fn() } }));
 vi.mock('../src/models/DatabaseMigration', () => ({ default: { distinct: vi.fn() } }));
 
+vi.mock('../src/services/launch/recordTestnetActivity', () => ({
+  default: async (): Promise<void> => {},
+}));
+
 describe('migration names endpoint', () => {
   beforeEach(() => {
     vi.resetAllMocks();
