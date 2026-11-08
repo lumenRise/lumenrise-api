@@ -18,7 +18,6 @@ beforeEach((): void => {
 it.each([
   '/v1/launches',
   '/v1/user',
-  '/v1/config',
   '/v1/stats',
   '/v1/stellar/accounts',
   '/V1/Launches',
@@ -41,6 +40,9 @@ it.each([
 it.each([
   ['/v1/launches', 'public', 'GET', 200],
   ['/v1/launches', 'testnet', 'OPTIONS', 204],
+  ['/v1/config', 'testnet', 'GET', 200],
+  ['/v1/config/', 'testnet', 'GET', 200],
+  ['/V1/Config', 'testnet', 'GET', 304],
   ['/v1/health', 'testnet', 'GET', 200],
   ['/v1/health/', 'testnet', 'GET', 200],
   ['/v1/docs', 'testnet', 'GET', 200],
