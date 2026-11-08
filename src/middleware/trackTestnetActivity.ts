@@ -8,7 +8,7 @@ const trackTestnetActivity = (req: Request, res: Response, next: NextFunction): 
     req.network !== 'testnet' ||
     req.method === 'OPTIONS' ||
     !/^\/v1\//i.test(req.path) ||
-    /^\/v1\/(?:health|docs|openapi\.json)(?:\/|$)/i.test(req.path)
+    /^\/v1\/(?:config|health|docs|openapi\.json)(?:\/|$)/i.test(req.path)
   ) {
     next();
 
