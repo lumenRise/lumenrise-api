@@ -20,13 +20,16 @@ import ExternalAccount from '../models/ExternalAccount';
 import LaunchTeamMember from '../models/LaunchTeamMember';
 import DeveloperApiUsage from '../models/DeveloperApiUsage';
 import LaunchPriceSample from '../models/LaunchPriceSample';
+import BaseTransactionJob from '../models/BaseTransactionJob';
 import GitHubDataSnapshot from '../models/GitHubDataSnapshot';
 import IntegrationSyncJob from '../models/IntegrationSyncJob';
 import ProviderCredential from '../models/ProviderCredential';
 import ReputationSnapshot from '../models/ReputationSnapshot';
 import StellarPaymentFact from '../models/StellarPaymentFact';
 import StellarActivityScan from '../models/StellarActivityScan';
+import ReputationCleanupJob from '../models/ReputationCleanupJob';
 import GitHubRepositoryFact from '../models/GitHubRepositoryFact';
+import StellarTransactionJob from '../models/StellarTransactionJob';
 import ManualRefreshCooldown from '../models/ManualRefreshCooldown';
 import LaunchHolderRefreshJob from '../models/LaunchHolderRefreshJob';
 import type { MigrationDefinition } from '../types/database/migration';
@@ -40,6 +43,7 @@ const createCurrentIndexes: MigrationDefinition = {
       AvatarCleanup.createIndexes(),
       BaseCheckpoint.createIndexes(),
       BaseCursor.createIndexes(),
+      BaseTransactionJob.createIndexes(),
       DeveloperApiKey.createIndexes(),
       DeveloperApiUsage.createIndexes(),
       EvmAccount.createIndexes(),
@@ -62,10 +66,12 @@ const createCurrentIndexes: MigrationDefinition = {
       PrivyIdentity.createIndexes(),
       ProviderCredential.createIndexes(),
       ReputationSnapshot.createIndexes(),
+      ReputationCleanupJob.createIndexes(),
       SorobanTransactionEvidence.createIndexes(),
       StellarAccount.createIndexes(),
       StellarActivityScan.createIndexes(),
       StellarPaymentFact.createIndexes(),
+      StellarTransactionJob.createIndexes(),
       TokenImage.createIndexes(),
       XDataSnapshot.createIndexes(),
     ]);
