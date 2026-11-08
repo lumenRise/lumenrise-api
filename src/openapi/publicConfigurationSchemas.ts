@@ -57,6 +57,7 @@ const publicConfigurationSchemas = {
               required: [
                 'network',
                 'chainId',
+                'rpcUrl',
                 'factoryContractId',
                 'launchConfigured',
                 'uniswapV4',
@@ -64,6 +65,7 @@ const publicConfigurationSchemas = {
               properties: {
                 network: { enum: ['testnet', 'public'] },
                 chainId: { enum: [8453, 84532] },
+                rpcUrl: stringSchema,
                 factoryContractId: stringSchema,
                 launchConfigured: booleanSchema,
                 uniswapV4: {

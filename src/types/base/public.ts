@@ -5,6 +5,7 @@ import type baseApplicationRules from '../../constants/base/applicationRules';
 interface BasePublicNetworkConfiguration {
   network: 'testnet' | 'public';
   chainId: 8453 | 84532;
+  rpcUrl: string;
   factoryContractId: string;
   launchConfigured: boolean;
   uniswapV4: Pick<BasePool, 'poolManager' | 'stateView' | 'positionManager'>;
