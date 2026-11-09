@@ -34,35 +34,38 @@ describe('identity resolution', () => {
     vi.spyOn(Identity, 'updateOne').mockResolvedValue({} as never);
   });
 
-  it('links an alternate ID and preserves the existing profile', async () => {
-    vi.mocked(StellarAccount.findOne).mockReturnValue(query({ identity: identityId }) as never);
-    vi.mocked(Identity.findById).mockReturnValue(
-      query({
-        _id: identityId,
-        status: 'active',
+  it.each(['87', 'ekfvknkfkwsmaka322aa'])(
+    'links alternate ID %s and preserves the existing profile',
+    async (userId: string): Promise<void> => {
+      vi.mocked(StellarAccount.findOne).mockReturnValue(query({ identity: identityId }) as never);
+      vi.mocked(Identity.findById).mockReturnValue(
+        query({
+          _id: identityId,
+          status: 'active',
+          name: 'Alice',
+          avatarUrl: 'https://images.example/avatar.webp',
+        }) as never,
+      );
+
+      const response = await request(app).post('/v1/auth/resolve').send({ userId, address });
+
+      expect(response.status).toBe(200);
+      expect(response.body.result).toEqual({
+        registered: true,
+        userId,
+        identityId: identityId.toString(),
         name: 'Alice',
         avatarUrl: 'https://images.example/avatar.webp',
-      }) as never,
-    );
-
-    const response = await request(app).post('/v1/auth/resolve').send({ userId: '87', address });
-
-    expect(response.status).toBe(200);
-    expect(response.body.result).toEqual({
-      registered: true,
-      userId: '87',
-      identityId: identityId.toString(),
-      name: 'Alice',
-      avatarUrl: 'https://images.example/avatar.webp',
-    });
-    expect(verifyProviderAddress).toHaveBeenCalledWith('87', address);
-    expect(Identity.updateOne).toHaveBeenCalledWith(
-      { _id: identityId },
-      { $addToSet: { externalUserIds: '87' } },
-      { session: {} },
-    );
-    expect(response.headers['set-cookie']).toBeUndefined();
-  });
+      });
+      expect(verifyProviderAddress).toHaveBeenCalledWith(userId, address);
+      expect(Identity.updateOne).toHaveBeenCalledWith(
+        { _id: identityId },
+        { $addToSet: { externalUserIds: userId } },
+        { session: {} },
+      );
+      expect(response.headers['set-cookie']).toBeUndefined();
+    },
+  );
 
   it('resolves a known alias to the same identity on repeated login', async () => {
     vi.mocked(Identity.findOne).mockReturnValue(
@@ -153,13 +156,14 @@ describe('identity resolution', () => {
     expect(response.status).toBe(409);
   });
 
-  it.each([{ userId: '87' }, { userId: 'invalid', address }, { userId: '87', address: 'invalid' }])(
-    'rejects invalid input before verification',
-    async (body: object) => {
-      const response = await request(app).post('/v1/auth/resolve').send(body);
+  it.each([
+    { userId: '87' },
+    { userId: 'invalid/id', address },
+    { userId: '87', address: 'invalid' },
+  ])('rejects invalid input before verification', async (body: object) => {
+    const response = await request(app).post('/v1/auth/resolve').send(body);
 
-      expect(response.status).toBe(400);
-      expect(verifyProviderAddress).not.toHaveBeenCalled();
-    },
-  );
+    expect(response.status).toBe(400);
+    expect(verifyProviderAddress).not.toHaveBeenCalled();
+  });
 });

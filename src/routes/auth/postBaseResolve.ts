@@ -25,6 +25,8 @@ const postBaseResolve: RequestHandler = async (req, res) => {
     });
   }
 
+  let stage = 'providerVerification';
+
   try {
     if (!(await verifyPrivyUser(req.get('authorization'), userId))) {
       return res.status(401).json({
@@ -41,6 +43,8 @@ const postBaseResolve: RequestHandler = async (req, res) => {
         result: {},
       });
     }
+
+    stage = 'identityTransaction';
 
     const result = await withDatabaseTransaction(async (session) => {
       const known = await findPrivyIdentityInSession(userId, session);
@@ -107,7 +111,7 @@ const postBaseResolve: RequestHandler = async (req, res) => {
       });
     }
 
-    log.error({ error }, 'Identity resolution failed');
+    log.error({ error, stage, chain: 'base' }, 'Identity resolution failed');
 
     return res.status(503).json({
       status: 'error',

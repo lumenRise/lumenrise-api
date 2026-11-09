@@ -4,7 +4,7 @@ import { requestAuthProvider } from '../../utils/services/auth/provider/requestA
 const verifyProviderAddress = async (userId: string, address: string): Promise<boolean> => {
   const result = await requestAuthProvider('server/wallets/verify', {
     address,
-    user_id: Number(userId),
+    user_id: userId,
   });
 
   return Boolean(

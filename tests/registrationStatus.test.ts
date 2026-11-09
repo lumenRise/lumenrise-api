@@ -65,7 +65,7 @@ describe('registration status', () => {
   it('rejects missing and invalid IDs before database access', async () => {
     const lookup = vi.spyOn(Identity, 'findOne');
     expect((await request(app).get('/v1/auth/status')).status).toBe(400);
-    expect((await request(app).get('/v1/auth/status').set('X-User-Id', 'invalid')).status).toBe(
+    expect((await request(app).get('/v1/auth/status').set('X-User-Id', 'invalid/id')).status).toBe(
       400,
     );
     expect(lookup).not.toHaveBeenCalled();

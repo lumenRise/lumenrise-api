@@ -27,30 +27,39 @@ describe('Auth provider registration verification', () => {
     vi.unstubAllGlobals();
   });
 
-  it('fetches project-scoped information and pins wallet verification to the same user', async () => {
-    fetch
-      .mockResolvedValueOnce(
-        reply({ id: 42, wallet: address, accounts: [{ network: 'stellar', public_key: address }] }),
-      )
-      .mockResolvedValueOnce(reply({ exists: true, user_id: 42, network: 'stellar' }));
-    expect(await getVerifiedProviderAddresses('42')).toEqual([address]);
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenNthCalledWith(
-      1,
-      'https://identity.example/server/users/42',
-      expect.objectContaining({
-        headers: { authorization: `Basic ${Buffer.from('app-id:app-secret').toString('base64')}` },
-      }),
-    );
-    expect(fetch).toHaveBeenNthCalledWith(
-      2,
-      'https://identity.example/server/wallets/verify',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ address, user_id: 42 }),
-      }),
-    );
-  });
+  it.each(['42', 'ekfvknkfkwsmaka322aa'])(
+    'fetches project-scoped information and pins verification to user %s',
+    async (userId: string): Promise<void> => {
+      fetch
+        .mockResolvedValueOnce(
+          reply({
+            id: userId,
+            wallet: address,
+            accounts: [{ network: 'stellar', public_key: address }],
+          }),
+        )
+        .mockResolvedValueOnce(reply({ exists: true, user_id: userId, network: 'stellar' }));
+      expect(await getVerifiedProviderAddresses(userId)).toEqual([address]);
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        `https://identity.example/server/users/${userId}`,
+        expect.objectContaining({
+          headers: {
+            authorization: `Basic ${Buffer.from('app-id:app-secret').toString('base64')}`,
+          },
+        }),
+      );
+      expect(fetch).toHaveBeenNthCalledWith(
+        2,
+        'https://identity.example/server/wallets/verify',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ address, user_id: userId }),
+        }),
+      );
+    },
+  );
 
   it('treats a 200 negative verification as failure', async () => {
     fetch
@@ -103,13 +112,14 @@ describe('Auth provider registration verification', () => {
     expect(await getVerifiedProviderAddresses('42', address)).toEqual([address]);
     expect(fetch).toHaveBeenLastCalledWith(
       'https://identity.example/server/wallets/verify',
-      expect.objectContaining({ body: JSON.stringify({ address, user_id: 42 }) }),
+      expect.objectContaining({ body: JSON.stringify({ address, user_id: '42' }) }),
     );
   });
 
   it('canonicalizes numeric IDs without accepting unsafe or ambiguous values', () => {
     expect(parseExternalUserId(42)).toBe('42');
     expect(parseExternalUserId('42')).toBe('42');
+    expect(parseExternalUserId('ekfvknkfkwsmaka322aa')).toBe('ekfvknkfkwsmaka322aa');
     for (const value of [
       undefined,
       null,
@@ -118,7 +128,7 @@ describe('Auth provider registration verification', () => {
       -1,
       42.1,
       '042',
-      '42e0',
+      'user id',
       '42/other',
       9007199254740992,
     ]) {

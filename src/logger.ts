@@ -9,7 +9,11 @@ const transport =
         options: { colorize: true },
       }
     : undefined;
-    
-const log = pino({ level: env.LOG_LEVEL, transport });
+
+const log = pino({
+  level: env.LOG_LEVEL,
+  transport,
+  serializers: { error: pino.stdSerializers.err },
+});
 
 export default log;
