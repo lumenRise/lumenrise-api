@@ -605,10 +605,10 @@ const openApiComponents = {
     },
     ExternalUserId: {
       type: 'string',
-      pattern: '^([1-9]\\d*|did:privy:[a-zA-Z0-9_-]{1,128})$',
-      example: '42',
+      pattern: '^([a-z0-9][a-z0-9_-]{0,127}|did:privy:[a-zA-Z0-9_-]{1,128})$',
+      example: 'ekfvknkfkwsmaka322aa',
       description:
-        'Blux numeric ID (up to 9007199254740991) for Stellar, or did:privy: ID for Base. Returned as a string; select Base using X-Chain.',
+        'Blux public user ID for Stellar (legacy numeric IDs remain supported), or did:privy: ID for Base. Returned as a string; select Base using X-Chain.',
     },
     RegistrationRequest: {
       type: 'object',

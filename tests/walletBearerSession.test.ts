@@ -35,7 +35,7 @@ describe('Auth provider user ID authentication', () => {
     expect(lookup).not.toHaveBeenCalled();
   });
 
-  it.each(['invalid', '0', '-1', '42.0', '042', '9007199254740992'])(
+  it.each(['invalid/id', '0', '-1', '42.0', '042', '9007199254740992'])(
     'rejects invalid IDs: %s',
     async (id) => {
       const lookup = vi.spyOn(Identity, 'findOne');

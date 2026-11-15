@@ -27,6 +27,8 @@ const postResolve: RequestHandler = async (req, res, next) => {
     });
   }
 
+  let stage = 'providerVerification';
+
   try {
     if (!(await verifyProviderAddress(userId, address))) {
       return res.status(401).json({
@@ -35,6 +37,8 @@ const postResolve: RequestHandler = async (req, res, next) => {
         result: {},
       });
     }
+
+    stage = 'identityTransaction';
 
     const result = await withDatabaseTransaction(async (session) => {
       const known = await Identity.findOne({ externalUserIds: userId }).session(session);
@@ -101,7 +105,7 @@ const postResolve: RequestHandler = async (req, res, next) => {
       });
     }
 
-    log.error({ error }, 'Identity resolution failed');
+    log.error({ error, stage, chain: 'stellar' }, 'Identity resolution failed');
 
     return res.status(503).json({
       status: 'error',

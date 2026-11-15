@@ -15,19 +15,22 @@ describe('selected wallet verification', () => {
     vi.resetAllMocks();
   });
 
-  it('pins the exact selected address to the current user ID', async () => {
-    vi.mocked(requestAuthProvider).mockResolvedValue({
-      exists: true,
-      user_id: 87,
-      network: 'stellar',
-    });
+  it.each(['87', 'ekfvknkfkwsmaka322aa'])(
+    'pins the exact selected address to user %s without numeric conversion',
+    async (userId: string): Promise<void> => {
+      vi.mocked(requestAuthProvider).mockResolvedValue({
+        exists: true,
+        user_id: userId,
+        network: 'stellar',
+      });
 
-    expect(await verifyProviderAddress('87', address)).toBe(true);
-    expect(requestAuthProvider).toHaveBeenCalledWith('server/wallets/verify', {
-      address,
-      user_id: 87,
-    });
-  });
+      expect(await verifyProviderAddress(userId, address)).toBe(true);
+      expect(requestAuthProvider).toHaveBeenCalledWith('server/wallets/verify', {
+        address,
+        user_id: userId,
+      });
+    },
+  );
 
   it.each([
     null,
