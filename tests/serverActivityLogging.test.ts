@@ -12,7 +12,6 @@ beforeEach((): void => {
 });
 
 it.each([
-  ['POST', '/v1/auth/register', 200, 'User registration completed'],
   ['DELETE', '/v1/launches/example/team/member', 200, 'Launch team member removed'],
   ['POST', '/v1/connections/github/sync', 202, 'GitHub account synchronization requested'],
 ])(
@@ -28,7 +27,7 @@ it.each([
       headers: { authorization: 'Bearer private-token' },
     } as unknown as Request;
 
-    const response = Object.assign(new EventEmitter(), { statusCode });
+    const response = Object.assign(new EventEmitter(), { statusCode, locals: {} });
     const next = vi.fn();
 
     logServerActivity(request, response as unknown as Response, next);
@@ -50,7 +49,10 @@ it.each([
 
 it.each([
   ['GET', '/v1/launches/example/market', 200],
+  ['GET', '/v1/auth/status', 200],
+  ['GET', '/v1/auth/session', 200],
   ['POST', '/v1/auth/resolve', 200],
+  ['POST', '/v1/auth/register', 200],
   ['POST', '/v1/launches/example/trades', 200],
   ['POST', '/v1/launches/confirm', 202],
   ['POST', '/v1/auth/register', 400],
@@ -59,7 +61,7 @@ it.each([
   'does not log polling, confirmation replays or failures as successful activity: %s %s %s',
   (method, path, statusCode): void => {
     const request = { method, path } as Request;
-    const response = Object.assign(new EventEmitter(), { statusCode });
+    const response = Object.assign(new EventEmitter(), { statusCode, locals: {} });
 
     logServerActivity(request, response as unknown as Response, vi.fn());
 
@@ -68,3 +70,26 @@ it.each([
     expect(log.info).not.toHaveBeenCalled();
   },
 );
+
+it.each([
+  ['/v1/auth/register', 'User registration completed', { addresses: ['wallet-address'] }],
+  ['/v1/auth/resolve', 'User login resolved', { address: 'wallet-address' }],
+])('logs verified account details once for %s', (path, message, wallets): void => {
+  const accountActivity = { name: 'Taylor', ...wallets };
+  const request = { method: 'POST', path } as Request;
+
+  const response = Object.assign(new EventEmitter(), {
+    statusCode: 200,
+    locals: { accountActivity },
+  });
+
+  logServerActivity(request, response as unknown as Response, vi.fn());
+
+  response.emit('finish');
+  response.emit('finish');
+
+  expect(log.info).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining(accountActivity),
+    message,
+  );
+});
