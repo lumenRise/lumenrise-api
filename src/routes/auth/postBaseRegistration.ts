@@ -114,6 +114,8 @@ const postBaseRegistration: RequestHandler = async (req, res) => {
         return null;
       }
 
+      const alreadyRegistered = Boolean(identity?.name?.trim());
+
       if (!identity) {
         const created = await Identity.create(
           [
@@ -188,6 +190,7 @@ const postBaseRegistration: RequestHandler = async (req, res) => {
         name: identity.name,
         avatarUrl: identity.avatarUrl ?? null,
         addresses,
+        alreadyRegistered,
       };
     });
 
@@ -205,10 +208,21 @@ const postBaseRegistration: RequestHandler = async (req, res) => {
       });
     }
 
-    res.locals.registeredIdentityId = result.identityId;
-    res.locals.registeredUserId = result.userId;
+    const { alreadyRegistered, ...profile } = result;
 
-    return res.status(200).json({ status: 'success', message: 'Privy user registered', result });
+    if (!alreadyRegistered) {
+      res.locals.accountActivity = {
+        event: 'user.registered',
+        identityId: profile.identityId,
+        userId: profile.userId,
+        name: profile.name,
+        addresses: profile.addresses,
+      };
+    }
+
+    return res
+      .status(200)
+      .json({ status: 'success', message: 'Privy user registered', result: profile });
   } catch (error) {
     if (uploaded) {
       await deleteAvatarOrQueue(uploaded.objectKey);

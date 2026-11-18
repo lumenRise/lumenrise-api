@@ -19,7 +19,13 @@ const logServerActivity: RequestHandler = (req, res, next): void => {
   }
 
   res.once('finish', (): void => {
-    if (res.statusCode < 200 || res.statusCode >= 300) {
+    const accountActivity = res.locals.accountActivity;
+
+    if (
+      res.statusCode < 200 ||
+      res.statusCode >= 300 ||
+      ('requiresAccountActivity' in activity && !accountActivity)
+    ) {
       return;
     }
 
@@ -30,8 +36,9 @@ const logServerActivity: RequestHandler = (req, res, next): void => {
         method,
         path,
         statusCode: res.statusCode,
-        identityId: req.auth?.identityId.toString() ?? res.locals?.registeredIdentityId,
-        userId: req.auth?.userId ?? res.locals?.registeredUserId,
+        identityId: req.auth?.identityId.toString(),
+        userId: req.auth?.userId,
+        ...accountActivity,
         contractId: req.launchIdentity?.contractId,
         launchSlug: req.launchSlug,
       },

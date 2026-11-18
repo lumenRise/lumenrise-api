@@ -1,5 +1,16 @@
 const serverActivities = [
-  { method: 'POST', path: /^\/v1\/auth\/register\/?$/, message: 'User registration completed' },
+  {
+    method: 'POST',
+    path: /^\/v1\/auth\/register\/?$/,
+    message: 'User registration completed',
+    requiresAccountActivity: true,
+  },
+  {
+    method: 'POST',
+    path: /^\/v1\/auth\/resolve\/?$/,
+    message: 'User login resolved',
+    requiresAccountActivity: true,
+  },
   { method: 'PUT', path: /^\/v1\/user\/avatar\/?$/, message: 'User avatar updated' },
   { method: 'DELETE', path: /^\/v1\/user\/avatar\/?$/, message: 'User avatar removed' },
   {

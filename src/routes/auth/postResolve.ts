@@ -83,6 +83,16 @@ const postResolve: RequestHandler = async (req, res, next) => {
 
     const identity = result.identity;
 
+    if (identity?.name?.trim()) {
+      res.locals.accountActivity = {
+        event: 'user.login',
+        userId,
+        identityId: identity._id.toString(),
+        name: identity.name,
+        address: address,
+      };
+    }
+
     return res.status(200).json({
       status: 'success',
       message: 'Registration status',
